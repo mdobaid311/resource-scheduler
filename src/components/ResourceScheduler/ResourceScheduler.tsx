@@ -10,6 +10,8 @@ import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
 import { ResourceSchedulerProps } from "./types";
 import { scrollToDate } from "./utils/scrollUtils";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   resources: initialResources,
@@ -103,57 +105,59 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   }, [currentDate, viewType, timeColumnWidth, dateColumnWidth]);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 w-full rounded-lg overflow-hidden">
-      <SchedulerControls
-        currentDate={currentDate}
-        viewType={viewType}
-        onNavigate={handleNavigate}
-        onViewChange={handleViewChange}
-        onGoToToday={goToToday}
-        allowViewChange={allowViewChange}
-      />
-
-      <div
-        className="flex flex-1 overflow-hidden bg-white rounded-b-lg shadow-sm"
-        onMouseUp={handleMouseUp}
-      >
-        <ResourceColumn
-          resources={resources}
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex flex-col h-full bg-gray-50 w-full rounded-lg overflow-hidden">
+        <SchedulerControls
+          currentDate={currentDate}
           viewType={viewType}
-          resourceColumnWidth={resourceColumnWidth}
-          getResourceRowHeight={getResourceRowHeight}
+          onNavigate={handleNavigate}
+          onViewChange={handleViewChange}
+          onGoToToday={goToToday}
+          allowViewChange={allowViewChange}
         />
 
-        <div ref={timelineRef} className="overflow-auto flex-1">
-          <TimelineHeader
-            viewType={viewType}
-            timeColumnWidth={timeColumnWidth}
-            dateColumnWidth={dateColumnWidth}
-            getTimeSlots={getTimeSlots}
-            getDatesInView={getDatesInView}
-          />
-
-          <TimelineGrid
+        <div
+          className="flex flex-1 overflow-hidden bg-white rounded-b-lg shadow-sm"
+          onMouseUp={handleMouseUp}
+        >
+          <ResourceColumn
             resources={resources}
             viewType={viewType}
-            timeColumnWidth={timeColumnWidth}
-            dateColumnWidth={dateColumnWidth}
-            getTimeSlots={getTimeSlots}
-            getDatesInView={getDatesInView}
-            isDragging={isDragging}
-            dragStart={dragStart}
-            dragEnd={dragEnd}
-            onMouseDown={handleMouseDown}
-            onMouseEnter={handleMouseEnter}
-            onEventClick={onEventClick}
-            renderEventPopover={renderEventPopover}
-            onEventDrop={onEventDrop}
-            calculateEventPositions={calculateEventPositions}
-            getGridTemplateRows={getGridTemplateRows}
+            resourceColumnWidth={resourceColumnWidth}
+            getResourceRowHeight={getResourceRowHeight}
           />
+
+          <div ref={timelineRef} className="overflow-auto flex-1">
+            <TimelineHeader
+              viewType={viewType}
+              timeColumnWidth={timeColumnWidth}
+              dateColumnWidth={dateColumnWidth}
+              getTimeSlots={getTimeSlots}
+              getDatesInView={getDatesInView}
+            />
+
+            <TimelineGrid
+              resources={resources}
+              viewType={viewType}
+              timeColumnWidth={timeColumnWidth}
+              dateColumnWidth={dateColumnWidth}
+              getTimeSlots={getTimeSlots}
+              getDatesInView={getDatesInView}
+              isDragging={isDragging}
+              dragStart={dragStart}
+              dragEnd={dragEnd}
+              onMouseDown={handleMouseDown}
+              onMouseEnter={handleMouseEnter}
+              onEventClick={onEventClick}
+              renderEventPopover={renderEventPopover}
+              onEventDrop={onEventDrop}
+              calculateEventPositions={calculateEventPositions}
+              getGridTemplateRows={getGridTemplateRows}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </DndProvider>
   );
 };
 

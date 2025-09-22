@@ -7,6 +7,7 @@ export interface Event {
   startDate: Date;
   endDate: Date;
   color?: string;
+  description?: string;
 }
 
 export interface Resource {
