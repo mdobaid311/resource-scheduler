@@ -344,6 +344,144 @@ const App = () => {
                     timeColumnWidth="60px"
                   />
                 </div>
+                <Tabs defaultValue="installation" className="mt-8">
+                  <TabsList>
+                    <TabsTrigger value="installation">Installation</TabsTrigger>
+                    <TabsTrigger value="usage">Usage</TabsTrigger>
+                    <TabsTrigger value="props">API Reference</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="installation">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Installation</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
+                          {`npm install resource-scheduler
+# or
+yarn add resource-scheduler
+# or
+pnpm add resource-scheduler`}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  <TabsContent value="usage">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Basic Usage</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
+                          {`import { ResourceScheduler, ViewType } from 'resource-scheduler';
+import { useState } from 'react';
+
+function App() {
+  const [resources, setResources] = useState([
+    {
+      id: "1",
+      name: "John Doe",
+      events: [
+        {
+          id: "e1",
+          startDate: new Date("2025-09-10T10:00:00"),
+          endDate: new Date("2025-09-10T12:00:00"),
+          title: "Team Meeting",
+          color: "#3b82f6",
+        },
+      ],
+    },
+  ]);
+
+  const handleEventCreate = (eventData, resourceId) => {
+    const newEvent = {
+      ...eventData,
+      id: \`event-\${Date.now()}\`,
+    };
+    
+    setResources(prev => 
+      prev.map(resource => 
+        resource.id === resourceId 
+          ? { ...resource, events: [...resource.events, newEvent] }
+          : resource
+      )
+    );
+  };
+
+  return (
+    <div style={{ height: '600px' }}>
+      <ResourceScheduler
+        resources={resources}
+        initialView={ViewType.Week}
+        onEventCreate={handleEventCreate}
+      />
+    </div>
+  );
+}`}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  <TabsContent value="props">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>API Reference</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium">
+                              resources: Resource[]
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Array of resources to display in the scheduler
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">initialDate?: Date</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Initial date to display (defaults to current date)
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">
+                              initialView?: ViewType
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Initial view type (Day, Week, Month, Quarter,
+                              Year)
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">
+                              onEventCreate?: function
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Callback when a new event is created by dragging
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">
+                              onEventDrop?: function
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Callback when an event is moved to a new time or
+                              resource
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">
+                              renderEventPopover?: function
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Custom function to render event details popover
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
@@ -446,135 +584,6 @@ const App = () => {
             </Card>
           </div>
         </div>
-
-        <Tabs defaultValue="installation" className="mt-8">
-          <TabsList>
-            <TabsTrigger value="installation">Installation</TabsTrigger>
-            <TabsTrigger value="usage">Usage</TabsTrigger>
-            <TabsTrigger value="props">API Reference</TabsTrigger>
-          </TabsList>
-          <TabsContent value="installation">
-            <Card>
-              <CardHeader>
-                <CardTitle>Installation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="bg-muted p-4 rounded-md overflow-x-auto">
-                  {`npm install resource-scheduler
-# or
-yarn add resource-scheduler
-# or
-pnpm add resource-scheduler`}
-                </pre>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="usage">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Usage</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="bg-muted p-4 rounded-md overflow-x-auto">
-                  {`import { ResourceScheduler, ViewType } from 'resource-scheduler';
-import { useState } from 'react';
-
-function App() {
-  const [resources, setResources] = useState([
-    {
-      id: "1",
-      name: "John Doe",
-      events: [
-        {
-          id: "e1",
-          startDate: new Date("2025-09-10T10:00:00"),
-          endDate: new Date("2025-09-10T12:00:00"),
-          title: "Team Meeting",
-          color: "#3b82f6",
-        },
-      ],
-    },
-  ]);
-
-  const handleEventCreate = (eventData, resourceId) => {
-    const newEvent = {
-      ...eventData,
-      id: \`event-\${Date.now()}\`,
-    };
-    
-    setResources(prev => 
-      prev.map(resource => 
-        resource.id === resourceId 
-          ? { ...resource, events: [...resource.events, newEvent] }
-          : resource
-      )
-    );
-  };
-
-  return (
-    <div style={{ height: '600px' }}>
-      <ResourceScheduler
-        resources={resources}
-        initialView={ViewType.Week}
-        onEventCreate={handleEventCreate}
-      />
-    </div>
-  );
-}`}
-                </pre>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="props">
-            <Card>
-              <CardHeader>
-                <CardTitle>API Reference</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium">resources: Resource[]</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Array of resources to display in the scheduler
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">initialDate?: Date</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Initial date to display (defaults to current date)
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">initialView?: ViewType</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Initial view type (Day, Week, Month, Quarter, Year)
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">onEventCreate?: function</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Callback when a new event is created by dragging
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">onEventDrop?: function</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Callback when an event is moved to a new time or resource
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">
-                      renderEventPopover?: function
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Custom function to render event details popover
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   );
