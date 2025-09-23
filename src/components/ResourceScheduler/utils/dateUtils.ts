@@ -1,6 +1,4 @@
 // src/components/ResourceScheduler/utils/dateUtils.ts
-import { ViewType } from "@/types/scheduler.enum";
-import { Event } from "@/types/scheduler.type";
 import {
   addDays,
   addMonths,
@@ -25,6 +23,7 @@ import {
   startOfWeek,
   startOfYear,
 } from "date-fns";
+import { Event, ViewType } from "../types";
 
 export const getTimeSlots = (currentDate: Date, viewType: ViewType): Date[] => {
   if (viewType !== ViewType.Day) return [];

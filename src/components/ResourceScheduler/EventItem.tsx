@@ -6,7 +6,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "../../components/ui/popover";
 import { Calendar, User } from "lucide-react";
 import { EventItemProps } from "./types";
 

@@ -1,12 +1,12 @@
 // src/components/ResourceScheduler/SchedulerControls.tsx
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import { endOfWeek, format, startOfWeek } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";

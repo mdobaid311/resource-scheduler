@@ -5,26 +5,38 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "ResourceScheduler",
-      fileName: (format) => `index.${format}.js`,
-      formats: ['es', 'cjs']
+      formats: ["es"],
+      fileName: "index",
     },
     rollupOptions: {
-      external: ["react", "react-dom", "react-dnd", "react-dnd-html5-backend"],
+      external: [
+        "react",
+        "react-dom",
+        "react-dnd",
+        "react-dnd-html5-backend",
+        "date-fns",
+        "tailwind-merge",
+        "clsx",
+        "class-variance-authority",
+        "@radix-ui/react-popover",
+        "@radix-ui/react-select",
+        "@radix-ui/react-slot",
+        "@radix-ui/react-tabs",
+        "lucide-react",
+      ],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDOM",
           "react-dnd": "ReactDnD",
-          "react-dnd-html5-backend": "ReactDnDHTML5Backend"
+          "react-dnd-html5-backend": "ReactDnDHTML5Backend",
+          "date-fns": "dateFns",
+          "tailwind-merge": "tailwindMerge",
+          clsx: "clsx",
         },
       },
     },

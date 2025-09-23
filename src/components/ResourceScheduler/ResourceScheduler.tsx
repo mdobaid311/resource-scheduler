@@ -1,5 +1,5 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useMediaQuery } from "../../hooks/use-media-query";
 import React, { useEffect, useRef } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";

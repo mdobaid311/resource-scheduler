@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/utils/scrollUtils.ts
 import { isSameDay, isSameHour } from "date-fns";
-import { ViewType } from "@/types/scheduler.enum";
 import { getTimeSlots, getDatesInView } from "./dateUtils";
+import { ViewType } from "../types";
 
 export const scrollToDate = (
   date: Date,
