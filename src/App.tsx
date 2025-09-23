@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { ResourceScheduler } from "./components/ResourceScheduler";
-import { ViewType } from "./types/scheduler.enum";
-import { Resource, Event } from "./types/scheduler.type";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Event,
+  Resource,
+  ViewType,
+} from "./components/ResourceScheduler/types";
 
 const App = () => {
   const [eventsCreated, setEventsCreated] = useState(0);

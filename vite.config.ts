@@ -8,11 +8,26 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@/assets": path.resolve(__dirname, "./src/assets/"),
     },
   },
-  server: {
-    host: "localhost",
-    port: 3000,
+  build: {
+    lib: {
+      entry: path.resolve(__dirname, "src/index.ts"),
+      name: "ResourceScheduler",
+      fileName: (format) => `index.${format}.js`,
+      formats: ['es', 'cjs']
+    },
+    rollupOptions: {
+      external: ["react", "react-dom", "react-dnd", "react-dnd-html5-backend"],
+      output: {
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+          "react-dnd": "ReactDnD",
+          "react-dnd-html5-backend": "ReactDnDHTML5Backend"
+        },
+      },
+    },
+    outDir: "dist",
   },
 });

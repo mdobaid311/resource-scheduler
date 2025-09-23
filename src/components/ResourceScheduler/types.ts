@@ -1,8 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // src/components/ResourceScheduler/types.ts
-import { ViewType } from "@/types/scheduler.enum";
-import type { Event, Resource } from "@/types/scheduler.type";
+export enum ViewType {
+  Day = "day",
+  Week = "week",
+  Month = "month",
+  Quarter = "quarter",
+  Year = "year",
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  startTime?: string;
+  endTime?: string;
+  duration?: string;
+  startDate: Date;
+  endDate: Date;
+  color?: string;
+  description?: string;
+}
+
+export interface Resource {
+  id: string;
+  name: string;
+  role?: string;
+  timezone?: string;
+  events: Event[];
+}
 
 export interface ResourceSchedulerProps {
   resources: Resource[];

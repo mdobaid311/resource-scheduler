@@ -1,28 +1,48 @@
-
 // src/components/ResourceScheduler/hooks/useEventCreation.ts
-import { useState, useCallback } from 'react';
-import type { Event } from '@/types/scheduler.type';
+import { useState, useCallback } from "react";
+import { Event } from "../types";
 
-export const useEventCreation = (onEventCreate?: (event: Omit<Event, "id">, resourceId: string) => void) => {
+export const useEventCreation = (
+  onEventCreate?: (event: Omit<Event, "id">, resourceId: string) => void
+) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ date: Date; resourceId: string } | null>(null);
-  const [dragEnd, setDragEnd] = useState<{ date: Date; resourceId: string } | null>(null);
+  const [dragStart, setDragStart] = useState<{
+    date: Date;
+    resourceId: string;
+  } | null>(null);
+  const [dragEnd, setDragEnd] = useState<{
+    date: Date;
+    resourceId: string;
+  } | null>(null);
 
-  const handleMouseDown = useCallback((date: Date, resourceId: string, e?: React.MouseEvent) => {
-    if (e?.target instanceof HTMLElement && e.target.closest(".event-item")) return;
-    setIsDragging(true);
-    setDragStart({ date, resourceId });
-    setDragEnd({ date, resourceId });
-  }, []);
-
-  const handleMouseEnter = useCallback((date: Date, resourceId: string) => {
-    if (isDragging && dragStart) {
+  const handleMouseDown = useCallback(
+    (date: Date, resourceId: string, e?: React.MouseEvent) => {
+      if (e?.target instanceof HTMLElement && e.target.closest(".event-item"))
+        return;
+      setIsDragging(true);
+      setDragStart({ date, resourceId });
       setDragEnd({ date, resourceId });
-    }
-  }, [isDragging, dragStart]);
+    },
+    []
+  );
+
+  const handleMouseEnter = useCallback(
+    (date: Date, resourceId: string) => {
+      if (isDragging && dragStart) {
+        setDragEnd({ date, resourceId });
+      }
+    },
+    [isDragging, dragStart]
+  );
 
   const handleMouseUp = useCallback(() => {
-    if (isDragging && dragStart && dragEnd && dragStart.resourceId === dragEnd.resourceId && onEventCreate) {
+    if (
+      isDragging &&
+      dragStart &&
+      dragEnd &&
+      dragStart.resourceId === dragEnd.resourceId &&
+      onEventCreate
+    ) {
       const startDate = new Date(
         Math.min(dragStart.date.getTime(), dragEnd.date.getTime())
       );
@@ -39,10 +59,10 @@ export const useEventCreation = (onEventCreate?: (event: Omit<Event, "id">, reso
           .padStart(6, "0")}`,
         duration: "1h", // You might want to calculate this based on viewType
       };
-      
+
       onEventCreate(newEvent, dragStart.resourceId);
     }
-    
+
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);

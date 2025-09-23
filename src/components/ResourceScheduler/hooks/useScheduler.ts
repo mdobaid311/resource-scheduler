@@ -1,7 +1,5 @@
 // src/components/ResourceScheduler/hooks/useScheduler.ts
 import { useState, useCallback, useEffect } from "react";
-import { ViewType } from "@/types/scheduler.enum";
-import type { Event, Resource } from "@/types/scheduler.type";
 import {
   getTimeSlots,
   getDatesInView,
@@ -10,6 +8,7 @@ import {
   getEventStartPosition,
   isToday,
 } from "../utils/dateUtils";
+import { Event, Resource, ViewType } from "../types";
 
 export const useScheduler = (
   initialResources: Resource[],

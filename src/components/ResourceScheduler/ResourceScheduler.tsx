@@ -1,6 +1,5 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { ViewType } from "@/types/scheduler.enum";
 import React, { useEffect, useRef } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";
@@ -8,7 +7,7 @@ import { ResourceColumn } from "./ResourceColumn";
 import { SchedulerControls } from "./SchedulerControls";
 import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
-import { ResourceSchedulerProps } from "./types";
+import { ResourceSchedulerProps, ViewType } from "./types";
 import { scrollToDate } from "./utils/scrollUtils";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";

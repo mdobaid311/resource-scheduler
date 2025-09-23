@@ -1,20 +1,35 @@
 {
   "name": "resource-scheduler",
-  "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A React-based resource scheduling component with drag-and-drop functionality",
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+     ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "prepublishOnly": "npm run build",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
-    "@tailwindcss/vite": "^4.1.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -23,8 +38,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.1.1",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.13"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -32,13 +46,44 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react-swc": "^4.0.1",
+    "@tailwindcss/vite": "^4.1.13",
     "eslint": "^9.35.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
+    "tailwindcss": "^4.1.13",
     "tw-animate-css": "^1.3.8",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.43.0",
     "vite": "^7.1.6"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "tailwindcss": "^4.1.13"
+  },
+  "keywords": [
+    "react",
+    "scheduler",
+    "resource-scheduler",
+    "calendar",
+    "drag-and-drop",
+    "booking",
+    "appointment",
+    "timeline",
+    "schedule"
+  ],
+  "author": "Mohammed Obaid <mdobaid311@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mdobaid311/resource-scheduler"
+  },
+  "homepage": "https://github.com/mdobaid311/resource-scheduler#readme",
+  "bugs": {
+    "url": "https://github.com/mdobaid311/resource-scheduler/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

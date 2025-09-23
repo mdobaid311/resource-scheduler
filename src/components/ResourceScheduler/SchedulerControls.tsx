@@ -7,11 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ViewType } from "@/types/scheduler.enum";
 import { endOfWeek, format, startOfWeek } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
-import { SchedulerControlsProps } from "./types";
+import { SchedulerControlsProps, ViewType } from "./types";
 
 export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   currentDate,
