@@ -10,9 +10,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "style": "./dist/resource-scheduler.css",
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "style": "./dist/resource-scheduler.css"
+      "require": "./dist/index.js"
     },
     "./style.css": "./dist/resource-scheduler.css",
     "./dist/resource-scheduler.css": "./dist/resource-scheduler.css"
@@ -83,7 +83,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mdobaid311/resource-scheduler"
+    "url": "git+https://github.com/mdobaid311/resource-scheduler.git"
   },
   "homepage": "https://github.com/mdobaid311/resource-scheduler#readme",
   "bugs": {
