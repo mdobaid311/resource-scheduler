@@ -2,15 +2,32 @@ import path from "path";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    dts({
+      include: ["src"],
+      exclude: ["src/**/*.stories.tsx", "src/**/*.test.tsx"],
+      insertTypesEntry: true,
+      rollupTypes: true,
+      outDir: "dist",
+      staticImport: true,
+      tsconfigPath: "./tsconfig.build.json",
+    }),
+  ],
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "ResourceScheduler",
-      formats: ["es"],
-      fileName: "index",
+      formats: ["es", "cjs"],
+      fileName: (format) => {
+        if (format === "es") return "index.esm.js";
+        if (format === "cjs") return "index.js";
+        return "index.js";
+      },
     },
     rollupOptions: {
       external: [
@@ -41,5 +58,11 @@ export default defineConfig({
       },
     },
     outDir: "dist",
+    // Add CSS extraction
+  },
+  css: {
+    modules: {
+      localsConvention: "camelCase",
+    },
   },
 });

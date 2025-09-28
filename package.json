@@ -3,27 +3,32 @@
   "version": "1.0.0",
   "description": "A React-based resource scheduling component with drag-and-drop functionality",
   "type": "module",
-  "main": "./dist/index.cjs.js",
-  "module": "./dist/index.es.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.cjs.js"
-    }
+      "styles": "./dist/index.css",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "scripts": {
+ "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.build.json && vite build",
-    "lint": "eslint .",
+    "build:css": "node build-css.js",
+    "build:js": "vite build",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "build": "npm run build:css && npm run build:js && npm run build:types",
     "prepublishOnly": "npm run build",
-    "prepack": "npm run build"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
