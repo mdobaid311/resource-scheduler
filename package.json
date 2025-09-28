@@ -1,6 +1,6 @@
 {
   "name": "resource-scheduler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A React-based resource scheduling component with drag-and-drop functionality",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
     "README.md",
     "LICENSE"
   ],
- "scripts": {
+  "scripts": {
     "dev": "vite",
     "build:js": "vite build",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
