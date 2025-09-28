@@ -6,15 +6,16 @@
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
-  "style": "./dist/index.css",
+  "style": "./dist/resource-scheduler.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "styles": "./dist/index.css",
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "style": "./dist/resource-scheduler.css"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/resource-scheduler.css",
+    "./dist/resource-scheduler.css": "./dist/resource-scheduler.css"
   },
   "files": [
     "dist",
@@ -23,10 +24,9 @@
   ],
  "scripts": {
     "dev": "vite",
-    "build:css": "node build-css.js",
     "build:js": "vite build",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
-    "build": "npm run build:css && npm run build:js && npm run build:types",
+    "build": "npm run build:js && npm run build:types",
     "prepublishOnly": "npm run build",
     "type-check": "tsc --noEmit"
   },

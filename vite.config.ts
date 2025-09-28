@@ -55,10 +55,18 @@ export default defineConfig({
           "tailwind-merge": "tailwindMerge",
           clsx: "clsx",
         },
+        // Fix CSS file naming
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'resource-scheduler.css';
+          }
+          return assetInfo.name || '[name][extname]';
+        },
       },
     },
     outDir: "dist",
-    // Add CSS extraction
+    // Ensure CSS is extracted
+    cssCodeSplit: true,
   },
   css: {
     modules: {

@@ -1,3 +1,4 @@
+import "./styles/global.css";
 // Main exports
 export { ResourceScheduler } from "./components/ResourceScheduler/ResourceScheduler";
 
