@@ -146,6 +146,7 @@ interface Event {
 ### Basic Usage
 
 ```tsx
+import "resource-scheduler/dist/resource-scheduler.css"
 import { ResourceScheduler, ViewType } from 'resource-scheduler';
 
 function BasicExample() {
@@ -295,7 +296,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/resource-scheduler.git
+git clone https://github.com/mdobaid311/resource-scheduler.git
 
 # Install dependencies
 npm install
@@ -316,20 +317,10 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation](https://github.com/your-username/resource-scheduler/docs)
-- 🐛 [Bug Reports](https://github.com/your-username/resource-scheduler/issues)
-- 💡 [Feature Requests](https://github.com/your-username/resource-scheduler/issues)
-- 💬 [Discussions](https://github.com/your-username/resource-scheduler/discussions)
-
-## Changelog
-
-### v1.0.0
-- Initial release
-- Multiple view types (Day, Week, Month, Quarter, Year)
-- Drag & drop event creation and movement
-- Customizable event popovers
-- Responsive design
-- TypeScript support
+- 📚 [Documentation](https://github.com/mdobaid311/resource-scheduler/docs)
+- 🐛 [Bug Reports](https://github.com/mdobaid311/resource-scheduler/issues)
+- 💡 [Feature Requests](https://github.com/mdobaid311/resource-scheduler/issues)
+- 💬 [Discussions](https://github.com/mdobaid311/resource-scheduler/discussions)
 
 ## Acknowledgments
 
