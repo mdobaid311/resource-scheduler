@@ -2,7 +2,7 @@
 
 A fully customizable, feature-rich resource scheduling component for React applications. Built with TypeScript, Tailwind CSS, and shadcn/ui components.
 
-![Resource Scheduler](https://via.placeholder.com/800x400/3b82f6/ffffff?text=Resource+Scheduler+Demo)
+![Resource Scheduler](./public/resource-scheduler-demo.png)
 
 ## Features
 
@@ -37,6 +37,7 @@ npm install react react-dom tailwindcss date-fns
 
 ```tsx
 import { ResourceScheduler, ViewType } from 'resource-scheduler';
+import "resource-scheduler/dist/resource-scheduler.css"
 import { useState } from 'react';
 
 function App() {
@@ -83,6 +84,13 @@ function App() {
     </div>
   );
 }
+```
+
+## Styles
+Import the default styles in your main CSS or JS file:
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css"
 ```
 
 ## Props
