@@ -26,7 +26,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
       {slots.map((slot, i) => (
         <div
           key={i}
-          className={`p-2 text-center border-b h-14 flex flex-col items-center justify-center shadow-sm ${
+          className={`p-2 text-center border-b h-14 flex flex-col items-center justify-center border-r ${
             isToday(slot) ? "bg-blue-50" : "bg-gray-50"
           }`}
         >

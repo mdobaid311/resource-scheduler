@@ -44,7 +44,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   };
 
   return (
-    <div className="flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-white rounded-t-lg border-b sticky top-0 z-30 shadow-sm">
+    <div className="flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-white rounded-t-lg border-b sticky top-0 z-30">
       <div className="flex items-center justify-between lg:justify-start w-full gap-2">
         <div className="flex items-center gap-1">
           <Button
