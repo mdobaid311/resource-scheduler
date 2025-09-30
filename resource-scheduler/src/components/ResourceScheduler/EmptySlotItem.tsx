@@ -2,7 +2,7 @@
 // src/components/ResourceScheduler/EmptySlotItem.tsx
 import React from "react";
 import { useDrop } from "react-dnd";
-import { EmptySlotItemProps } from "./types";
+import { EmptySlotItemProps, Event, Resource } from "./types";
 
 export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   colIndex,
@@ -19,16 +19,20 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   const [, drop] = useDrop(
     () => ({
       accept: "BOX",
-      drop: (item: { event: any }) => {
+      drop: (item: { event: Event; resource: Resource }) => {
         if (onEventDrop) {
           const event = item.event;
           const newStartDate = new Date(slot);
           const duration = event.endDate.getTime() - event.startDate.getTime();
           const newEndDate = new Date(newStartDate.getTime() + duration);
+          const fromResourceId = item?.resource?.id;
+          const toResourceId = resource.id;
+
+
           onEventDrop(
             event,
-            item.event.id,
-            resource.id,
+            fromResourceId!,
+            toResourceId,
             newStartDate,
             newEndDate
           );

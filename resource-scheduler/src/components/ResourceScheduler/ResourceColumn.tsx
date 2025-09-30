@@ -12,7 +12,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       className="bg-white border-r z-20 sticky left-0"
       style={{ width: resourceColumnWidth }}
     >
-      <div className="sticky top-0 z-10 bg-gray-50 p-2 text-center border-b h-14 flex items-center justify-center shadow-sm">
+      <div className="sticky top-0 z-10 bg-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
         <span className="text-sm font-medium text-gray-600">Resources</span>
       </div>
       {resources.map((resource) => {

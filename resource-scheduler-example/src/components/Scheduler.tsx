@@ -115,12 +115,10 @@ const Scheduler = () => {
   // Handler functions
   const handleDateChange = (date: Date) => {
     setLastAction(`Date changed to: ${date.toDateString()}`);
-    console.log("Date changed:", date);
   };
 
   const handleEventClick = (event: Event, resource: Resource) => {
     setLastAction(`Event clicked: ${event.title} (${resource.name})`);
-    console.log("Event clicked:", event, resource);
   };
 
   const handleEventCreate = (
@@ -142,7 +140,6 @@ const Scheduler = () => {
 
     setEventsCreated((prev) => prev + 1);
     setLastAction(`Event created on resource: ${resourceId}`);
-    console.log("Event created:", newEvent, resourceId);
   };
 
   const handleEventDrop = (
@@ -152,48 +149,39 @@ const Scheduler = () => {
     newStartDate: Date,
     newEndDate: Date
   ) => {
-    // First remove the event from the original resource
-    const updatedResources = resources.map((resource) =>
-      resource.id === fromResourceId
-        ? {
+    setResources((prevResources) => {
+      // Remove the event from the old resource and add to the new one with updated dates
+      return prevResources.map((resource: Resource) => {
+        if (resource.id === fromResourceId) {
+          // Remove the event from the old resource
+          return {
             ...resource,
-            events: resource.events.filter((e) => e.id !== event.id),
-          }
-        : resource
-    );
-
-    // Then add it to the new resource with updated dates
-    const updatedEvent = {
-      ...event,
-      startDate: newStartDate,
-      endDate: newEndDate,
-    };
-
-    const finalResources = updatedResources.map((resource) =>
-      resource.id === toResourceId
-        ? {
+            events: resource.events.filter((e: Event) => e.id !== event.id),
+          };
+        }
+        if (resource.id === toResourceId) {
+          // Add the updated event to the new resource
+          return {
             ...resource,
-            events: [...resource.events, updatedEvent],
-          }
-        : resource
-    );
-
-    setResources(finalResources);
+            events: [
+              ...resource.events,
+              {
+                ...event,
+                startDate: newStartDate,
+                endDate: newEndDate,
+              },
+            ],
+          };
+        }
+        return resource;
+      });
+    });
     setEventsDropped((prev) => prev + 1);
     setLastAction(`Event moved from ${fromResourceId} to ${toResourceId}`);
-    console.log(
-      "Event dropped:",
-      event,
-      fromResourceId,
-      toResourceId,
-      newStartDate,
-      newEndDate
-    );
   };
 
   const handleViewChange = (view: ViewType) => {
     setLastAction(`View changed to: ${view}`);
-    console.log("View changed:", view);
   };
 
   const handleClearStats = () => {
@@ -348,7 +336,7 @@ const Scheduler = () => {
                     resources={resources}
                     allowViewChange={true}
                     dateColumnWidth="100px"
-                    initialDate={new Date("2025-09-10")}
+                    initialDate={new Date()}
                     initialView={ViewType.Week}
                     onDateChange={handleDateChange}
                     onEventClick={handleEventClick}
@@ -379,6 +367,13 @@ yarn add resource-scheduler
 # or
 pnpm add resource-scheduler`}
                         </pre>
+                        <p className="mt-4 text-sm text-muted-foreground">
+                          Don't forget to import the CSS file in your main entry
+                          point:
+                        </p>
+                        <pre className="bg-muted p-4 rounded-md overflow-x-auto mt-2">
+                          {`import "resource-scheduler/dist/resource-scheduler.css";`}
+                        </pre>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -389,14 +384,16 @@ pnpm add resource-scheduler`}
                       </CardHeader>
                       <CardContent>
                         <pre className="bg-muted p-4 rounded-md overflow-x-auto">
-                          {`import { ResourceScheduler, ViewType } from 'resource-scheduler';
-import { useState } from 'react';
+                          {`import { useState } from "react";
+import { ResourceScheduler, ViewType, type Event, type Resource } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
 
 function App() {
-  const [resources, setResources] = useState([
+  const [resources, setResources] = useState<Resource[]>([
     {
       id: "1",
       name: "John Doe",
+      role: "Frontend Developer",
       events: [
         {
           id: "e1",
@@ -404,17 +401,18 @@ function App() {
           endDate: new Date("2025-09-10T12:00:00"),
           title: "Team Meeting",
           color: "#3b82f6",
+          description: "Weekly team sync",
         },
       ],
     },
   ]);
 
-  const handleEventCreate = (eventData, resourceId) => {
-    const newEvent = {
+  const handleEventCreate = (eventData: Omit<Event, "id">, resourceId: string) => {
+    const newEvent: Event = {
       ...eventData,
       id: \`event-\${Date.now()}\`,
     };
-    
+
     setResources(prev => 
       prev.map(resource => 
         resource.id === resourceId 
@@ -424,12 +422,42 @@ function App() {
     );
   };
 
+  const handleEventDrop = (
+    event: Event,
+    fromResourceId: string,
+    toResourceId: string,
+    newStartDate: Date,
+    newEndDate: Date
+  ) => {
+    setResources(prev => 
+      prev.map(resource => {
+        if (resource.id === fromResourceId) {
+          return {
+            ...resource,
+            events: resource.events.filter(e => e.id !== event.id),
+          };
+        }
+        if (resource.id === toResourceId) {
+          return {
+            ...resource,
+            events: [
+              ...resource.events,
+              { ...event, startDate: newStartDate, endDate: newEndDate },
+            ],
+          };
+        }
+        return resource;
+      })
+    );
+  };
+
   return (
     <div style={{ height: '600px' }}>
       <ResourceScheduler
         resources={resources}
         initialView={ViewType.Week}
         onEventCreate={handleEventCreate}
+        onEventDrop={handleEventDrop}
       />
     </div>
   );
