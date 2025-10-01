@@ -116,7 +116,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
         />
 
         <div
-          className="flex flex-1 overflow-hidden bg-ocrs-white rounded-b-lg ocrs-shadow-sm"
+          className="flex flex-1 bg-ocrs-white rounded-b-lg ocrs-shadow-sm overflow-x-auto"
           onMouseUp={handleMouseUp}
         >
           <ResourceColumn
@@ -126,7 +126,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
             getResourceRowHeight={getResourceRowHeight}
           />
 
-          <div ref={timelineRef} className="overflow-auto flex-1">
+          <div ref={timelineRef} className="flex-1">
             <TimelineHeader
               viewType={viewType}
               timeColumnWidth={timeColumnWidth}

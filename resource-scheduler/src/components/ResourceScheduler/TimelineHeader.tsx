@@ -15,7 +15,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 
   return (
     <div
-      className="grid sticky top-0 z-10"
+      className="grid sticky top-0 z-10 bg-ocrs-background"
       style={{
         gridTemplateColumns:
           viewType === "day"
