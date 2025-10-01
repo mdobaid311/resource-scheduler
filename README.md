@@ -4,6 +4,10 @@ A fully customizable, feature-rich resource scheduling component for React appli
 
 ![Resource Scheduler](./public/resource-scheduler-demo.png)
 
+## Live Demo
+
+Try the Resource Scheduler in action: [resource-scheduler-demo.vercel.app](https://resource-scheduler-demo.vercel.app/)
+
 ## Features
 
 - 📅 **Multiple View Types**: Day, Week, Month, Quarter, and Year views
