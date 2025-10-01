@@ -44,13 +44,13 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   };
 
   return (
-    <div className="flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-white rounded-t-lg border-b sticky top-0 z-30">
+    <div className="flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30">
       <div className="flex items-center justify-between lg:justify-start w-full gap-2">
         <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-gray-100 rounded-lg"
+            className="hover:bg-ocrs-gray-100 rounded-lg"
             onClick={() => onNavigate("prev")}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -68,7 +68,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-gray-100 rounded-lg"
+            className="hover:bg-ocrs-gray-100 rounded-lg"
             onClick={() => onNavigate("next")}
           >
             <ChevronRight className="h-4 w-4" />
@@ -78,7 +78,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 bg-white hover:bg-gray-50"
+          className="flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
           onClick={onGoToToday}
         >
           <Calendar className="h-4 w-4" />
@@ -88,7 +88,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
 
       {allowViewChange && (
         <Select value={viewType} onValueChange={onViewChange}>
-          <SelectTrigger className="lg:w-[140px] w-full bg-white">
+          <SelectTrigger className="lg:w-[140px] w-full bg-ocrs-white">
             <SelectValue placeholder="View" />
           </SelectTrigger>
           <SelectContent style={{ zIndex: 99 }}>

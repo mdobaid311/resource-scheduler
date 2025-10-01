@@ -293,7 +293,7 @@ const App = () => {
           className="w-4 h-4 rounded-full"
           style={{ backgroundColor: event.color }}
         ></div>
-        <span className="text-sm text-muted-foreground">{resource.name}</span>
+        <span className="text-sm text-ocrs-muted-foreground">{resource.name}</span>
         <Badge variant="outline">{resource.role}</Badge>
       </div>
       <p className="text-sm">{event.description}</p>
@@ -308,13 +308,13 @@ const App = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-ocrs-background p-4">
       <div className="container mx-auto max-w-7xl">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-ocrs-foreground">
             Resource Scheduler Demo
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-ocrs-muted-foreground">
             A fully customizable resource scheduling component for React
             applications
           </p>
@@ -360,17 +360,17 @@ const App = () => {
                         <CardTitle>Installation</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
+                        <pre className="bg-ocrs-muted p-4 rounded-md overflow-x-auto">
                           {`npm install resource-scheduler
 # or
 yarn add resource-scheduler
 # or
 pnpm add resource-scheduler`}
                         </pre>
-                        <p className="mt-4 text-sm text-muted-foreground">
+                        <p className="mt-4 text-sm text-ocrs-muted-foreground">
                           Don't forget to import the CSS file in your main entry point:
                         </p>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto mt-2">
+                        <pre className="bg-ocrs-muted p-4 rounded-md overflow-x-auto mt-2">
                           {`import "resource-scheduler/dist/resource-scheduler.css";`}
                         </pre>
                       </CardContent>
@@ -382,7 +382,7 @@ pnpm add resource-scheduler`}
                         <CardTitle>Basic Usage</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
+                        <pre className="bg-ocrs-muted p-4 rounded-md overflow-x-auto">
                           {`import { useState } from "react";
 import { ResourceScheduler, ViewType, type Event, type Resource } from "resource-scheduler";
 import "resource-scheduler/dist/resource-scheduler.css";
@@ -476,13 +476,13 @@ function App() {
                             <h4 className="font-medium">
                               resources: Resource[]
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Array of resources to display in the scheduler
                             </p>
                           </div>
                           <div>
                             <h4 className="font-medium">initialDate?: Date</h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Initial date to display (defaults to current date)
                             </p>
                           </div>
@@ -490,7 +490,7 @@ function App() {
                             <h4 className="font-medium">
                               initialView?: ViewType
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Initial view type (Day, Week, Month, Quarter,
                               Year)
                             </p>
@@ -499,7 +499,7 @@ function App() {
                             <h4 className="font-medium">
                               onEventCreate?: function
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Callback when a new event is created by dragging
                             </p>
                           </div>
@@ -507,7 +507,7 @@ function App() {
                             <h4 className="font-medium">
                               onEventDrop?: function
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Callback when an event is moved to a new time or
                               resource
                             </p>
@@ -516,7 +516,7 @@ function App() {
                             <h4 className="font-medium">
                               renderEventPopover?: function
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-ocrs-muted-foreground">
                               Custom function to render event details popover
                             </p>
                           </div>
@@ -548,7 +548,7 @@ function App() {
                 </div>
                 <div>
                   <p className="text-sm font-medium mb-1">Last Action</p>
-                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                  <p className="text-sm text-ocrs-muted-foreground bg-ocrs-muted p-2 rounded">
                     {lastAction || "No actions yet"}
                   </p>
                 </div>
@@ -577,31 +577,31 @@ function App() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">
                     Multiple view types (Day, Week, Month, Quarter, Year)
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">Drag to create events</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">
                     Drag to move events between resources
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">Customizable event popovers</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">Responsive design</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-ocrs-primary rounded-full"></div>
                   <span className="text-sm">Customizable styling</span>
                 </div>
               </CardContent>

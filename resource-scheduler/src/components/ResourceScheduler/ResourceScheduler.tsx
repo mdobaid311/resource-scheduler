@@ -105,7 +105,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col h-full bg-gray-50 w-full rounded-lg overflow-hidden">
+      <div className="flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden">
         <SchedulerControls
           currentDate={currentDate}
           viewType={viewType}
@@ -116,7 +116,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
         />
 
         <div
-          className="flex flex-1 overflow-hidden bg-white rounded-b-lg shadow-sm"
+          className="flex flex-1 overflow-hidden bg-ocrs-white rounded-b-lg shadow-sm"
           onMouseUp={handleMouseUp}
         >
           <ResourceColumn

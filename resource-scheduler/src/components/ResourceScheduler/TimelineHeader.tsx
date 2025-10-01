@@ -27,7 +27,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
         <div
           key={i}
           className={`p-2 text-center border-b h-14 flex flex-col items-center justify-center border-r ${
-            isToday(slot) ? "bg-blue-50" : "bg-gray-50"
+            isToday(slot) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
           }`}
         >
           {viewType === "day" ? (
@@ -72,7 +72,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                   {format(slot, "MMM")}
                 </span>
               )}
-              <span className="absolute mt-8 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              <span className="absolute mt-8 px-2 py-1 rounded bg-ocrs-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 {format(slot, "MMMM yyyy")}
               </span>
             </div>

@@ -49,7 +49,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   return (
     <div
       className={`border-b border-r cursor-pointer ${
-        isToday ? "bg-blue-50" : isSelected ? "bg-blue-50" : "hover:bg-gray-50"
+        isToday ? "bg-ocrs-blue-50" : isSelected ? "bg-ocrs-blue-50" : "hover:bg-ocrs-gray-50"
       }`}
       style={{
         gridRow: rowIndex + 2,

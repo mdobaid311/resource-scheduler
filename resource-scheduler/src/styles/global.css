@@ -97,38 +97,38 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-ocrs-background: var(--background);
+  --color-ocrs-foreground: var(--foreground);
+  --color-ocrs-card: var(--card);
+  --color-ocrs-card-foreground: var(--card-foreground);
+  --color-ocrs-popover: var(--popover);
+  --color-ocrs-popover-foreground: var(--popover-foreground);
+  --color-ocrs-primary: var(--primary);
+  --color-ocrs-primary-foreground: var(--primary-foreground);
+  --color-ocrs-secondary: var(--secondary);
+  --color-ocrs-secondary-foreground: var(--secondary-foreground);
+  --color-ocrs-muted: var(--muted);
+  --color-ocrs-muted-foreground: var(--muted-foreground);
+  --color-ocrs-accent: var(--accent);
+  --color-ocrs-accent-foreground: var(--accent-foreground);
+  --color-ocrs-destructive: var(--destructive);
+  --color-ocrs-destructive-foreground: var(--destructive-foreground);
+  --color-ocrs-border: var(--border);
+  --color-ocrs-input: var(--input);
+  --color-ocrs-ring: var(--ring);
+  --color-ocrs-chart-1: var(--chart-1);
+  --color-ocrs-chart-2: var(--chart-2);
+  --color-ocrs-chart-3: var(--chart-3);
+  --color-ocrs-chart-4: var(--chart-4);
+  --color-ocrs-chart-5: var(--chart-5);
+  --color-ocrs-sidebar: var(--sidebar);
+  --color-ocrs-sidebar-foreground: var(--sidebar-foreground);
+  --color-ocrs-sidebar-primary: var(--sidebar-primary);
+  --color-ocrs-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-ocrs-sidebar-accent: var(--sidebar-accent);
+  --color-ocrs-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-ocrs-sidebar-border: var(--sidebar-border);
+  --color-ocrs-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -150,12 +150,12 @@
 }
 /* Base styles */
 * {
-  border-color: var(--color-border);
+  border-color: var(--color-ocrs-border);
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--color-ocrs-background);
+  color: var(--color-ocrs-foreground);
   font-family: var(--font-sans);
 }
 
