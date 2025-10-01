@@ -38,7 +38,7 @@ export const EventItem: React.FC<EventItemProps> = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div
-          className="event-item text-black p-2 text-xs rounded border cursor-pointer z-99 h-full shadow-xs flex flex-col justify-center"
+          className="event-item text-black p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center"
           style={{
             backgroundColor: `${event.color}20`,
             borderColor: event.color,

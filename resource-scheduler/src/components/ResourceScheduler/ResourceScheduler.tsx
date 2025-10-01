@@ -116,7 +116,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
         />
 
         <div
-          className="flex flex-1 overflow-hidden bg-ocrs-white rounded-b-lg shadow-sm"
+          className="flex flex-1 overflow-hidden bg-ocrs-white rounded-b-lg ocrs-shadow-sm"
           onMouseUp={handleMouseUp}
         >
           <ResourceColumn
