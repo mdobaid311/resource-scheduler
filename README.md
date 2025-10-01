@@ -1,4 +1,4 @@
-# Resource Scheduler -1 
+# Resource Scheduler
 
 A fully customizable, feature-rich resource scheduling component for React applications. Built with TypeScript, Tailwind CSS, and shadcn/ui components.
 
