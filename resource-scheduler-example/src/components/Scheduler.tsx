@@ -20,6 +20,7 @@ const Scheduler = () => {
   const [eventsCreated, setEventsCreated] = useState(0);
   const [eventsDropped, setEventsDropped] = useState(0);
   const [lastAction, setLastAction] = useState<string>("");
+
   // Helper to get a date relative to today
   const getRelativeDate = (
     daysOffset: number,
@@ -41,16 +42,16 @@ const Scheduler = () => {
       events: [
         {
           id: "e1",
-          startDate: getRelativeDate(0, 10, 0), // today 10:00
-          endDate: getRelativeDate(0, 12, 0), // today 12:00
+          startDate: getRelativeDate(0, 10, 0),
+          endDate: getRelativeDate(0, 12, 0),
           title: "Team Meeting",
           color: "#3b82f6",
           description: "Weekly team sync",
         },
         {
           id: "e2",
-          startDate: getRelativeDate(1, 14, 0), // tomorrow 14:00
-          endDate: getRelativeDate(1, 16, 0), // tomorrow 16:00
+          startDate: getRelativeDate(1, 14, 0),
+          endDate: getRelativeDate(1, 16, 0),
           title: "Code Review",
           color: "#10b981",
           description: "PR review session",
@@ -64,16 +65,16 @@ const Scheduler = () => {
       events: [
         {
           id: "e3",
-          startDate: getRelativeDate(0, 13, 0), // today 13:00
-          endDate: getRelativeDate(0, 15, 0), // today 15:00
+          startDate: getRelativeDate(0, 13, 0),
+          endDate: getRelativeDate(0, 15, 0),
           title: "User Research",
           color: "#8b5cf6",
           description: "User testing session",
         },
         {
           id: "e4",
-          startDate: getRelativeDate(2, 9, 0), // +2 days 09:00
-          endDate: getRelativeDate(2, 11, 0), // +2 days 11:00
+          startDate: getRelativeDate(2, 9, 0),
+          endDate: getRelativeDate(2, 11, 0),
           title: "Design Workshop",
           color: "#f59e0b",
           description: "New feature design",
@@ -87,8 +88,8 @@ const Scheduler = () => {
       events: [
         {
           id: "e5",
-          startDate: getRelativeDate(1, 10, 0), // tomorrow 10:00
-          endDate: getRelativeDate(1, 12, 30), // tomorrow 12:30
+          startDate: getRelativeDate(1, 10, 0),
+          endDate: getRelativeDate(1, 12, 30),
           title: "API Development",
           color: "#ef4444",
           description: "New endpoints implementation",
@@ -102,8 +103,8 @@ const Scheduler = () => {
       events: [
         {
           id: "e6",
-          startDate: getRelativeDate(2, 14, 0), // +2 days 14:00
-          endDate: getRelativeDate(2, 16, 0), // +2 days 16:00
+          startDate: getRelativeDate(2, 14, 0),
+          endDate: getRelativeDate(2, 16, 0),
           title: "Client Demo",
           color: "#ec4899",
           description: "Quarterly review with client",
@@ -150,17 +151,14 @@ const Scheduler = () => {
     newEndDate: Date
   ) => {
     setResources((prevResources) => {
-      // Remove the event from the old resource and add to the new one with updated dates
       return prevResources.map((resource: Resource) => {
         if (resource.id === fromResourceId) {
-          // Remove the event from the old resource
           return {
             ...resource,
             events: resource.events.filter((e: Event) => e.id !== event.id),
           };
         }
         if (resource.id === toResourceId) {
-          // Add the updated event to the new resource
           return {
             ...resource,
             events: [
@@ -190,7 +188,6 @@ const Scheduler = () => {
     setLastAction("Stats cleared");
   };
 
-  // Function to reset to initial data
   const handleResetData = () => {
     setResources([
       {
@@ -275,29 +272,45 @@ const Scheduler = () => {
     setLastAction("Data reset to initial state");
   };
 
+  // Copy to clipboard function
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setLastAction("Code copied to clipboard!");
+    });
+  };
+
   // Custom popover renderer
   const renderEventPopover = (
     event: Event,
     resource: Resource,
     closePopover: () => void
   ) => (
-    <div className="space-y-2 p-2">
+    <div className="space-y-3 p-4 bg-white rounded-lg border shadow-lg">
       <div className="flex justify-between items-start">
-        <h3 className="font-bold text-lg">{event.title}</h3>
-        <Button variant="outline" size="sm" onClick={closePopover}>
+        <h3 className="font-bold text-lg text-gray-900">{event.title}</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={closePopover}
+          className="h-8 w-8 p-0 hover:bg-gray-100"
+        >
           ×
         </Button>
       </div>
       <div className="flex items-center gap-2">
         <div
-          className="w-4 h-4 rounded-full"
+          className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
           style={{ backgroundColor: event.color }}
         ></div>
-        <span className="text-sm text-muted-foreground">{resource.name}</span>
-        <Badge variant="outline">{resource.role}</Badge>
+        <span className="text-sm font-medium text-gray-700">
+          {resource.name}
+        </span>
+        <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+          {resource.role}
+        </Badge>
       </div>
-      <p className="text-sm">{event.description}</p>
-      <div className="text-sm">
+      <p className="text-sm text-gray-600">{event.description}</p>
+      <div className="text-sm space-y-1 text-gray-500">
         <div>Start: {event.startDate.toLocaleString()}</div>
         <div>End: {event.endDate.toLocaleString()}</div>
       </div>
@@ -307,84 +320,16 @@ const Scheduler = () => {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container mx-auto max-w-7xl">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">
-            Resource Scheduler Demo
-          </h1>
-          <p className="text-muted-foreground">
-            A fully customizable resource scheduling component for React
-            applications
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Scheduler Preview</CardTitle>
-                <CardDescription>
-                  Drag to create events, click on events to view details, and
-                  drag events to reschedule or reassign
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[600px] border rounded-lg">
-                  <ResourceScheduler
-                    resources={resources}
-                    allowViewChange={true}
-                    dateColumnWidth="100px"
-                    initialDate={new Date()}
-                    initialView={ViewType.Week}
-                    onDateChange={handleDateChange}
-                    onEventClick={handleEventClick}
-                    onEventCreate={handleEventCreate}
-                    onEventDrop={handleEventDrop}
-                    onViewChange={handleViewChange}
-                    renderEventPopover={renderEventPopover}
-                    resourceColumnWidth="200px"
-                    timeColumnWidth="60px"
-                  />
-                </div>
-                <Tabs defaultValue="installation" className="mt-8">
-                  <TabsList>
-                    <TabsTrigger value="installation">Installation</TabsTrigger>
-                    <TabsTrigger value="usage">Usage</TabsTrigger>
-                    <TabsTrigger value="props">API Reference</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="installation">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Installation</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
-                          {`npm install resource-scheduler
+  // Code snippets
+  const installationCode = `npm install resource-scheduler
 # or
 yarn add resource-scheduler
 # or
-pnpm add resource-scheduler`}
-                        </pre>
-                        <p className="mt-4 text-sm text-muted-foreground">
-                          Don't forget to import the CSS file in your main entry
-                          point:
-                        </p>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto mt-2">
-                          {`import "resource-scheduler/dist/resource-scheduler.css";`}
-                        </pre>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  <TabsContent value="usage">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Basic Usage</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto">
-                          {`import { useState } from "react";
+pnpm add resource-scheduler
+
+import "resource-scheduler/dist/resource-scheduler.css";`;
+
+  const usageCode = `import { useState } from "react";
 import { ResourceScheduler, ViewType, type Event, type Resource } from "resource-scheduler";
 import "resource-scheduler/dist/resource-scheduler.css";
 
@@ -461,11 +406,101 @@ function App() {
       />
     </div>
   );
-}`}
-                        </pre>
+}`;
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="container mx-auto max-w-7xl">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Resource Scheduler Demo
+          </h1>
+          <p className="text-gray-600 text-lg">
+            A fully customizable resource scheduling component for React
+            applications
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <Card className="shadow-sm border">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl">Scheduler Preview</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Drag to create events, click on events to view details, and
+                  drag events to reschedule or reassign
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[600px] border rounded-lg bg-white">
+                  <ResourceScheduler
+                    resources={resources}
+                    allowViewChange={true}
+                    dateColumnWidth="100px"
+                    initialDate={new Date()}
+                    initialView={ViewType.Week}
+                    onDateChange={handleDateChange}
+                    onEventClick={handleEventClick}
+                    onEventCreate={handleEventCreate}
+                    onEventDrop={handleEventDrop}
+                    onViewChange={handleViewChange}
+                    renderEventPopover={renderEventPopover}
+                    resourceColumnWidth="200px"
+                    timeColumnWidth="60px"
+                  />
+                </div>
+
+                <Tabs defaultValue="installation" className="mt-8">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="installation">Installation</TabsTrigger>
+                    <TabsTrigger value="usage">Usage</TabsTrigger>
+                    <TabsTrigger value="props">API Reference</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="installation">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Installation</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="relative">
+                          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                            {installationCode}
+                          </pre>
+                          <Button
+                            size="sm"
+                            className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600"
+                            onClick={() => copyToClipboard(installationCode)}
+                          >
+                            Copy
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
+
+                  <TabsContent value="usage">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Basic Usage</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="relative">
+                          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                            {usageCode}
+                          </pre>
+                          <Button
+                            size="sm"
+                            className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600"
+                            onClick={() => copyToClipboard(usageCode)}
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
                   <TabsContent value="props">
                     <Card>
                       <CardHeader>
@@ -473,52 +508,46 @@ function App() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          <div>
-                            <h4 className="font-medium">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold text-gray-900">
                               resources: Resource[]
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-gray-600 text-sm mt-1">
                               Array of resources to display in the scheduler
                             </p>
                           </div>
-                          <div>
-                            <h4 className="font-medium">initialDate?: Date</h4>
-                            <p className="text-sm text-muted-foreground">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold text-gray-900">
+                              initialDate?: Date
+                            </h4>
+                            <p className="text-gray-600 text-sm mt-1">
                               Initial date to display (defaults to current date)
                             </p>
                           </div>
-                          <div>
-                            <h4 className="font-medium">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold text-gray-900">
                               initialView?: ViewType
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-gray-600 text-sm mt-1">
                               Initial view type (Day, Week, Month, Quarter,
                               Year)
                             </p>
                           </div>
-                          <div>
-                            <h4 className="font-medium">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold text-gray-900">
                               onEventCreate?: function
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-gray-600 text-sm mt-1">
                               Callback when a new event is created by dragging
                             </p>
                           </div>
-                          <div>
-                            <h4 className="font-medium">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold text-gray-900">
                               onEventDrop?: function
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-gray-600 text-sm mt-1">
                               Callback when an event is moved to a new time or
                               resource
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="font-medium">
-                              renderEventPopover?: function
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              Custom function to render event details popover
                             </p>
                           </div>
                         </div>
@@ -531,29 +560,43 @@ function App() {
           </div>
 
           <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Interaction Stats</CardTitle>
+            <Card className="shadow-sm border">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Interaction Stats</CardTitle>
                 <CardDescription>
                   Track your interactions with the scheduler
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Events Created</span>
-                  <Badge variant="secondary">{eventsCreated}</Badge>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-gray-700">Events Created</span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700"
+                  >
+                    {eventsCreated}
+                  </Badge>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Events Moved</span>
-                  <Badge variant="secondary">{eventsDropped}</Badge>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-gray-700">Events Moved</span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-700"
+                  >
+                    {eventsDropped}
+                  </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-1">Last Action</p>
-                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
-                    {lastAction || "No actions yet"}
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    Last Action
                   </p>
+                  <div className="p-3 bg-gray-50 rounded-lg border">
+                    <p className="text-sm text-gray-600">
+                      {lastAction || "No actions yet"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     className="flex-1"
@@ -572,58 +615,49 @@ function App() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Features</CardTitle>
+            <Card className="shadow-sm border">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Features</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">
-                    Multiple view types (Day, Week, Month, Quarter, Year)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">Drag to create events</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">
-                    Drag to move events between resources
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">Customizable event popovers</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">Responsive design</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm">Customizable styling</span>
-                </div>
+              <CardContent className="space-y-3">
+                {[
+                  "Multiple view types (Day, Week, Month, Quarter, Year)",
+                  "Drag to create events",
+                  "Drag to move events between resources",
+                  "Customizable event popovers",
+                  "Responsive design",
+                  "Customizable styling",
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                    <span className="text-sm text-gray-700">{feature}</span>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Try These Actions</CardTitle>
+            <Card className="shadow-sm border">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Try These Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p>1. Drag on empty slots to create new events</p>
-                <p>2. Click on existing events to view details</p>
-                <p>
-                  3. Drag events to move them to different times or resources
-                </p>
-                <p>
-                  4. Use the view selector to change between different time
-                  views
-                </p>
-                <p>5. Use navigation buttons to move through time</p>
-                <p>6. Click "Today" to return to the current date</p>
+              <CardContent className="space-y-3">
+                {[
+                  "Drag on empty slots to create new events",
+                  "Click on existing events to view details",
+                  "Drag events to move them to different times or resources",
+                  "Use the view selector to change between different time views",
+                  "Use navigation buttons to move through time",
+                  'Click "Today" to return to the current date',
+                ].map((action, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium flex-shrink-0 mt-0.5">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {action}
+                    </p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>

@@ -156,7 +156,7 @@ const App = () => {
           // Remove the event from the old resource
           return {
             ...resource,
-            events: resource.events.filter((e:Event) => e.id !== event.id),
+            events: resource.events.filter((e: Event) => e.id !== event.id),
           };
         }
         if (resource.id === toResourceId) {
@@ -293,7 +293,9 @@ const App = () => {
           className="w-4 h-4 rounded-full"
           style={{ backgroundColor: event.color }}
         ></div>
-        <span className="text-sm text-ocrs-muted-foreground">{resource.name}</span>
+        <span className="text-sm text-ocrs-muted-foreground">
+          {resource.name}
+        </span>
         <Badge variant="outline">{resource.role}</Badge>
       </div>
       <p className="text-sm">{event.description}</p>
@@ -368,7 +370,8 @@ yarn add resource-scheduler
 pnpm add resource-scheduler`}
                         </pre>
                         <p className="mt-4 text-sm text-ocrs-muted-foreground">
-                          Don't forget to import the CSS file in your main entry point:
+                          Don't forget to import the CSS file in your main entry
+                          point:
                         </p>
                         <pre className="bg-ocrs-muted p-4 rounded-md overflow-x-auto mt-2">
                           {`import "resource-scheduler/dist/resource-scheduler.css";`}
