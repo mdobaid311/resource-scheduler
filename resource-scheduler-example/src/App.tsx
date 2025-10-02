@@ -1,7 +1,7 @@
 import Scheduler from "./components/Scheduler";
 import "resource-scheduler/dist/resource-scheduler.css";
 import logo from "./assets/obaid-code-logo.svg";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   return (
