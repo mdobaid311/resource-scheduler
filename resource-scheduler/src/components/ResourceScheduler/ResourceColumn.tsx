@@ -9,8 +9,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
 }) => {
   return (
     <div
-      className="bg-ocrs-white z-20 sticky left-0"
-      style={{ width: resourceColumnWidth }}
+      className={`bg-ocrs-white z-20 sticky left-0 max-w-[30%] lg:max-w-${resourceColumnWidth}`}
     >
       <div className="border-r bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
         <span className="text-sm font-medium text-gray-600">Resources</span>
@@ -20,13 +19,12 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         return (
           <div
             key={resource.id}
-            className="p-3 border-b border-r hover:bg-ocrs-gray-50 transition-colors"
+            className="p-3 border-b border-r flex items-center justify-center text-center overflow-hidden bg-white hover:bg-ocrs-accent text-sm"
             style={{ height: rowHeight + "px" }}
           >
-            <div className="font-medium text-gray-800">{resource.name}</div>
-            {resource.role && (
-              <div className="text-xs text-gray-500 mt-1">{resource.role}</div>
-            )}
+            <span className="w-full block break-words whitespace-pre-line">
+              {resource.name}
+            </span>
           </div>
         );
       })}

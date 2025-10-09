@@ -56,11 +56,11 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <div className="flex flex-col items-center px-2">
-            <span className="text-base md:text-lg font-semibold text-gray-800">
+          <div className="flex flex-col items-center px-2 flex-1 min-w-0">
+            <span className="text-base md:text-lg font-semibold text-gray-800 text-center truncate">
               {getDateTitle()}
             </span>
-            <span className="text-xs text-gray-500 font-medium mt-1">
+            <span className="text-xs text-gray-500 font-medium mt-1 text-center">
               {viewType.charAt(0).toUpperCase() + viewType.slice(1)} View
             </span>
           </div>
