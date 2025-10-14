@@ -6,6 +6,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   resources,
   resourceColumnWidth = "220px",
   getResourceRowHeight,
+  renderResourceHeader,
 }) => {
   return (
     <div
@@ -16,7 +17,15 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       </div>
       {resources.map((resource) => {
         const rowHeight = getResourceRowHeight(resource);
-        return (
+        return renderResourceHeader ? (
+          <div
+            key={resource.id}
+            className="p-3 border-b border-r flex items-center justify-center text-center overflow-hidden bg-white hover:bg-ocrs-accent text-sm"
+            style={{ height: rowHeight + "px" }}
+          >
+            {renderResourceHeader(resource)}
+          </div>
+        ) : (
           <div
             key={resource.id}
             className="p-3 border-b border-r flex items-center justify-center text-center overflow-hidden bg-white hover:bg-ocrs-accent text-sm"

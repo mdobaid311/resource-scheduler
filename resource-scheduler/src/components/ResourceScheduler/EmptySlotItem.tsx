@@ -15,6 +15,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   onMouseEnter,
   onCellClick,
   onEventDrop,
+  renderEmptyCell,
 }) => {
   const [, drop] = useDrop(
     () => ({
@@ -27,7 +28,6 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
           const newEndDate = new Date(newStartDate.getTime() + duration);
           const fromResourceId = item?.resource?.id;
           const toResourceId = resource.id;
-
 
           onEventDrop(
             event,
@@ -48,8 +48,12 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
 
   return (
     <div
-      className={`border-b border-r cursor-pointer ${
-        isToday ? "bg-ocrs-blue-50" : isSelected ? "bg-ocrs-blue-50" : "hover:bg-ocrs-gray-50"
+      className={`border-b border-r cursor-pointer overflow-hidden ${
+        isToday
+          ? "bg-ocrs-blue-50"
+          : isSelected
+          ? "bg-ocrs-blue-50"
+          : "hover:bg-ocrs-gray-50"
       }`}
       style={{
         gridRow: rowIndex + 2,
@@ -67,6 +71,8 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
         }
       }}
       ref={drop as any}
-    />
+    >
+      {renderEmptyCell && renderEmptyCell(slot, resource)}
+    </div>
   );
 };
