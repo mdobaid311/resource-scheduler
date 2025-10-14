@@ -15,18 +15,18 @@ const CalendarIcon = () => {
         rx="4"
         ry="4"
         stroke="#333"
-        stroke-width="2"
+        strokeWidth="2"
         fill="white"
       />
 
       <rect x="4" y="6" width="40" height="6" fill="#333" rx="4" ry="4" />
 
-      <line x1="4" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1" />
-      <line x1="4" y1="26" x2="44" y2="26" stroke="#ccc" stroke-width="1" />
-      <line x1="4" y1="34" x2="44" y2="34" stroke="#ccc" stroke-width="1" />
+      <line x1="4" y1="18" x2="44" y2="18" stroke="#ccc" strokeWidth="1" />
+      <line x1="4" y1="26" x2="44" y2="26" stroke="#ccc" strokeWidth="1" />
+      <line x1="4" y1="34" x2="44" y2="34" stroke="#ccc" strokeWidth="1" />
 
-      <line x1="16" y1="12" x2="16" y2="44" stroke="#ccc" stroke-width="1" />
-      <line x1="28" y1="12" x2="28" y2="44" stroke="#ccc" stroke-width="1" />
+      <line x1="16" y1="12" x2="16" y2="44" stroke="#ccc" strokeWidth="1" />
+      <line x1="28" y1="12" x2="28" y2="44" stroke="#ccc" strokeWidth="1" />
 
       <rect x="6" y="20" width="8" height="4" rx="1" fill="#2563EB" />
       <rect x="18" y="28" width="8" height="4" rx="1" fill="#16A34A" />

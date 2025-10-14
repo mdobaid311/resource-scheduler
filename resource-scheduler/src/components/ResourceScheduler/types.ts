@@ -32,6 +32,7 @@ export interface ResourceSchedulerProps {
   resources: Resource[];
   initialDate?: Date;
   initialView?: ViewType;
+  availableViews?: ViewType[];
   onEventClick?: (event: Event, resource: Resource) => void;
   onDateChange?: (date: Date) => void;
   onViewChange?: (view: ViewType) => void;
@@ -52,6 +53,10 @@ export interface ResourceSchedulerProps {
   timeColumnWidth?: string;
   dateColumnWidth?: string;
   allowViewChange?: boolean;
+  renderResourceHeader?: (resource: Resource) => React.ReactNode;
+  renderDateHeader?: (date: Date, view: ViewType) => React.ReactNode;
+  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
+  renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }
 
 export interface SchedulerControlsProps {
@@ -61,6 +66,7 @@ export interface SchedulerControlsProps {
   onViewChange: (view: ViewType) => void;
   onGoToToday: () => void;
   allowViewChange?: boolean;
+  availableViews?: ViewType[];
 }
 
 export interface ResourceColumnProps {
@@ -68,6 +74,7 @@ export interface ResourceColumnProps {
   viewType: ViewType;
   resourceColumnWidth?: string;
   getResourceRowHeight: (resource: Resource) => number;
+  renderResourceHeader?: (resource: Resource) => React.ReactNode;
 }
 
 export interface TimelineHeaderProps {
@@ -76,6 +83,7 @@ export interface TimelineHeaderProps {
   dateColumnWidth?: string;
   getTimeSlots: () => Date[];
   getDatesInView: () => Date[];
+  renderDateHeader?: (date: Date, view: ViewType) => React.ReactNode;
 }
 
 export interface TimelineGridProps {
@@ -105,6 +113,8 @@ export interface TimelineGridProps {
   ) => void;
   calculateEventPositions: (events: Event[], datesInView: Date[]) => any[];
   getGridTemplateRows: () => string;
+  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
+  renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }
 
 export interface EventItemProps {
@@ -115,6 +125,7 @@ export interface EventItemProps {
     resource: Resource,
     closePopover: () => void
   ) => React.ReactNode;
+  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
 }
 
 export interface EmptySlotItemProps {
@@ -134,4 +145,5 @@ export interface EmptySlotItemProps {
     newStartDate: Date,
     newEndDate: Date
   ) => void;
+  renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }

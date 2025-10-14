@@ -23,6 +23,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   onEventDrop,
   calculateEventPositions,
   getGridTemplateRows,
+  renderTimeSlot,
+  renderEmptyCell,
 }) => {
   const datesInView = getDatesInView();
   const timeSlots = getTimeSlots();
@@ -99,6 +101,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     event={event}
                     resource={resource}
                     renderEventPopover={renderEventPopover}
+                    renderTimeSlot={renderTimeSlot}
                   />
                 </div>
               </div>
@@ -127,6 +130,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                   onMouseEnter={onMouseEnter}
                   onCellClick={handleCellClick}
                   onEventDrop={onEventDrop}
+                  renderEmptyCell={renderEmptyCell}
                 />
               );
             })}

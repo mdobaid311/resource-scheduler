@@ -19,6 +19,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   onViewChange,
   onGoToToday,
   allowViewChange = true,
+  availableViews,
 }) => {
   const getDateTitle = () => {
     switch (viewType) {
@@ -92,11 +93,19 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             <SelectValue placeholder="View" />
           </SelectTrigger>
           <SelectContent style={{ zIndex: 99 }}>
-            <SelectItem value={ViewType.Day}>Day</SelectItem>
-            <SelectItem value={ViewType.Week}>Week</SelectItem>
-            <SelectItem value={ViewType.Month}>Month</SelectItem>
-            <SelectItem value={ViewType.Quarter}>Quarter</SelectItem>
-            <SelectItem value={ViewType.Year}>Year</SelectItem>
+            {(
+              availableViews ?? [
+                ViewType.Day,
+                ViewType.Week,
+                ViewType.Month,
+                ViewType.Quarter,
+                ViewType.Year,
+              ]
+            ).map((view) => (
+              <SelectItem key={view} value={view}>
+                {view.charAt(0).toUpperCase() + view.slice(1)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       )}

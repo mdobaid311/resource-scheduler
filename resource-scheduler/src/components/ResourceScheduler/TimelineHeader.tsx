@@ -10,6 +10,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
   dateColumnWidth = "140px",
   getTimeSlots,
   getDatesInView,
+  renderDateHeader,
 }) => {
   const slots = viewType === "day" ? getTimeSlots() : getDatesInView();
 
@@ -30,7 +31,9 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             isToday(slot) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
           }`}
         >
-          {viewType === "day" ? (
+          {renderDateHeader ? (
+            renderDateHeader(slot, viewType)
+          ) : viewType === "day" ? (
             <>
               <span
                 className={`text-xs font-medium ${

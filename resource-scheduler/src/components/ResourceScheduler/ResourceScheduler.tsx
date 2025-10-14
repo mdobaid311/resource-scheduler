@@ -26,6 +26,11 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   resourceColumnWidth: propResourceColumnWidth,
   timeColumnWidth: propTimeColumnWidth,
   dateColumnWidth: propDateColumnWidth,
+  availableViews,
+  renderDateHeader,
+  renderResourceHeader,
+  renderTimeSlot,
+  renderEmptyCell,
 }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -113,6 +118,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
           onViewChange={handleViewChange}
           onGoToToday={goToToday}
           allowViewChange={allowViewChange}
+          availableViews={availableViews}
         />
 
         <div
@@ -124,6 +130,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
             viewType={viewType}
             resourceColumnWidth={resourceColumnWidth}
             getResourceRowHeight={getResourceRowHeight}
+            renderResourceHeader={renderResourceHeader}
           />
 
           <div ref={timelineRef} className="flex-1">
@@ -133,6 +140,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
               dateColumnWidth={dateColumnWidth}
               getTimeSlots={getTimeSlots}
               getDatesInView={getDatesInView}
+              renderDateHeader={renderDateHeader}
             />
 
             <TimelineGrid
@@ -152,6 +160,8 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
               onEventDrop={onEventDrop}
               calculateEventPositions={calculateEventPositions}
               getGridTemplateRows={getGridTemplateRows}
+              renderTimeSlot={renderTimeSlot}
+              renderEmptyCell={renderEmptyCell}
             />
           </div>
         </div>

@@ -398,6 +398,7 @@ function App() {
                     renderEventPopover={renderEventPopover}
                     resourceColumnWidth="200px"
                     timeColumnWidth="60px"
+                    availableViews={[ViewType.Week, ViewType.Month]}
                   />
                 </div>
 
