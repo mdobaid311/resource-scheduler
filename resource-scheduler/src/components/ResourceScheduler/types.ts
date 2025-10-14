@@ -25,7 +25,6 @@ export interface Resource {
   id: string;
   name: string;
   role?: string;
-  timezone?: string;
   events: Event[];
 }
 
