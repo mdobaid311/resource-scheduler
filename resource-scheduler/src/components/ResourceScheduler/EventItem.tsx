@@ -137,7 +137,7 @@ export const EventItem: React.FC<EventItemProps> = ({
           </div>
         ) : (
           <div
-            className={`event-item text-black p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`}
+            className={`event-item text-ocrs-foreground p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`}
             style={{
               backgroundColor: `${event.color}20`,
               borderColor: event.color,
@@ -153,10 +153,10 @@ export const EventItem: React.FC<EventItemProps> = ({
             }}
             {...dragProps}
           >
-            <div className="font-medium truncate text-gray-800">
+            <div className="font-medium truncate text-ocrs-foreground">
               {event.title}
             </div>
-            <div className="text-xs truncate text-gray-500">
+            <div className="text-xs truncate text-ocrs-muted-foreground">
               {formatEventTime(event)}
             </div>
             {resizeHandles}
@@ -168,17 +168,17 @@ export const EventItem: React.FC<EventItemProps> = ({
           renderEventPopover(event, resource!, onClose)
         ) : (
           <div className="space-y-2">
-            <div className="font-semibold text-gray-800">{event.title}</div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4 text-gray-400" />
+            <div className="font-semibold text-ocrs-foreground">{event.title}</div>
+            <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
+              <Calendar className="h-4 w-4 text-ocrs-muted-foreground" />
               <span>
                 {format(event.startDate, "MMM d, yyyy h:mm a")} -{" "}
                 {format(event.endDate, "h:mm a")}
               </span>
             </div>
             {resource && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="h-4 w-4 text-gray-400" />
+              <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
+                <User className="h-4 w-4 text-ocrs-muted-foreground" />
                 <span>{resource.name}</span>
               </div>
             )}
