@@ -69,6 +69,8 @@ export interface ResourceSchedulerProps {
    * reported. End is exclusive.
    */
   onSlotSelect?: (selection: SlotSelection) => void;
+  /** Accessible name of the schedule grid. Default "Resource schedule". */
+  ariaLabel?: string;
   /** Day view only: minutes per slot, e.g. 15, 30 or 60 (default 60). */
   slotDuration?: number;
   /** Day view only: first visible hour, 0-23 (default 0). */
@@ -157,6 +159,14 @@ export interface TimelineGridProps {
   onEventResize?: ResourceSchedulerProps["onEventResize"];
   /** Minutes per slot in day view. Default 60. */
   slotMinutes?: number;
+  /** Accessible name of the grid. */
+  ariaLabel?: string;
+  /** Id of an element describing how to use the keyboard. */
+  describedBy?: string;
+  /** Screen reader announcements (rendered by the parent in a live region). */
+  announce?: (message: string) => void;
+  /** Keyboard selection of slots `from` to `to` of one resource. */
+  onSelectRange?: (resourceId: string, from: Date, to: Date) => void;
   /** Whether an event may be placed there; rejected placements show in red and are not applied. */
   checkPlacement?: (event: SchedulerEvent, placement: Placement) => boolean;
   calculateEventPositions: (events: SchedulerEvent[], datesInView: Date[]) => any[];
@@ -183,6 +193,12 @@ export interface EmptySlotItemProps {
   colIndex: number;
   isSelected: boolean;
   isToday: boolean;
+  /** Element id, referenced by the grid's aria-activedescendant. */
+  id?: string;
+  /** Accessible name, e.g. "Ann, Tuesday, March 10, 2026". */
+  label?: string;
+  /** True while the keyboard cursor is on this cell. */
+  isActive?: boolean;
   onMouseDown: (date: Date, resourceId: string, e?: React.MouseEvent) => void;
   onMouseEnter: (date: Date, resourceId: string) => void;
   onCellClick: (date: Date, resourceId: string) => void;

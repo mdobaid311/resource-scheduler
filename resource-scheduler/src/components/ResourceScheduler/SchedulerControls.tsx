@@ -52,12 +52,17 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             variant="outline"
             size="sm"
             className="hover:bg-ocrs-gray-100 rounded-lg"
+            aria-label="Previous period"
             onClick={() => onNavigate("prev")}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <div className="flex flex-col items-center px-2 flex-1 min-w-0">
+          {/* Announces the new period when the user navigates. */}
+          <div
+            className="flex flex-col items-center px-2 flex-1 min-w-0"
+            aria-live="polite"
+          >
             <span className="text-base md:text-lg font-semibold text-gray-800 text-center truncate">
               {getDateTitle()}
             </span>
@@ -70,6 +75,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             variant="outline"
             size="sm"
             className="hover:bg-ocrs-gray-100 rounded-lg"
+            aria-label="Next period"
             onClick={() => onNavigate("next")}
           >
             <ChevronRight className="h-4 w-4" />
@@ -80,6 +86,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           variant="outline"
           size="sm"
           className="flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
+          aria-label="Today"
           onClick={onGoToToday}
         >
           <Calendar className="h-4 w-4" />
@@ -89,7 +96,10 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
 
       {allowViewChange && (
         <Select value={viewType} onValueChange={onViewChange}>
-          <SelectTrigger className="lg:w-[140px] w-full bg-ocrs-white">
+          <SelectTrigger
+            className="lg:w-[140px] w-full bg-ocrs-white"
+            aria-label="View"
+          >
             <SelectValue placeholder="View" />
           </SelectTrigger>
           <SelectContent style={{ zIndex: 99 }}>

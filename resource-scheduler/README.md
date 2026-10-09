@@ -15,6 +15,7 @@ Try the Resource Scheduler in action: [resource-scheduler-demo.vercel.app](https
 - 🎨 **Customizable**: Fully customizable styling and event rendering
 - 📱 **Responsive**: Works seamlessly across desktop and mobile devices
 - 👆 **Pointer-events drag & drop**: mouse, pen and touch, no extra DnD library, no clash with your own react-dnd setup
+- ⌨️ **Keyboard & screen reader support**: ARIA grid, keyboard move/resize/create, live announcements (see [status](#keyboard-and-screen-readers))
 - 🎪 **Event Popovers**: Customizable event detail popovers
 - 📊 **Resource Management**: Manage multiple resources with individual events
 - 🎯 **TypeScript**: Fully typed for better developer experience
@@ -114,6 +115,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeColumnWidth` | `string` | `"90px"` | Width of time columns (day view) |
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
+| `ariaLabel` | `string` | `"Resource schedule"` | Accessible name of the schedule grid |
 | `onSlotSelect` | `({ resourceId, start, end }) => void` | `undefined` | Called when the user clicks or drag-selects empty slots. Providing it replaces the built-in creation (`onEventCreate` is not called) so you can open your own dialog. The overlap rules apply. `end` is exclusive |
 | `slotDuration` | `number` | `60` | Day view only: minutes per slot (15, 30, 60, ...) |
 | `dayStartHour` | `number` | `0` | Day view only: first visible hour, 0-23 |
@@ -245,6 +247,23 @@ function InteractiveExample() {
   );
 }
 ```
+
+### Keyboard and screen readers
+
+The timeline is an ARIA `grid` (one tab stop, using `aria-activedescendant`) with rows and named cells such as "Ann, Tuesday, March 10, 9:00 AM". Events are focusable buttons. Everything you can do with the mouse has a keyboard equivalent, and actions are announced through a polite live region.
+
+| Where | Keys | Does |
+|---|---|---|
+| Grid | Arrow keys, Home, End | Move the slot cursor |
+| Grid | Shift + Left/Right | Extend a selection; Escape drops it |
+| Grid | Enter or Space | Select the slot or range (calls `onSlotSelect`, or creates an event) |
+| Event | Enter | Open its details |
+| Event | Space | Pick it up. Arrows move it, Space drops it, Escape cancels |
+| Picked-up event | Shift + Left/Right | Resize the end (needs `onEventResize`) |
+
+Keyboard moves use the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced ("Not allowed here") and shown in red, and moves stay inside the visible range. After a drop, focus returns to the moved event.
+
+Status: covered by automated keyboard tests and an axe-core check in CI. It has **not** yet been tried with NVDA, JAWS or VoiceOver, colour contrast of your event colours is up to you, announcements are English only, and resizing the start edge or paging between periods by keyboard is not available yet (use the toolbar buttons).
 
 ### Your own create dialog and finer slots
 

@@ -102,7 +102,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [ ] **Resource grouping / hierarchy** with collapse (L)
 - [ ] **Now indicator**, sticky headers/resource column, zoom (S-M)
-- [ ] **Keyboard navigation + ARIA grid**: roving tabindex, Enter/Space grab, arrows move, Shift+Enter resize, Esc cancel, live-region announcements, then publish a short accessibility statement (L)
+- [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
 - [ ] **Touch** drag/resize/create (M, comes with Pointer Events)
 - [ ] **Virtualization** for rows and columns; publish a benchmark (L-XL). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); report your own numbers honestly
 - [ ] **i18n**: `locale` (date-fns), 12/24h, RTL, IANA `timeZone` prop (M-L)

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { SchedulerEvent, ViewType } from "../types";
 import {
   formatEventTime,
+  formatRangeLabel,
+  formatSlotLabel,
   getDatesInView,
   getDropRange,
   getEventSpan,
@@ -317,5 +319,34 @@ describe("slot-minute aware helpers", () => {
       isSlotInRange(d(3, 10, Math.floor(h), (h % 1) * 60), range, ViewType.Day, 30)
     );
     expect(hits).toEqual([false, true, false]);
+  });
+});
+
+describe("screen reader labels", () => {
+  it("labels a day view slot with its date and time", () => {
+    expect(formatSlotLabel(d(3, 10, 9, 30), ViewType.Day)).toBe("Tuesday, March 10, 9:30 AM");
+  });
+
+  it("labels a date view slot with the full date", () => {
+    expect(formatSlotLabel(d(3, 10), ViewType.Week)).toBe("Tuesday, March 10, 2026");
+  });
+
+  it("labels a same-day time range", () => {
+    expect(formatRangeLabel(d(3, 10, 9), d(3, 10, 10, 30), ViewType.Day)).toBe(
+      "Tuesday, March 10, 9:00 AM to 10:30 AM"
+    );
+  });
+
+  it("labels a time range that crosses midnight", () => {
+    expect(formatRangeLabel(d(3, 10, 22), d(3, 11, 1), ViewType.Day)).toBe(
+      "Tuesday, March 10, 10:00 PM to Wednesday, March 11, 1:00 AM"
+    );
+  });
+
+  it("labels date view ranges by inclusive days", () => {
+    expect(formatRangeLabel(d(3, 10), d(3, 11), ViewType.Week)).toBe("Tuesday, March 10, 2026");
+    expect(formatRangeLabel(d(3, 10), d(3, 13), ViewType.Week)).toBe(
+      "Tuesday, March 10 to Thursday, March 12, 2026"
+    );
   });
 });

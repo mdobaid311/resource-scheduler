@@ -95,4 +95,29 @@ describe("useEventCreation", () => {
     expect(onCreate).not.toHaveBeenCalled();
     expect(result.current.isDragging).toBe(false);
   });
+
+  describe("commitRange (keyboard selection)", () => {
+    it("creates an event covering the first to last slot", () => {
+      const onCreate = vi.fn();
+      const { result } = renderHook(() => useEventCreation(onCreate, ViewType.Day));
+
+      act(() => result.current.commitRange("r1", slot(9), slot(10)));
+
+      expect(onCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ startDate: slot(9), endDate: slot(11) }),
+        "r1"
+      );
+    });
+
+    it("applies the same placement rules as the mouse", () => {
+      const onCreate = vi.fn();
+      const { result } = renderHook(() =>
+        useEventCreation(onCreate, ViewType.Day, () => false)
+      );
+
+      act(() => result.current.commitRange("r1", slot(9), slot(9)));
+
+      expect(onCreate).not.toHaveBeenCalled();
+    });
+  });
 });
