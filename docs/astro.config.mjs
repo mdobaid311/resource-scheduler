@@ -80,6 +80,7 @@ export default defineConfig({
             { label: "Creating events", slug: "guides/creating-events" },
             { label: "Drag and resize", slug: "guides/drag-and-resize" },
             { label: "Conflict control", slug: "guides/conflict-control" },
+            { label: "Business hours and availability", slug: "guides/availability" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
             { label: "Theming", slug: "guides/theming" },
             { label: "Next.js and SSR", slug: "guides/nextjs-and-ssr" },

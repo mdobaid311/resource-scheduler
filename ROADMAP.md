@@ -97,11 +97,11 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
 - [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
 - [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`), plus `weekStartsOn` and `hideWeekends` (done on branch `feat/view-controls`)
-- [ ] **Business hours / unavailable ranges** shading per resource, and capacity per resource (M)
+- [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). Still open: capacity per resource
 - [ ] **Flat data model**: `events[]` with `resourceId` or `resourceIds[]` as the primary API; keep nested `resource.events` via adapter (M)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [ ] **Resource grouping / hierarchy** with collapse (L)
-- [ ] **Now indicator**, sticky headers/resource column, zoom (S-M)
+- [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
 - [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
 - [ ] **Touch** drag/resize/create (M, comes with Pointer Events)
 - [ ] **Virtualization** for rows and columns; publish a benchmark (L-XL). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); report your own numbers honestly

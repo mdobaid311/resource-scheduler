@@ -171,6 +171,9 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `weekStartsOn` | `0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6` | `0` | First day of the week (0 is Sunday) |
 | `hideWeekends` | `boolean` | `false` | Leave Saturday and Sunday out of the week, month, quarter and year views |
 | `onRangeChange` | `({ start, end, view }) => void` | `undefined` | Called on mount and whenever the visible range changes. `end` is exclusive. Use it to load only what is on screen |
+| `businessHours` | `{ daysOfWeek?, startHour?, endHour? }` | `undefined` | Shade time outside working hours and non-working days (`{}` is Monday to Friday, 9 to 17). A resource's own `businessHours` overrides it; `false` means always available. Hours apply to the day view only |
+| `blockUnavailable` | `boolean` | `false` | Reject every move, resize and create that touches a shaded slot (outside business hours or inside a resource's `unavailable` ranges) |
+| `nowIndicator` | `boolean` | `false` | Day view: a line at the current time, moved every minute |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
 | `renderTimeSlot` | `(event: SchedulerEvent, resources: Resource[]) => ReactNode` | `undefined` | Replace the event card. `resources` holds the single owning resource |

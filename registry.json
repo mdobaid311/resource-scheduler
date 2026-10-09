@@ -75,6 +75,11 @@
           "target": "@components/resource-scheduler/hooks/useGridKeyboard.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useNow.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useNow.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useScheduler.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/useScheduler.ts"
@@ -108,6 +113,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/ui/select.tsx",
           "type": "registry:component",
           "target": "@components/resource-scheduler/ui/select.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/availability.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/availability.ts"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/dateUtils.ts",

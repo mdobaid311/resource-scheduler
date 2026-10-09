@@ -1,0 +1,81 @@
+---
+title: Business hours and availability
+description: Shade closed hours and time off per resource, optionally block bookings there, and show a line at the current time.
+---
+
+import AvailabilityDemo from "../../../components/demos/AvailabilityDemo";
+
+Shade the time a resource cannot be booked, and choose whether the grid also stops people booking it.
+
+<AvailabilityDemo client:only="react" />
+
+## Business hours
+
+Pass `businessHours` to shade everything outside working time. Every field is optional:
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  businessHours={{ daysOfWeek: [1, 2, 3, 4, 5], startHour: 9, endHour: 17 }}
+/>
+```
+
+Those values are the defaults, so `businessHours={{}}` means Monday to Friday, 9 to 17. Without the prop nothing is shaded.
+
+- In the **day view**, slots outside the hours and on non-working days are shaded.
+- In the **week view and longer**, columns are whole days, so only non-working days are shaded. The hours do not apply.
+
+## Per resource
+
+A resource can carry its own hours, which replace the shared ones, and its own blocked periods:
+
+```tsx
+const resources: Resource[] = [
+  {
+    id: "ann",
+    name: "Ann",
+    events: [],
+    // Lunch, leave, an appointment: any period she cannot be booked.
+    unavailable: [{ start: new Date(2026, 9, 7, 12), end: new Date(2026, 9, 7, 13) }],
+  },
+  { id: "bob", name: "Bob", events: [], businessHours: { startHour: 12, endHour: 20 } }, // late shift
+  { id: "chen", name: "Chen", events: [], businessHours: false }, // always available
+];
+```
+
+`unavailable` ranges have an exclusive `end`. In the day view a slot is shaded when a range overlaps it at all. In the date views a day is shaded only when a range covers all of it, so a morning appointment does not grey out the whole day.
+
+## Stopping bookings
+
+Shading is only visual by default: people can still create and drop events there. Add `blockUnavailable` and every move, resize and create that touches a shaded slot is rejected, with the same red outline as a rejected overlap:
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  businessHours={{}}
+  blockUnavailable
+  eventOverlap={false}
+/>
+```
+
+It runs together with [`eventOverlap` and `isValidDrop`](/guides/conflict-control/). In the date views an event that spans a non-working day, such as Friday to Monday, touches that day and is rejected. If you need long events across weekends, leave `blockUnavailable` off and use `isValidDrop` with the helpers below.
+
+Keyboard users and screen readers get the same information: a shaded cell is announced as "unavailable", and rejected placements read "Not allowed".
+
+## The helpers
+
+The same checks are exported, so you can run them on a server:
+
+```ts
+import { isCellUnavailable, touchesUnavailable } from "resource-scheduler";
+
+touchesUnavailable(resource, { start, end }, { businessHours, viewType, slotMinutes });
+```
+
+## Now indicator
+
+`nowIndicator` draws a line at the current time in today's day view and moves it every minute. It is hidden on other days, outside the visible hours, and in the other views. Off by default.
+
+```tsx
+<ResourceScheduler resources={resources} initialView={ViewType.Day} nowIndicator />
+```

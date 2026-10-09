@@ -44,6 +44,12 @@ Only `resources` is required.
 - **`eventOverlap`**: `boolean` or `(moving, other) => boolean`, default allow. `false` forbids overlapping events on the same resource; a function decides per pair.
 - **`isValidDrop`**: `(event, { resourceId, start, end }) => boolean`. Final veto for move, resize and create.
 
+## Availability
+
+- **`businessHours`**: `{ daysOfWeek?, startHour?, endHour? }`. Shades time outside working hours and non-working days. `{}` means Monday to Friday, 9 to 17. A resource's own `businessHours` overrides it. See [Business hours and availability](/guides/availability/).
+- **`blockUnavailable`**: `boolean`, default `false`. Rejects every move, resize and create that touches a shaded slot.
+- **`nowIndicator`**: `boolean`, default `false`. A line at the current time in today's day view.
+
 ## Rendering
 
 - **`renderEventPopover`**: `(event, resource, closePopover) => ReactNode`. Replaces the details popover.

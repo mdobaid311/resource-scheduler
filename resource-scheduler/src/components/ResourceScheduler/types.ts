@@ -37,11 +37,31 @@ export interface SlotSelection {
   end: Date;
 }
 
+/** Working time. Everything outside it is shaded. */
+export interface BusinessHours {
+  /** Working days, 0 (Sunday) to 6 (Saturday). Default Monday to Friday. */
+  daysOfWeek?: number[];
+  /** First working hour, 0-23. Day view only. Default 9. */
+  startHour?: number;
+  /** Hour working time ends (exclusive), 1-24. Day view only. Default 17. */
+  endHour?: number;
+}
+
+/** A period a resource cannot be booked, such as leave. `end` is exclusive. */
+export interface UnavailableRange {
+  start: Date;
+  end: Date;
+}
+
 export interface Resource {
   id: string;
   name: string;
   role?: string;
   events: SchedulerEvent[];
+  /** Overrides the `businessHours` prop for this resource; `false` means always available. */
+  businessHours?: BusinessHours | false;
+  /** Time off and other blocked periods. Shaded in the grid. */
+  unavailable?: UnavailableRange[];
 }
 
 /** What the grid covers. `end` is exclusive. */
@@ -129,6 +149,18 @@ export interface ResourceSchedulerProps {
   eventOverlap?: PlacementRules["eventOverlap"];
   /** Final veto for any move, resize or drag-create. Return `false` to reject. */
   isValidDrop?: PlacementRules["isValidDrop"];
+  /**
+   * Working time. Slots outside it, and non-working days, are shaded. A
+   * resource's own `businessHours` overrides it. Omit it to shade nothing.
+   */
+  businessHours?: BusinessHours;
+  /**
+   * Reject every move, resize and create that touches a shaded slot: outside
+   * business hours, or inside a resource's `unavailable` range.
+   */
+  blockUnavailable?: boolean;
+  /** Day view: draw a line at the current time, moved every minute. */
+  nowIndicator?: boolean;
   resourceColumnWidth?: string;
   timeColumnWidth?: string;
   dateColumnWidth?: string;
@@ -196,6 +228,8 @@ export interface TimelineGridProps {
   onEventResize?: ResourceSchedulerProps["onEventResize"];
   /** Minutes per slot in day view. Default 60. */
   slotMinutes?: number;
+  businessHours?: BusinessHours;
+  nowIndicator?: boolean;
   /** Accessible name of the grid. */
   ariaLabel?: string;
   /** Id of an element describing how to use the keyboard. */
@@ -230,6 +264,8 @@ export interface EmptySlotItemProps {
   colIndex: number;
   isSelected: boolean;
   isToday: boolean;
+  /** Outside business hours or inside an unavailable range. */
+  isUnavailable?: boolean;
   /** Element id, referenced by the grid's aria-activedescendant. */
   id?: string;
   /** Accessible name, e.g. "Ann, Tuesday, March 10, 2026". */
