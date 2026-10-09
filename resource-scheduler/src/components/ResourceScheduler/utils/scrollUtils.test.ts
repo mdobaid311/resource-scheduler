@@ -44,4 +44,10 @@ describe("scrollToDate", () => {
     // visible timeline width is 600 - 200 = 400
     expect(el.scrollTo).toHaveBeenCalledWith({ left: 710, behavior: "smooth" });
   });
+
+  it("scrolls the other way in a right-to-left layout, where scrollLeft counts down from 0", () => {
+    const el = scroller(600);
+    scrollToDate(saturday, ViewType.Week, el, "90px", "140px", 0, undefined, undefined, true);
+    expect(el.scrollTo).toHaveBeenCalledWith({ left: -610, behavior: "smooth" });
+  });
 });

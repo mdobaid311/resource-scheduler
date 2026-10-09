@@ -9,7 +9,6 @@ import {
   differenceInCalendarDays,
   eachDayOfInterval,
   endOfDay,
-  format,
   endOfMonth,
   endOfQuarter,
   endOfWeek,
@@ -24,6 +23,7 @@ import {
   startOfWeek,
   startOfYear,
 } from "date-fns";
+import { defaultI18n } from "../i18n";
 import { type SchedulerEvent, ViewType } from "../types";
 
 /** Day view slot axis. Date-based views always use whole days. */
@@ -389,42 +389,42 @@ export const isSlotInRange = (
   return slot < range.end && slotEnd > range.start;
 };
 
-// Labels read out by screen readers.
-export const formatSlotLabel = (slot: Date, viewType: ViewType): string =>
-  format(
-    slot,
-    viewType === ViewType.Day ? "EEEE, MMMM d, h:mm a" : "EEEE, MMMM d, yyyy"
-  );
+// Labels read out by screen readers. The last argument is the language and
+// clock; it defaults to English.
+export const formatSlotLabel = (
+  slot: Date,
+  viewType: ViewType,
+  { fmt } = defaultI18n
+): string =>
+  viewType === ViewType.Day ? fmt.fullDateTime(slot) : fmt.fullDate(slot);
 
 // End times are exclusive; date views name the last day the range touches.
 export const formatRangeLabel = (
   start: Date,
   end: Date,
-  viewType: ViewType
+  viewType: ViewType,
+  { fmt, labels } = defaultI18n
 ): string => {
   if (viewType === ViewType.Day) {
     return isSameDay(start, end) || end.getTime() === startOfDay(end).getTime()
-      ? `${format(start, "EEEE, MMMM d, h:mm a")} to ${format(end, "h:mm a")}`
-      : `${format(start, "EEEE, MMMM d, h:mm a")} to ${format(
-          end,
-          "EEEE, MMMM d, h:mm a"
-        )}`;
+      ? `${fmt.fullDateTime(start)} ${labels.to} ${fmt.time(end)}`
+      : `${fmt.fullDateTime(start)} ${labels.to} ${fmt.fullDateTime(end)}`;
   }
   const lastDay = new Date(Math.max(start.getTime(), end.getTime() - 1));
   return isSameDay(start, lastDay)
-    ? format(start, "EEEE, MMMM d, yyyy")
-    : `${format(start, "EEEE, MMMM d")} to ${format(lastDay, "EEEE, MMMM d, yyyy")}`;
+    ? fmt.fullDate(start)
+    : `${fmt.fullDayMonth(start)} ${labels.to} ${fmt.fullDate(lastDay)}`;
 };
 
 // "9:30 AM - 11:00 AM", or "All day" for events that start and end at midnight.
-export const formatEventTime = (event: SchedulerEvent): string => {
+export const formatEventTime = (
+  event: SchedulerEvent,
+  { fmt, labels } = defaultI18n
+): string => {
   const atMidnight = (d: Date) => startOfDay(d).getTime() === d.getTime();
   return atMidnight(event.startDate) && atMidnight(event.endDate)
-    ? "All day"
-    : `${format(event.startDate, "h:mm a")} - ${format(
-        event.endDate,
-        "h:mm a"
-      )}`;
+    ? labels.allDay
+    : `${fmt.time(event.startDate)} - ${fmt.time(event.endDate)}`;
 };
 
 export const isToday = (date: Date): boolean => {

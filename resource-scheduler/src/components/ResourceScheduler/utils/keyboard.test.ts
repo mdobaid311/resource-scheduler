@@ -1,8 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { ViewType } from "../types";
-import { moveCursor, stepPlacement, type StepContext } from "./keyboard";
+import { flipHorizontal, moveCursor, stepPlacement, type StepContext } from "./keyboard";
 
 const d = (day: number, hour = 0, minute = 0) => new Date(2026, 2, day, hour, minute);
+
+describe("flipHorizontal", () => {
+  it("swaps left and right when the layout is right-to-left", () => {
+    expect(flipHorizontal("ArrowLeft", true)).toBe("ArrowRight");
+    expect(flipHorizontal("ArrowRight", true)).toBe("ArrowLeft");
+  });
+
+  it("leaves everything else, and left-to-right layouts, alone", () => {
+    expect(flipHorizontal("ArrowLeft", false)).toBe("ArrowLeft");
+    expect(flipHorizontal("ArrowUp", true)).toBe("ArrowUp");
+    expect(flipHorizontal("Home", true)).toBe("Home");
+  });
+});
 
 describe("moveCursor", () => {
   const at = (row: number, col: number) => ({ row, col });

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // src/components/ResourceScheduler/types.ts
+import type { Locale } from "date-fns";
+import type { PartialLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
 
@@ -166,8 +168,28 @@ export interface ResourceSchedulerProps {
    * reported. End is exclusive.
    */
   onSlotSelect?: (selection: SlotSelection) => void;
-  /** Accessible name of the schedule grid. Default "Resource schedule". */
+  /** Accessible name of the schedule grid. Default `labels.gridName` ("Resource schedule"). */
   ariaLabel?: string;
+  /**
+   * A date-fns locale, for example `import { de } from "date-fns/locale"`.
+   * Day and month names, date formats, the 12 or 24-hour clock and the first
+   * day of the week follow it. Default: English, Sunday first, 12-hour.
+   */
+  locale?: Locale;
+  /** `true` for a 12-hour clock, `false` for 24-hour. Default: what the locale uses. */
+  hour12?: boolean;
+  /**
+   * `"rtl"` lays the scheduler out right to left for Arabic, Hebrew and other
+   * right-to-left languages: the resource column on the right, time running
+   * leftwards, mirrored arrows, and the left arrow key moving forward in time.
+   * Default `"ltr"`.
+   */
+  dir?: "ltr" | "rtl";
+  /**
+   * The text the scheduler shows and reads out: toolbar, headers, view names
+   * and screen reader messages. Pass any subset; the rest stays English.
+   */
+  labels?: PartialLabels;
   /** Day view only: minutes per slot, e.g. 15, 30 or 60 (default 60). */
   slotDuration?: number;
   /** Day view only: first visible hour, 0-23 (default 0). */

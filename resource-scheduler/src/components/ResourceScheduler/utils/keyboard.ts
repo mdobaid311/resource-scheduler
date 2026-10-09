@@ -34,6 +34,16 @@ export const moveCursor = (
   }
 };
 
+/** In a right-to-left layout the left arrow points forward in time: swap the two. */
+export const flipHorizontal = (key: string, rtl: boolean): string =>
+  rtl
+    ? key === "ArrowLeft"
+      ? "ArrowRight"
+      : key === "ArrowRight"
+      ? "ArrowLeft"
+      : key
+    : key;
+
 export interface StepContext {
   viewType: ViewType;
   /** Minutes per slot in day view. */

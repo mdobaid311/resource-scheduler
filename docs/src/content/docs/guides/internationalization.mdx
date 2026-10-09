@@ -1,0 +1,94 @@
+---
+title: Languages and clocks
+description: Show the scheduler in your users' language with a date-fns locale and labels, choose a 12 or 24-hour clock, and translate what screen readers hear.
+---
+
+import I18nDemo from "../../../components/demos/I18nDemo";
+
+The scheduler speaks English unless you tell it otherwise. Three props change that, and none of them adds weight to your bundle beyond the locales you import yourself.
+
+<I18nDemo client:only="react" />
+
+## `locale`: names, dates and the first day of the week
+
+Pass a [date-fns locale](https://date-fns.org/docs/I18n):
+
+```tsx
+import { de } from "date-fns/locale";
+
+<ResourceScheduler resources={resources} locale={de} />
+```
+
+With a locale:
+
+- Day and month names, and the long dates in titles, follow the language ("Oktober 2026", "Mittwoch, 7. Oktober 2026").
+- The clock follows the locale: German and British English are 24-hour, American English is 12-hour.
+- The week starts on the day the locale says (Monday for German). Set `weekStartsOn` to override it.
+
+Without `locale` you get exactly the English the scheduler has always shown. Note that date-fns' own English locale (`enUS`) also switches to its long date formats, such as "October 7th, 2026", so leave `locale` out for the classic output.
+
+## `hour12`: the clock
+
+```tsx
+<ResourceScheduler resources={resources} hour12={false} />      // 09:00, 14:30
+<ResourceScheduler resources={resources} locale={de} hour12 />  // 9:30 vorm., with the locale's own AM and PM
+```
+
+`true` is a 12-hour clock, `false` a 24-hour one. Leave it out to use whatever the locale uses.
+
+## `labels`: every word that is not a date
+
+The toolbar, the resource column header, the view names, the "unavailable" and "All day" text, the keyboard instructions and every message read to screen reader users come from `labels`. Pass any subset; the rest stays English.
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  locale={de}
+  labels={{
+    resources: "Ressourcen",
+    today: "Heute",
+    previousPeriod: "Vorheriger Zeitraum",
+    nextPeriod: "Nächster Zeitraum",
+    views: { day: "Tag", week: "Woche", month: "Monat", quarter: "Quartal", year: "Jahr" },
+    viewTitle: (view) => `Ansicht: ${view}`, // under the title
+    allDay: "Ganztägig",
+    unavailable: "nicht verfügbar",
+    announce: {
+      cantGoFurther: "Weiter geht es nicht.",
+      cancelled: (title) => `Abgebrochen. ${title} bleibt, wo es war.`,
+    },
+  }}
+/>
+```
+
+Messages that need a number or a name are functions, so each language can word and inflect them its own way. The full set is typed as `SchedulerLabels`, and `defaultLabels` holds the English version to copy from:
+
+| Label | What it is |
+|---|---|
+| `resources`, `today`, `previousPeriod`, `nextPeriod`, `view`, `gridName` | Toolbar, header and accessible names |
+| `views` | `{ day, week, month, quarter, year }` names in the selector |
+| `viewTitle(view)` | The small line under the period title |
+| `allDay`, `unavailable`, `to` | Event and slot text. `to` joins a range read aloud: "9:00 AM to 10:00 AM" |
+| `help(canResize)` | The hidden keyboard instructions |
+| `announce.*` | What the live region says: `pickedUp`, `moved`, `cantGoFurther`, `notAllowedHere`, `droppedNoChange`, `dropped`, `cancelled`, `selected`, `selecting`, `selectionCancelled` |
+
+`ariaLabel` still overrides `gridName`. The translations in the demo above are examples written for these docs: have a native speaker review a language before you ship it.
+
+## `dir`: right-to-left languages
+
+For Arabic, Hebrew, Persian and other right-to-left languages, set `dir="rtl"`. Try the Arabic option in the demo above.
+
+```tsx
+import { ar } from "date-fns/locale";
+
+<ResourceScheduler resources={resources} locale={ar} dir="rtl" />
+```
+
+The whole layout mirrors: the resource column moves to the right, time runs leftwards, the previous and next arrows flip, event accents and resize handles move to the other edge, and the view menu opens the right way. Keyboard users get the matching behaviour: the left arrow moves forward in time, because that is the direction it points on screen.
+
+`dir` does not choose a language by itself, so combine it with `locale` and `labels`. The default is `"ltr"`.
+
+## What is not translated
+
+- **Your own text**: event titles, resource names, and anything you render with `renderEventPopover`, `renderTimeSlot` or the other `render*` props.
+- **Time zones.** Dates are shown in the viewer's own zone, like the rest of the scheduler.

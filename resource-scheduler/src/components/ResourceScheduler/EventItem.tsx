@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/EventItem.tsx
 import React, { useContext, useState } from "react";
-import { format } from "date-fns";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
+import { useI18n } from "./i18n";
 import {
   Popover,
   PopoverContent,
@@ -10,6 +10,7 @@ import {
 import { Calendar, User } from "lucide-react";
 import { type EventItemProps, ViewType } from "./types";
 import { formatEventTime, formatRangeLabel } from "./utils/dateUtils";
+import { flipHorizontal } from "./utils/keyboard";
 
 const MOVE_STEPS: Record<string, { cols?: number; rows?: number }> = {
   ArrowLeft: { cols: -1 },
@@ -30,6 +31,7 @@ export const EventItem: React.FC<EventItemProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const drag = useContext(SchedulerDragContext);
+  const i18n = useI18n();
   const movingThis =
     drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
   const opacity = movingThis ? 0.5 : 1;
@@ -43,7 +45,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             aria-hidden="true"
             data-rs-resize={edge}
             className={`absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
-              edge === "start" ? "left-0" : "right-0"
+              edge === "start" ? "start-0" : "end-0"
             }`}
             style={{ touchAction: "none" }}
             onPointerDown={(e) => {
@@ -58,7 +60,8 @@ export const EventItem: React.FC<EventItemProps> = ({
   const label = `${event.title}, ${resource ? `${resource.name}, ` : ""}${formatRangeLabel(
     event.startDate,
     event.endDate,
-    drag?.viewType ?? ViewType.Week
+    drag?.viewType ?? ViewType.Week,
+    i18n
   )}`;
 
   // Keyboard: Enter opens details, Space picks the event up; then arrows move
@@ -70,7 +73,8 @@ export const EventItem: React.FC<EventItemProps> = ({
       e.stopPropagation();
     };
     if (grabbed) {
-      const step = e.shiftKey ? RESIZE_STEPS[e.key] : MOVE_STEPS[e.key];
+      const key = flipHorizontal(e.key, i18n.dir === "rtl");
+      const step = e.shiftKey ? RESIZE_STEPS[key] : MOVE_STEPS[key];
       if (step) {
         handled();
         drag.stepGrab(step);
@@ -141,7 +145,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             style={{
               backgroundColor: `${event.color}20`,
               borderColor: event.color,
-              borderLeftWidth: "3px",
+              borderInlineStartWidth: "3px",
               position: "relative",
               zIndex: 5,
               opacity,
@@ -157,13 +161,13 @@ export const EventItem: React.FC<EventItemProps> = ({
               {event.title}
             </div>
             <div className="text-xs truncate text-ocrs-muted-foreground">
-              {formatEventTime(event)}
+              {formatEventTime(event, i18n)}
             </div>
             {resizeHandles}
           </div>
         )}
       </PopoverTrigger>
-      <PopoverContent side="top" className="z-[2000] w-fit p-3">
+      <PopoverContent side="top" dir={i18n.dir} className="z-[2000] w-fit p-3">
         {renderEventPopover ? (
           renderEventPopover(event, resource!, onClose)
         ) : (
@@ -172,8 +176,8 @@ export const EventItem: React.FC<EventItemProps> = ({
             <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
               <Calendar className="h-4 w-4 text-ocrs-muted-foreground" />
               <span>
-                {format(event.startDate, "MMM d, yyyy h:mm a")} -{" "}
-                {format(event.endDate, "h:mm a")}
+                {i18n.fmt.dateTime(event.startDate)} -{" "}
+                {i18n.fmt.time(event.endDate)}
               </span>
             </div>
             {resource && (

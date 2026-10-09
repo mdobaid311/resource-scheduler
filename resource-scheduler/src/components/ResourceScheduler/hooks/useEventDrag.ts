@@ -2,6 +2,7 @@
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { type Resource, type ResourceSchedulerProps, type SchedulerEvent, ViewType } from "../types";
 import { formatRangeLabel, getDropRange, getResizeRange } from "../utils/dateUtils";
+import { useI18n } from "../i18n";
 import { type Step, stepPlacement } from "../utils/keyboard";
 import type { Placement } from "../utils/placement";
 
@@ -107,9 +108,14 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
   const didDrag = useRef(false);
   const stop = useRef<(() => void) | null>(null);
   const latest = useRef(options);
+  // Text for the announcements; the keyboard callbacks below keep their first
+  // closure, so they read it through a ref.
+  const i18n = useI18n();
+  const i18nRef = useRef(i18n);
 
   useEffect(() => {
     latest.current = options;
+    i18nRef.current = i18n;
   });
   useEffect(() => () => stop.current?.(), []);
 
@@ -238,13 +244,15 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
   const pendingFocus = useRef<string | null>(null);
 
   const say = (message: string) => latest.current.announce?.(message);
+  const said = () => i18nRef.current.labels.announce;
   const nameOf = (resourceId: string) =>
     latest.current.resources?.find((r) => r.id === resourceId)?.name ?? "";
   const describe = (g: Grab) =>
     `${nameOf(g.placement.resourceId)}, ${formatRangeLabel(
       g.placement.start,
       g.placement.end,
-      latest.current.viewType
+      latest.current.viewType,
+      i18nRef.current
     )}`;
 
   const publish = (g: Grab): boolean => {
@@ -276,12 +284,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
     grab.current = g;
     setGrabbedEventId(event.id);
     publish(g);
-    const resizeHint = latest.current.onEventResize
-      ? " Hold Shift with left or right arrow to resize."
-      : "";
-    say(
-      `Picked up ${event.title}. Arrow keys move it, Space drops it, Escape cancels.${resizeHint}`
-    );
+    say(said().pickedUp(event.title, !!latest.current.onEventResize));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -298,14 +301,14 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
       range: visibleRange,
     });
     if (!next) {
-      say("Can't go any further.");
+      say(said().cantGoFurther);
       return;
     }
     g.placement = next;
     if (step.resizeEnd) g.resized = true;
     if (step.cols || step.rows) g.moved = true;
     const allowed = publish(g);
-    say(`${g.event.title}: ${describe(g)}${allowed ? "" : ". Not allowed here"}`);
+    say(said().moved(g.event.title, describe(g), allowed));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -313,7 +316,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
     const g = grab.current;
     if (!g) return;
     if (!(latest.current.checkPlacement?.(g.event, g.placement) ?? true)) {
-      say("Not allowed here. Move somewhere else, or press Escape to cancel.");
+      say(said().notAllowedHere);
       return;
     }
     const { event, resource, placement } = g;
@@ -329,7 +332,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
     }, 1500);
 
     if (unchanged) {
-      say(`Dropped ${event.title}, no change.`);
+      say(said().droppedNoChange(event.title));
       return;
     }
     const { onEventDrop, onEventResize } = latest.current;
@@ -337,7 +340,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
       onEventResize(event, resource.id, placement.start, placement.end);
     else
       onEventDrop?.(event, resource.id, placement.resourceId, placement.start, placement.end);
-    say(`Dropped ${event.title}. ${describe(g)}`);
+    say(said().dropped(event.title, describe(g)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -346,7 +349,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
     if (!g) return;
     endGrab();
     pendingFocus.current = g.event.id;
-    say(`Cancelled. ${g.event.title} stays where it was.`);
+    say(said().cancelled(g.event.title));
   }, []);
 
   return {

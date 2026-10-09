@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "./hooks/use-media-query";
+import { buildI18n, I18nContext } from "./i18n";
 import React, {
   forwardRef,
   useCallback,
@@ -57,6 +58,10 @@ export const ResourceScheduler = forwardRef<
   onEventCreate,
   onSlotSelect,
   ariaLabel,
+  locale,
+  hour12,
+  dir,
+  labels,
   slotDuration,
   dayStartHour,
   dayEndHour,
@@ -83,9 +88,15 @@ export const ResourceScheduler = forwardRef<
 }, ref) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const i18n = useMemo(
+    () => buildI18n({ locale, hour12, labels, dir }),
+    [locale, hour12, labels, dir]
+  );
+  // The locale knows which day its weeks start on; `weekStartsOn` overrides it.
+  const firstDay = weekStartsOn ?? locale?.options?.weekStartsOn;
   const viewOptions = useMemo(
-    () => ({ weekStartsOn, hideWeekends }),
-    [weekStartsOn, hideWeekends]
+    () => ({ weekStartsOn: firstDay, hideWeekends }),
+    [firstDay, hideWeekends]
   );
   // Flat `events` join the resources first, so every rule below sees them.
   const initialResources = useMemo(
@@ -282,7 +293,8 @@ export const ResourceScheduler = forwardRef<
         dateColumnWidth,
         stickyOffset,
         { slotDuration, dayStartHour, dayEndHour },
-        viewOptions
+        viewOptions,
+        i18n.dir === "rtl"
       );
     },
     [
@@ -293,6 +305,7 @@ export const ResourceScheduler = forwardRef<
       dayStartHour,
       dayEndHour,
       viewOptions,
+      i18n.dir,
     ]
   );
 
@@ -326,8 +339,9 @@ export const ResourceScheduler = forwardRef<
   );
 
   return (
-    <>
+    <I18nContext.Provider value={i18n}>
       <div
+        dir={i18n.dir}
         className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden"
         style={
           {
@@ -337,11 +351,7 @@ export const ResourceScheduler = forwardRef<
         }
       >
         <p id={helpId} className="sr-only">
-          Arrow keys move between slots. Enter or Space selects a slot; hold
-          Shift with Left or Right to select several. Tab to an event: Enter
-          opens its details, Space picks it up, arrow keys move it
-          {onEventResize ? ", Shift with Left or Right resizes it" : ""}, Space
-          drops it and Escape cancels.
+          {i18n.labels.help(!!onEventResize)}
         </p>
         <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {announcement}
@@ -354,7 +364,7 @@ export const ResourceScheduler = forwardRef<
           onGoToToday={goToToday}
           allowViewChange={allowViewChange}
           availableViews={availableViews}
-          weekStartsOn={weekStartsOn}
+          weekStartsOn={firstDay}
           hideWeekends={hideWeekends}
         />
 
@@ -414,7 +424,7 @@ export const ResourceScheduler = forwardRef<
           </div>
         </div>
       </div>
-    </>
+    </I18nContext.Provider>
   );
 });
 
