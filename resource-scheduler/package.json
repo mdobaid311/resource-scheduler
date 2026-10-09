@@ -35,6 +35,7 @@
     "test:watch": "vitest",
     "registry:build": "node scripts/build-registry.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
+    "check:size": "node scripts/check-size.mjs",
     "lint": "eslint src",
     "type-check": "tsc --noEmit -p tsconfig.app.json",
     "start": "vite preview"

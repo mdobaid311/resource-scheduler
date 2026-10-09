@@ -18,9 +18,10 @@ npm run type-check
 npm run lint
 npm test
 npm run build
+npm run check:size   # gzip budget, and no stray files in dist/
 ```
 
-CI runs the same commands on Node 20 and 22.
+CI runs the same commands on Node 20 and 22. Add a line to `CHANGELOG.md` under Unreleased for anything users can see. Please follow the [code of conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), not a public issue.
 
 ## Guidelines
 

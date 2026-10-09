@@ -54,6 +54,53 @@ export const isCellUnavailable = (
   );
 };
 
+export interface FindSlotsOptions {
+  /** The search window. `to` is exclusive: a slot must end by then. */
+  from: Date;
+  to: Date;
+  /** Length of the slot you need, in minutes. */
+  duration: number;
+  /** Candidates start on multiples of this many minutes. Default 30. */
+  step?: number;
+  /** The shared hours; a resource's own `businessHours` wins. */
+  businessHours?: BusinessHours;
+  /** Stop after this many. Default: all of them. */
+  limit?: number;
+}
+
+/**
+ * Free slots of `duration` minutes inside the window, earliest first. A slot
+ * is free when it overlaps none of the resource's events, touches no
+ * unavailable time and stays inside business hours. Pass several resources
+ * to find a time when all of them are free. Candidates start every `step`
+ * minutes, so neighbouring results can overlap each other.
+ */
+export const findAvailableSlots = (
+  resources: Resource | Resource[],
+  { from, to, duration, step = 30, businessHours, limit = Infinity }: FindSlotsOptions
+): { start: Date; end: Date }[] => {
+  const found: { start: Date; end: Date }[] = [];
+  if (!(duration > 0) || !(step > 0) || !(limit > 0) || from >= to) return found;
+
+  const list = Array.isArray(resources) ? resources : [resources];
+  const context = { businessHours, viewType: ViewType.Day, slotMinutes: step };
+  const free = (resource: Resource, start: Date, end: Date) =>
+    !resource.events.some((e) => rangesOverlap(start, end, e.startDate, e.endDate)) &&
+    !touchesUnavailable(resource, { start, end }, context);
+
+  // The first start on the step grid (counted from midnight) at or after `from`.
+  const day = startOfDay(from);
+  let start = addMinutes(day, Math.ceil(differenceInMinutes(from, day) / step) * step);
+  if (start < from) start = addMinutes(start, step);
+
+  for (; found.length < limit; start = addMinutes(start, step)) {
+    const end = addMinutes(start, duration);
+    if (end > to) break;
+    if (list.every((resource) => free(resource, start, end))) found.push({ start, end });
+  }
+  return found;
+};
+
 /** Whether placing an event on `range` would touch a shaded cell. */
 export const touchesUnavailable = (
   resource: Availability,

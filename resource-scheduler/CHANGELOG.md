@@ -3,6 +3,15 @@
 ## [Unreleased]
 
 ### Added
+- **Row virtualization.** `virtualize` (on by default above 100 resources, `false` to opt out) renders only the rows near the viewport. At 1,000 resources the DOM drops from 31,458 to 424 nodes and a drag pointer move from 68.9 ms to 7.1 ms of main-thread time (measured, reproducible with `npm run bench` in `docs/`). The grid keeps its full height and `aria-rowcount`; without a fixed-height box every row is drawn as before. Rows holding the keyboard cursor, a carried event or the event about to get focus stay mounted. `getRowWindow` is exported.
+- **Flat `events` prop.** Pass events as one list that names its resource with `resourceId` (or `resourceIds`); they are added to what resources hold in their own `events`, and every rule sees them. `Resource.events` is optional on input (`ResourceInput`). `withEvents` is exported.
+- **Business hours and availability.** `businessHours` shades closed hours and non-working days; `Resource.businessHours` overrides it (`false` = always available) and `Resource.unavailable` shades time off. `blockUnavailable` rejects moves, resizes and creates that touch a shaded slot. Shaded cells are announced as "unavailable". `isCellUnavailable`, `touchesUnavailable`, `resolveBusinessHours` are exported.
+- **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** returns the free slots, or the times when several resources are all free.
+- **`nowIndicator`**: a line at the current time in today's day view.
+- **`weekStartsOn`** and **`hideWeekends`** for the week, month, quarter and year views; events spanning a weekend continue over the gap.
+- **`onRangeChange({ start, end, view })`** fires on mount and whenever the visible range changes, for fetching only what is on screen (`end` is exclusive). `getVisibleRange` is exported.
+- **Ref handle** (`ResourceSchedulerHandle`): `goTo`, `setView`, `getVisibleRange`, `scrollToTime`.
+- **Documentation site** (Astro Starlight, `docs/`): guides with live demos, recipes, an honest comparison, reference, search, `llms.txt`.
 - **shadcn registry.** `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the component into `components/resource-scheduler/`, installs its dependencies and adds the `--rs-*` tokens and utilities to the app's Tailwind CSS, without touching the app's own theme or `components/ui`. `registry.json` at the repo root is generated (`npm run registry:build`) from the source and `src/styles/tokens.css`; a test fails if it is stale or ships a file that imports something missing. Verified by installing into a fresh Vite 8 + Tailwind 4 + shadcn app and building it.
 - **Keyboard navigation and ARIA.** The timeline is a `role="grid"` (single tab stop with `aria-activedescendant`) of rows and named gridcells. Arrow keys/Home/End move a slot cursor, Shift+Left/Right extends a range, Enter or Space selects it. Events are focusable buttons: Enter opens details, Space picks one up, arrows move it, Shift+Left/Right resizes its end, Space drops it, Escape cancels. Moves honour `eventOverlap`/`isValidDrop`, stay inside the visible range, and focus returns to the moved event. This gives keyboard equivalents for dragging, resizing and creating (WCAG 2.5.7).
 - Screen reader support: a polite live region announces pick-up, moves, rejected places, drops and selections; a visually hidden description explains the keys; toolbar buttons and the view select have accessible names; the period title is a live region; slots expose `aria-current="date"` for today. New `ariaLabel` prop.
@@ -15,12 +24,16 @@
 - Drag and resize now highlight every slot the event would cover, not only the one under the pointer.
 
 ### Changed
+- `ResourceScheduler` is now a `forwardRef` component (JSX usage is unchanged).
+- Text and surface colors inside the grid read the `--rs-*` tokens instead of fixed grays, so a dark token set is readable.
+- A keyboard-carried event keeps its destination in view as it moves, and focus returning to it after a drop or cancel scrolls it into view.
 - `ViewType` is now a `const` object plus a union type instead of an `enum` (`ViewType.Week` and `view: ViewType` work as before). Needed so the source compiles under `erasableSyntaxOnly`, the `create-vite` default.
 - Type-only imports use `import type` everywhere. Without that the source failed to build in apps with `verbatimModuleSyntax` (a Rolldown/Vite 8 `MISSING_EXPORT` error). The package's own tsconfigs now enable both flags so this cannot regress.
 - The UI primitives, `cn` helper and `use-media-query` moved under `src/components/ResourceScheduler/` so the installed layout matches the package. Public exports are unchanged.
 - `src/styles/tokens.css` split out of `global.css`; the compiled npm stylesheet is byte-identical.
 
 ### Fixed
+- The npm package no longer ships a demo screenshot and an icon copied from `public/` (package size 135 KB down to 50 KB). CI now fails on stray files in `dist/` and on a gzip size budget.
 - Events can be dropped on a slot that is covered by another event (the slot lookup now uses `elementsFromPoint`).
 
 ## [1.2.0] - 2026-10-09

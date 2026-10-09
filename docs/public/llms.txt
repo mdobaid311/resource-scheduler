@@ -14,6 +14,7 @@ Facts to get the code right:
 - `onSlotSelect({ resourceId, start, end })` replaces the built-in event creation so you can open your own dialog. `onEventResize` turns the resize handles on.
 - Conflicts: `eventOverlap={false}` forbids overlapping events on one resource, `isValidDrop(event, { resourceId, start, end })` is a final veto, `businessHours` and `Resource.unavailable` shade closed time and `blockUnavailable` rejects bookings there.
 - `onRangeChange({ start, end, view })` fires on mount and when the visible range changes (`end` is exclusive): use it to fetch only what is on screen. A `ref` of type `ResourceSchedulerHandle` offers `goTo`, `setView`, `getVisibleRange` and `scrollToTime`.
+- `findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })` returns the free `{ start, end }` slots (for several resources, times when all are free). `virtualize` renders only the rows near the viewport; it is on by default above 100 resources and needs a fixed-height container.
 - Colors come from `--rs-*` CSS variables, so a dark theme is a second set of values. Styles are scoped under `.rs-root` and do not leak.
 - Next.js: the npm bundle starts with `"use client"`, so it can be imported from a server file.
 

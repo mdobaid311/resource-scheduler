@@ -118,7 +118,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] **Recurring events** (RRULE, exceptions, DST-safe) in an optional module (L-XL). Premium in MUI X, so strong differentiator
 - [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)
 - [ ] **ICS import/export, CSV, print stylesheet** (M)
-- [ ] **`findAvailableSlots(resource, duration, constraints)`** helper, a small step toward auto-assignment (M)
+- [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
 - [ ] **Recipes** with complete data models: room booking, shift roster, equipment, field service dispatch, project allocation (M each)
 - [ ] Docs with `llms.txt` so AI coding assistants generate correct usage (S)
 
