@@ -21,6 +21,9 @@ Only `resources` is required.
 - **`allowViewChange`**: `boolean`, default `true`. Set `false` to hide the selector.
 - **`onDateChange`**: `(date: Date) => void`. The user navigated.
 - **`onViewChange`**: `(view: ViewType) => void`. The user changed view.
+- **`weekStartsOn`**: `0 | 1 | 2 | 3 | 4 | 5 | 6`, default `0` (Sunday). First day of the week.
+- **`hideWeekends`**: `boolean`, default `false`. Leaves Saturday and Sunday out of the week, month, quarter and year views.
+- **`onRangeChange`**: `({ start, end, view }) => void`. Fires when the grid first shows and whenever the visible range changes. `end` is exclusive. Use it to load only what is on screen.
 
 ## Day view slots
 
@@ -55,3 +58,12 @@ Only `resources` is required.
 - **`timeColumnWidth`**: `string`, default `"90px"`. Day view column width.
 - **`dateColumnWidth`**: `string`, default `"140px"`. Week view and longer.
 - **`ariaLabel`**: `string`, default `"Resource schedule"`. Accessible name of the grid.
+
+## Ref
+
+Pass `ref` (type `ResourceSchedulerHandle`) to drive the view from code. See [Load data and control the view](/guides/loading-and-control/).
+
+- **`goTo(date)`**: show the period containing `date`. Calls `onDateChange`.
+- **`setView(view)`**: change the view, keep the date. Calls `onViewChange`.
+- **`getVisibleRange()`**: `{ start, end }` of what the grid covers. `end` is exclusive.
+- **`scrollToTime(date)`**: scroll `date` to the middle of the grid; navigates first if it is outside the range.

@@ -5,6 +5,7 @@ import {
   getDatesInView,
   getVisibleEvents,
   type SlotOptions,
+  type ViewOptions,
   navigateDate,
   getEventSpan,
   getEventStartPosition,
@@ -16,7 +17,8 @@ export const useScheduler = (
   initialResources: Resource[],
   initialDate: Date = new Date(),
   initialView: ViewType = ViewType.Day,
-  slotOptions?: SlotOptions
+  slotOptions?: SlotOptions,
+  viewOptions?: ViewOptions
 ) => {
   const [currentDate, setCurrentDate] = useState<Date>(initialDate);
   const [viewType, setViewType] = useState<ViewType>(initialView);
@@ -27,14 +29,25 @@ export const useScheduler = (
     () => ({ slotDuration, dayStartHour, dayEndHour }),
     [slotDuration, dayStartHour, dayEndHour]
   );
+  const { weekStartsOn, hideWeekends } = viewOptions ?? {};
+  const view = useMemo<ViewOptions>(
+    () => ({ weekStartsOn, hideWeekends }),
+    [weekStartsOn, hideWeekends]
+  );
 
   const resources = useMemo<Resource[]>(
     () =>
       initialResources.map((resource) => ({
         ...resource,
-        events: getVisibleEvents(resource.events, currentDate, viewType, slots),
+        events: getVisibleEvents(
+          resource.events,
+          currentDate,
+          viewType,
+          slots,
+          view
+        ),
       })),
-    [initialResources, currentDate, viewType, slots]
+    [initialResources, currentDate, viewType, slots, view]
   );
 
   const getTimeSlotsMemoized = useCallback(() => {
@@ -42,8 +55,8 @@ export const useScheduler = (
   }, [currentDate, viewType, slots]);
 
   const getDatesInViewMemoized = useCallback(() => {
-    return getDatesInView(currentDate, viewType);
-  }, [currentDate, viewType]);
+    return getDatesInView(currentDate, viewType, view);
+  }, [currentDate, viewType, view]);
 
   const navigate = useCallback(
     (direction: "prev" | "next") => {

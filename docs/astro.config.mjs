@@ -76,6 +76,7 @@ export default defineConfig({
           items: [
             { label: "Data model", slug: "guides/data-model" },
             { label: "Views and slots", slug: "guides/views-and-slots" },
+            { label: "Load data and control the view", slug: "guides/loading-and-control" },
             { label: "Creating events", slug: "guides/creating-events" },
             { label: "Drag and resize", slug: "guides/drag-and-resize" },
             { label: "Conflict control", slug: "guides/conflict-control" },

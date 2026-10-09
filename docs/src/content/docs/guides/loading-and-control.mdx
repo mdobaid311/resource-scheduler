@@ -1,0 +1,56 @@
+---
+title: Load data and control the view
+description: Fetch only the visible range with onRangeChange, and drive the date, view and scroll position from your own code with a ref.
+---
+
+import ControlDemo from "../../../components/demos/ControlDemo";
+
+## Load only what is on screen
+
+`onRangeChange` fires when the grid first shows and every time the visible range changes: the user navigates, switches view, or your code calls `goTo`. Use it to fetch just that window.
+
+```tsx
+const [resources, setResources] = useState<Resource[]>([]);
+
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Week}
+  onRangeChange={async ({ start, end, view }) => {
+    // `end` is exclusive: the first moment after the range.
+    const res = await fetch(`/api/schedule?from=${start.toISOString()}&to=${end.toISOString()}`);
+    setResources(await res.json());
+  }}
+/>
+```
+
+The range follows the options you set: the visible hours in the day view, and `weekStartsOn` and `hideWeekends` in the others. A new callback identity on each render does not fire it again, so an inline arrow function is fine. React Strict Mode runs effects twice in development, so expect a second call on mount there.
+
+## Drive the view from your code
+
+Pass a `ref` to call methods on the scheduler. Build a custom toolbar, link it to a mini calendar, or jump to a booking from a list.
+
+```tsx
+import { useRef } from "react";
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import type { ResourceSchedulerHandle } from "resource-scheduler";
+
+const ref = useRef<ResourceSchedulerHandle>(null);
+
+<ResourceScheduler ref={ref} resources={resources} />;
+
+ref.current?.goTo(new Date(2026, 11, 1));
+ref.current?.setView(ViewType.Month);
+ref.current?.scrollToTime(new Date(2026, 11, 1, 15));
+const { start, end } = ref.current!.getVisibleRange();
+```
+
+| Method | What it does |
+|---|---|
+| `goTo(date)` | Shows the period containing `date`. Calls `onDateChange`. |
+| `setView(view)` | Changes the view and keeps the date. Calls `onViewChange`. |
+| `getVisibleRange()` | Returns `{ start, end }` for what the grid covers. `end` is exclusive. |
+| `scrollToTime(date)` | Scrolls `date` to the middle of the grid. A date outside the visible range navigates there first. |
+
+The callbacks fire for these calls exactly as they do for a click, so state you keep in `onDateChange` stays in sync. Do not call `goTo` from inside `onDateChange` with a different date; it would loop.
+
+<ControlDemo client:only="react" />

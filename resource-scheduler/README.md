@@ -168,6 +168,9 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `eventOverlap` | `boolean \| (moving, other) => boolean` | `true` | `false` forbids overlapping events on the same resource; a function decides per overlapping pair (return `true` to allow) |
 | `isValidDrop` | `(event, placement) => boolean` | `undefined` | Final veto for move, resize and drag-create. `placement` is `{ resourceId, start, end }` |
 | `availableViews` | `ViewType[]` | all five | Views offered in the selector |
+| `weekStartsOn` | `0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6` | `0` | First day of the week (0 is Sunday) |
+| `hideWeekends` | `boolean` | `false` | Leave Saturday and Sunday out of the week, month, quarter and year views |
+| `onRangeChange` | `({ start, end, view }) => void` | `undefined` | Called on mount and whenever the visible range changes. `end` is exclusive. Use it to load only what is on screen |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
 | `renderTimeSlot` | `(event: SchedulerEvent, resources: Resource[]) => ReactNode` | `undefined` | Replace the event card. `resources` holds the single owning resource |
@@ -176,6 +179,17 @@ import "resource-scheduler/dist/resource-scheduler.css"
 Column widths must be `px` values. Event end times are exclusive: an event ending at midnight does not occupy the next day. Dropped events keep their time of day in Week/Month/Quarter/Year views, and snap to the hour in Day view.
 
 `resources` is read as-is: the component keeps no copy of your data, so update your own state in `onEventCreate` / `onEventDrop`.
+
+### Ref
+
+Pass a `ref` (type `ResourceSchedulerHandle`) to drive the view from code:
+
+| Method | Description |
+|--------|-------------|
+| `goTo(date)` | Show the period containing `date`. Calls `onDateChange` |
+| `setView(view)` | Change the view and keep the date. Calls `onViewChange` |
+| `getVisibleRange()` | `{ start, end }` of what the grid covers. `end` is exclusive |
+| `scrollToTime(date)` | Scroll `date` to the middle of the grid; navigates first if it is outside the range |
 
 ### Type Definitions
 

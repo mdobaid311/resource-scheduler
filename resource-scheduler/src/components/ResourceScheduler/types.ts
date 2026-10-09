@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // src/components/ResourceScheduler/types.ts
+import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
 
 // A const object plus a union (not an `enum`) so the source compiles in apps
@@ -43,11 +44,42 @@ export interface Resource {
   events: SchedulerEvent[];
 }
 
+/** What the grid covers. `end` is exclusive. */
+export interface VisibleRange {
+  start: Date;
+  end: Date;
+}
+
+/** Methods available through a `ref` on `ResourceScheduler`. */
+export interface ResourceSchedulerHandle {
+  /** Shows the period that contains `date`. Calls `onDateChange`. */
+  goTo(date: Date): void;
+  /** Switches the view and keeps the date. Calls `onViewChange`. */
+  setView(view: ViewType): void;
+  /** What the grid covers right now. */
+  getVisibleRange(): VisibleRange;
+  /**
+   * Scrolls `date` to the middle of the grid. A date outside the visible
+   * range navigates there first (and calls `onDateChange`).
+   */
+  scrollToTime(date: Date): void;
+}
+
 export interface ResourceSchedulerProps {
   resources: Resource[];
   initialDate?: Date;
   initialView?: ViewType;
   availableViews?: ViewType[];
+  /** First day of the week, 0 (Sunday) to 6 (Saturday). Default 0. */
+  weekStartsOn?: ViewOptions["weekStartsOn"];
+  /** Leave Saturday and Sunday out of the week, month, quarter and year views. */
+  hideWeekends?: boolean;
+  /**
+   * Called when the grid first shows and whenever the visible range changes
+   * (navigation, view change, `goTo`). `end` is exclusive. Use it to load
+   * only the events that are on screen.
+   */
+  onRangeChange?: (range: VisibleRange & { view: ViewType }) => void;
   onEventClick?: (event: SchedulerEvent, resource: Resource) => void;
   onDateChange?: (date: Date) => void;
   onViewChange?: (view: ViewType) => void;
@@ -115,6 +147,8 @@ export interface SchedulerControlsProps {
   onGoToToday: () => void;
   allowViewChange?: boolean;
   availableViews?: ViewType[];
+  weekStartsOn?: ViewOptions["weekStartsOn"];
+  hideWeekends?: boolean;
 }
 
 export interface ResourceColumnProps {

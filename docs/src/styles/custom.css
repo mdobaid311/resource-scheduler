@@ -67,6 +67,16 @@
   gap: 0.4rem;
   align-items: center;
 }
+.demo-controls button {
+  background: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.375rem;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--sl-font-system-mono);
+  font-size: var(--sl-text-xs);
+  cursor: pointer;
+}
 .demo-controls select,
 .demo-controls input[type="text"] {
   background: var(--sl-color-bg);

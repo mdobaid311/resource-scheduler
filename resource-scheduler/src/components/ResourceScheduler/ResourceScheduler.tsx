@@ -1,18 +1,35 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "./hooks/use-media-query";
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";
 import { ResourceColumn } from "./ResourceColumn";
 import { SchedulerControls } from "./SchedulerControls";
 import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
-import { type ResourceSchedulerProps, type SchedulerEvent, ViewType } from "./types";
-import { resolveSlotOptions } from "./utils/dateUtils";
+import {
+  type ResourceSchedulerHandle,
+  type ResourceSchedulerProps,
+  type SchedulerEvent,
+  ViewType,
+} from "./types";
+import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { isPlacementAllowed, type Placement } from "./utils/placement";
 import { scrollToDate } from "./utils/scrollUtils";
 
-export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
+export const ResourceScheduler = forwardRef<
+  ResourceSchedulerHandle,
+  ResourceSchedulerProps
+>(function ResourceScheduler({
   resources: initialResources,
   initialDate = new Date(),
   initialView = ViewType.Day,
@@ -35,13 +52,20 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   timeColumnWidth: propTimeColumnWidth,
   dateColumnWidth: propDateColumnWidth,
   availableViews,
+  weekStartsOn,
+  hideWeekends,
+  onRangeChange,
   renderDateHeader,
   renderResourceHeader,
   renderTimeSlot,
   renderEmptyCell,
-}) => {
+}, ref) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const viewOptions = useMemo(
+    () => ({ weekStartsOn, hideWeekends }),
+    [weekStartsOn, hideWeekends]
+  );
   const helpId = `rs-help${useId()}`;
   // Spoken by screen readers through the live region below.
   const [announcement, setAnnouncement] = useState("");
@@ -58,12 +82,41 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     calculateEventPositions,
     getResourceRowHeight,
     getGridTemplateRows,
-  } = useScheduler(initialResources, initialDate, initialView, {
-    slotDuration,
-    dayStartHour,
-    dayEndHour,
-  });
+  } = useScheduler(
+    initialResources,
+    initialDate,
+    initialView,
+    { slotDuration, dayStartHour, dayEndHour },
+    viewOptions
+  );
   const { slotMinutes } = resolveSlotOptions({ slotDuration });
+
+  const range = useMemo(
+    () =>
+      getVisibleRange(currentDate, viewType, {
+        slotDuration,
+        dayStartHour,
+        dayEndHour,
+        ...viewOptions,
+      }),
+    [currentDate, viewType, slotDuration, dayStartHour, dayEndHour, viewOptions]
+  );
+
+  // Fires on mount and whenever the range changes; the latest callback is
+  // used, but a new callback identity alone does not fire it.
+  const onRangeChangeRef = useRef(onRangeChange);
+  useEffect(() => {
+    onRangeChangeRef.current = onRangeChange;
+  });
+  const rangeStart = range.start.getTime();
+  const rangeEnd = range.end.getTime();
+  useEffect(() => {
+    onRangeChangeRef.current?.({
+      start: new Date(rangeStart),
+      end: new Date(rangeEnd),
+      view: viewType,
+    });
+  }, [rangeStart, rangeEnd, viewType]);
 
   // Checked against the full `resources` prop, not just the visible range.
   const checkPlacement = useMemo<
@@ -126,31 +179,62 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     onDateChange?.(today);
   };
 
-  // Keep the displayed date in view whenever it, the view or column sizes change.
-  useEffect(() => {
-    const scroller = scrollRef.current;
-    if (scroller) {
+  const scrollToDay = useCallback(
+    (date: Date) => {
+      const scroller = scrollRef.current;
+      if (!scroller) return;
       // The resource column is the scroller's first child and sticks to its left edge.
       const stickyOffset = scroller.firstElementChild?.clientWidth ?? 0;
       scrollToDate(
-        currentDate,
+        date,
         viewType,
         scroller,
         timeColumnWidth,
         dateColumnWidth,
         stickyOffset,
-        { slotDuration, dayStartHour, dayEndHour }
+        { slotDuration, dayStartHour, dayEndHour },
+        viewOptions
       );
-    }
-  }, [
-    currentDate,
-    viewType,
-    timeColumnWidth,
-    dateColumnWidth,
-    slotDuration,
-    dayStartHour,
-    dayEndHour,
-  ]);
+    },
+    [
+      viewType,
+      timeColumnWidth,
+      dateColumnWidth,
+      slotDuration,
+      dayStartHour,
+      dayEndHour,
+      viewOptions,
+    ]
+  );
+
+  // Keep the displayed date in view whenever it, the view or column sizes change.
+  useEffect(() => {
+    scrollToDay(currentDate);
+  }, [currentDate, scrollToDay]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      goTo: (date) => {
+        setCurrentDate(date);
+        onDateChange?.(date);
+      },
+      setView: (view) => {
+        setViewType(view);
+        onViewChange?.(view);
+      },
+      getVisibleRange: () => range,
+      scrollToTime: (date) => {
+        if (date >= range.start && date < range.end) {
+          scrollToDay(date);
+        } else {
+          setCurrentDate(date);
+          onDateChange?.(date);
+        }
+      },
+    }),
+    [range, scrollToDay, setCurrentDate, setViewType, onDateChange, onViewChange]
+  );
 
   return (
     <>
@@ -181,6 +265,8 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
           onGoToToday={goToToday}
           allowViewChange={allowViewChange}
           availableViews={availableViews}
+          weekStartsOn={weekStartsOn}
+          hideWeekends={hideWeekends}
         />
 
         <div
@@ -237,6 +323,6 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
       </div>
     </>
   );
-};
+});
 
 export default ResourceScheduler;
