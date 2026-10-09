@@ -6,7 +6,7 @@ Every claim below can be checked in the repo or the docs. Keep it that way: repl
 
 ## Before you post anything
 
-- [ ] Merge the open PRs, then publish v1.2.0 (the fix for the React 18 failure in 1.1.1) with a GitHub Release.
+- [ ] Publish v1.3.0 with a GitHub Release. It is the first release since 1.1.1, which crashes under React 18.
 - [ ] Docs deployed (Vercel, Root Directory `docs`) and `https://resource-scheduler-demo.vercel.app/` serves them. Check `/og.png`, `/llms.txt`, `/sitemap-index.xml`.
 - [ ] README hero GIF renders on the GitHub page (it loads from `main`).
 - [ ] GitHub: repo description, topics (`react`, `scheduler`, `resource-scheduler`, `timeline`, `calendar`, `shadcn`, `tailwindcss`, `typescript`), social preview image (use `docs/public/og.png`), Discussions on, a few `good first issue` labels.

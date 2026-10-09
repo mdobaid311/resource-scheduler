@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-10
+
+The first release since 1.1.1. Version 1.2.0 was prepared but never published to npm, so everything listed under it below ships here too, including the fix for the crash under React 18 and the styles that no longer leak into your app. Upgrading from 1.1.1 needs no code changes.
+
 ### Added
 - **Right-to-left layout.** `dir="rtl"` mirrors the scheduler for Arabic, Hebrew and other right-to-left languages: the resource column on the right, time running leftwards, flipped arrows, logical borders and resize handles, and the left arrow key moving forward in time. `scrollToDate` takes a last `rtl` argument.
 - **Languages and clocks.** `locale` (a date-fns locale: names, date formats, 12/24-hour clock and the first day of the week), `hour12`, and `labels` (every word the scheduler shows and every screen reader message, any subset). Without them the output is the same English as before. `defaultLabels`, `SchedulerLabels`, `PartialLabels` and `I18nInput` are exported; `formatSlotLabel`, `formatRangeLabel` and `formatEventTime` take an optional last argument for the language.
@@ -36,6 +40,7 @@
 - `src/styles/tokens.css` split out of `global.css`; the compiled npm stylesheet is byte-identical.
 
 ### Fixed
+- `require("resource-scheduler")` crashed with "exports is not defined in ES module scope": `package.json` has `"type": "module"`, so Node read the CommonJS build `dist/index.js` as ESM. The CommonJS build is now `dist/index.cjs` (`main` and `exports.require` point at it). CI loads both entry points through the package's own `exports` map after every build.
 - The npm package no longer ships a demo screenshot and an icon copied from `public/` (package size 135 KB down to 50 KB). CI now fails on stray files in `dist/` and on a gzip size budget.
 - Events can be dropped on a slot that is covered by another event (the slot lookup now uses `elementsFromPoint`).
 

@@ -27,11 +27,9 @@ export default defineConfig({
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "ResourceScheduler",
       formats: ["es", "cjs"],
-      fileName: (format) => {
-        if (format === "es") return "index.esm.js";
-        if (format === "cjs") return "index.js";
-        return "index.js";
-      },
+      // package.json has "type": "module", so Node reads every .js file as ESM
+      // and the CommonJS build has to end in .cjs.
+      fileName: (format) => (format === "es" ? "index.esm.js" : "index.cjs"),
     },
     rollupOptions: {
       // Regexes also catch subpaths such as react/jsx-runtime. Bundling that
