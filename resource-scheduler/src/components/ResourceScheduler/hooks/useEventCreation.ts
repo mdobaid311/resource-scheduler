@@ -1,9 +1,11 @@
 // src/components/ResourceScheduler/hooks/useEventCreation.ts
-import { useState, useCallback } from "react";
-import { Event } from "../types";
+import { useState, useCallback, useEffect } from "react";
+import { SchedulerEvent, ViewType } from "../types";
+import { getSelectionBounds } from "../utils/dateUtils";
 
 export const useEventCreation = (
-  onEventCreate?: (event: Omit<Event, "id">, resourceId: string) => void
+  onEventCreate?: (event: Omit<SchedulerEvent, "id">, resourceId: string) => void,
+  viewType: ViewType = ViewType.Day
 ) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{
@@ -43,21 +45,19 @@ export const useEventCreation = (
       dragStart.resourceId === dragEnd.resourceId &&
       onEventCreate
     ) {
-      const startDate = new Date(
-        Math.min(dragStart.date.getTime(), dragEnd.date.getTime())
-      );
-      const endDate = new Date(
-        Math.max(dragStart.date.getTime(), dragEnd.date.getTime())
+      const { start, end } = getSelectionBounds(
+        dragStart.date,
+        dragEnd.date,
+        viewType
       );
 
-      const newEvent: Omit<Event, "id"> = {
+      const newEvent: Omit<SchedulerEvent, "id"> = {
         title: "New Event",
-        startDate,
-        endDate,
+        startDate: start,
+        endDate: end,
         color: `#${Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0")}`,
-        duration: "1h", // You might want to calculate this based on viewType
       };
 
       onEventCreate(newEvent, dragStart.resourceId);
@@ -66,7 +66,14 @@ export const useEventCreation = (
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart, dragEnd, onEventCreate]);
+  }, [isDragging, dragStart, dragEnd, onEventCreate, viewType]);
+
+  // Listen on window so releasing the mouse outside the grid still ends the drag.
+  useEffect(() => {
+    if (!isDragging) return;
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
+  }, [isDragging, handleMouseUp]);
 
   return {
     isDragging,

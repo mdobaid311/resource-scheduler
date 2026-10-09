@@ -3,6 +3,7 @@ import { isSameDay, isSameHour } from "date-fns";
 import React from "react";
 import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
+import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
 import { TimelineGridProps } from "./types";
 import { isToday } from "./utils/dateUtils";
 
@@ -26,6 +27,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   renderTimeSlot,
   renderEmptyCell,
 }) => {
+  const drag = useEventDrag(viewType, onEventDrop);
   const datesInView = getDatesInView();
   const timeSlots = getTimeSlots();
   const slots = viewType === "day" ? timeSlots : datesInView;
@@ -65,6 +67,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   };
 
   return (
+    <SchedulerDragContext.Provider value={drag}>
     <div
       className="grid relative"
       style={{
@@ -129,7 +132,6 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                   onMouseDown={onMouseDown}
                   onMouseEnter={onMouseEnter}
                   onCellClick={handleCellClick}
-                  onEventDrop={onEventDrop}
                   renderEmptyCell={renderEmptyCell}
                 />
               );
@@ -138,5 +140,6 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
         );
       })}
     </div>
+    </SchedulerDragContext.Provider>
   );
 };

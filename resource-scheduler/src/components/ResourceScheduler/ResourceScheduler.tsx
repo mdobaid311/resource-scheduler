@@ -9,8 +9,6 @@ import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
 import { ResourceSchedulerProps, ViewType } from "./types";
 import { scrollToDate } from "./utils/scrollUtils";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
 export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   resources: initialResources,
@@ -33,7 +31,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   renderEmptyCell,
 }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const timelineRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const {
     currentDate,
@@ -49,14 +47,8 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     getGridTemplateRows,
   } = useScheduler(initialResources, initialDate, initialView);
 
-  const {
-    isDragging,
-    dragStart,
-    dragEnd,
-    handleMouseDown,
-    handleMouseEnter,
-    handleMouseUp,
-  } = useEventCreation(onEventCreate);
+  const { isDragging, dragStart, dragEnd, handleMouseDown, handleMouseEnter } =
+    useEventCreation(onEventCreate, viewType);
 
   const resourceColumnWidth =
     propResourceColumnWidth || (isMobile ? "140px" : "220px");
@@ -81,36 +73,28 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     const today = new Date();
     setCurrentDate(today);
     onDateChange?.(today);
-
-    setTimeout(() => {
-      if (timelineRef.current) {
-        scrollToDate(
-          today,
-          viewType,
-          timelineRef.current,
-          timeColumnWidth,
-          dateColumnWidth
-        );
-      }
-    }, 100);
   };
 
+  // Keep the displayed date in view whenever it, the view or column sizes change.
   useEffect(() => {
-    const today = new Date();
-    if (timelineRef.current) {
+    const scroller = scrollRef.current;
+    if (scroller) {
+      // The resource column is the scroller's first child and sticks to its left edge.
+      const stickyOffset = scroller.firstElementChild?.clientWidth ?? 0;
       scrollToDate(
-        today,
+        currentDate,
         viewType,
-        timelineRef.current,
+        scroller,
         timeColumnWidth,
-        dateColumnWidth
+        dateColumnWidth,
+        stickyOffset
       );
     }
   }, [currentDate, viewType, timeColumnWidth, dateColumnWidth]);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden">
+    <>
+      <div className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden">
         <SchedulerControls
           currentDate={currentDate}
           viewType={viewType}
@@ -122,8 +106,8 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
         />
 
         <div
+          ref={scrollRef}
           className="flex flex-1 bg-ocrs-white rounded-b-lg ocrs-shadow-sm overflow-x-auto"
-          onMouseUp={handleMouseUp}
         >
           <ResourceColumn
             resources={resources}
@@ -133,7 +117,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
             renderResourceHeader={renderResourceHeader}
           />
 
-          <div ref={timelineRef} className="flex-1">
+          <div className="flex-1">
             <TimelineHeader
               viewType={viewType}
               timeColumnWidth={timeColumnWidth}
@@ -166,7 +150,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
           </div>
         </div>
       </div>
-    </DndProvider>
+    </>
   );
 };
 

@@ -9,7 +9,7 @@ export enum ViewType {
   Year = "year",
 }
 
-export interface Event {
+export interface SchedulerEvent {
   id: string;
   title: string;
   startTime?: string;
@@ -21,11 +21,14 @@ export interface Event {
   description?: string;
 }
 
+/** @deprecated Use `SchedulerEvent`. The name `Event` shadows the DOM global. */
+export type Event = SchedulerEvent;
+
 export interface Resource {
   id: string;
   name: string;
   role?: string;
-  events: Event[];
+  events: SchedulerEvent[];
 }
 
 export interface ResourceSchedulerProps {
@@ -33,17 +36,17 @@ export interface ResourceSchedulerProps {
   initialDate?: Date;
   initialView?: ViewType;
   availableViews?: ViewType[];
-  onEventClick?: (event: Event, resource: Resource) => void;
+  onEventClick?: (event: SchedulerEvent, resource: Resource) => void;
   onDateChange?: (date: Date) => void;
   onViewChange?: (view: ViewType) => void;
-  onEventCreate?: (event: Omit<Event, "id">, resourceId: string) => void;
+  onEventCreate?: (event: Omit<SchedulerEvent, "id">, resourceId: string) => void;
   renderEventPopover?: (
-    event: Event,
+    event: SchedulerEvent,
     resource: Resource,
     closePopover: () => void
   ) => React.ReactNode;
   onEventDrop?: (
-    event: Event,
+    event: SchedulerEvent,
     fromResourceId: string,
     toResourceId: string,
     newStartDate: Date,
@@ -55,7 +58,7 @@ export interface ResourceSchedulerProps {
   allowViewChange?: boolean;
   renderResourceHeader?: (resource: Resource) => React.ReactNode;
   renderDateHeader?: (date: Date, view: ViewType) => React.ReactNode;
-  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
+  renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;
   renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }
 
@@ -98,34 +101,34 @@ export interface TimelineGridProps {
   dragEnd: { date: Date; resourceId: string } | null;
   onMouseDown: (date: Date, resourceId: string, e?: React.MouseEvent) => void;
   onMouseEnter: (date: Date, resourceId: string) => void;
-  onEventClick?: (event: Event, resource: Resource) => void;
+  onEventClick?: (event: SchedulerEvent, resource: Resource) => void;
   renderEventPopover?: (
-    event: Event,
+    event: SchedulerEvent,
     resource: Resource,
     closePopover: () => void
   ) => React.ReactNode;
   onEventDrop?: (
-    event: Event,
+    event: SchedulerEvent,
     fromResourceId: string,
     toResourceId: string,
     newStartDate: Date,
     newEndDate: Date
   ) => void;
-  calculateEventPositions: (events: Event[], datesInView: Date[]) => any[];
+  calculateEventPositions: (events: SchedulerEvent[], datesInView: Date[]) => any[];
   getGridTemplateRows: () => string;
-  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
+  renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;
   renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }
 
 export interface EventItemProps {
-  event: Event;
+  event: SchedulerEvent;
   resource?: Resource;
   renderEventPopover?: (
-    event: Event,
+    event: SchedulerEvent,
     resource: Resource,
     closePopover: () => void
   ) => React.ReactNode;
-  renderTimeSlot?: (event: Event, resource: Resource[]) => React.ReactNode;
+  renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;
 }
 
 export interface EmptySlotItemProps {
@@ -138,12 +141,5 @@ export interface EmptySlotItemProps {
   onMouseDown: (date: Date, resourceId: string, e?: React.MouseEvent) => void;
   onMouseEnter: (date: Date, resourceId: string) => void;
   onCellClick: (date: Date, resourceId: string) => void;
-  onEventDrop?: (
-    event: Event,
-    fromResourceId: string,
-    toResourceId: string,
-    newStartDate: Date,
-    newEndDate: Date
-  ) => void;
   renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
 }
