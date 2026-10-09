@@ -3,7 +3,11 @@ import "./styles/global.css";
 export { ResourceScheduler } from "./components/ResourceScheduler/ResourceScheduler";
 
 // Type exports
-export type { ResourceSchedulerProps } from "./components/ResourceScheduler/types";
+export type {
+  ResourceSchedulerHandle,
+  ResourceSchedulerProps,
+  VisibleRange,
+} from "./components/ResourceScheduler/types";
 export type {
   Event,
   Resource,

@@ -7,10 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { endOfWeek, format, startOfWeek } from "date-fns";
+import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { type SchedulerControlsProps, ViewType } from "./types";
+import { getDatesInView } from "./utils/dateUtils";
 
 export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   currentDate,
@@ -20,16 +21,23 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   onGoToToday,
   allowViewChange = true,
   availableViews,
+  weekStartsOn,
+  hideWeekends,
 }) => {
   const getDateTitle = () => {
     switch (viewType) {
       case ViewType.Day:
         return format(currentDate, "MMMM d, yyyy");
-      case ViewType.Week:
-        return `${format(startOfWeek(currentDate), "MMM d")} – ${format(
-          endOfWeek(currentDate),
+      case ViewType.Week: {
+        const days = getDatesInView(currentDate, viewType, {
+          weekStartsOn,
+          hideWeekends,
+        });
+        return `${format(days[0], "MMM d")} – ${format(
+          days[days.length - 1],
           "MMM d, yyyy"
         )}`;
+      }
       case ViewType.Month:
         return format(currentDate, "MMMM yyyy");
       case ViewType.Quarter:

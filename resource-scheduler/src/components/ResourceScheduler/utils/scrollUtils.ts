@@ -1,6 +1,11 @@
 // src/components/ResourceScheduler/utils/scrollUtils.ts
 import { isSameDay } from "date-fns";
-import { getTimeSlots, getDatesInView, type SlotOptions } from "./dateUtils";
+import {
+  getTimeSlots,
+  getDatesInView,
+  type SlotOptions,
+  type ViewOptions,
+} from "./dateUtils";
 import { ViewType } from "../types";
 
 /**
@@ -18,7 +23,8 @@ export const scrollToDate = (
   timeColumnWidth: string,
   dateColumnWidth: string,
   stickyOffset = 0,
-  slotOptions?: SlotOptions
+  slotOptions?: SlotOptions,
+  viewOptions?: ViewOptions
 ) => {
   let targetIndex = -1;
 
@@ -28,7 +34,7 @@ export const scrollToDate = (
     const started = timeSlots.filter((slot) => slot <= date).length;
     targetIndex = timeSlots.length ? Math.max(0, started - 1) : -1;
   } else {
-    targetIndex = getDatesInView(date, viewType).findIndex((d) =>
+    targetIndex = getDatesInView(date, viewType, viewOptions).findIndex((d) =>
       isSameDay(d, date)
     );
   }

@@ -1,8 +1,9 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import axe from "axe-core";
+import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResourceScheduler } from "./ResourceScheduler";
-import { type Resource, ViewType } from "./types";
+import { type Resource, type ResourceSchedulerHandle, ViewType } from "./types";
 
 const scrollTo = vi.fn();
 
@@ -334,6 +335,158 @@ describe("ResourceScheduler", () => {
       expect(
         results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)
       ).toEqual([]);
+    });
+  });
+
+  describe("view controls", () => {
+    const ann: Resource[] = [{ id: "r1", name: "Ann", events: [] }];
+    // The system time is Wednesday 7 October 2026.
+    const slotDays = () =>
+      [...document.querySelectorAll<HTMLElement>("[data-rs-slot]")].map((el) =>
+        new Date(Number(el.dataset.rsSlot)).getDate()
+      );
+
+    it("starts the week on weekStartsOn", () => {
+      render(
+        <ResourceScheduler resources={ann} initialView={ViewType.Week} weekStartsOn={1} />
+      );
+      expect(slotDays()).toEqual([5, 6, 7, 8, 9, 10, 11]);
+    });
+
+    it("leaves weekends out with hideWeekends", () => {
+      render(
+        <ResourceScheduler resources={ann} initialView={ViewType.Week} hideWeekends />
+      );
+      expect(slotDays()).toEqual([5, 6, 7, 8, 9]);
+    });
+
+    it("names the shown days in the title", () => {
+      render(
+        <ResourceScheduler
+          resources={ann}
+          initialView={ViewType.Week}
+          weekStartsOn={1}
+          hideWeekends
+        />
+      );
+      expect(screen.getByText("Oct 5 – Oct 9, 2026")).toBeTruthy();
+    });
+
+    describe("onRangeChange", () => {
+      it("reports the first range on mount, with an exclusive end", () => {
+        const onRangeChange = vi.fn();
+        render(
+          <ResourceScheduler
+            resources={ann}
+            initialView={ViewType.Week}
+            onRangeChange={onRangeChange}
+          />
+        );
+        expect(onRangeChange).toHaveBeenCalledTimes(1);
+        expect(onRangeChange).toHaveBeenCalledWith({
+          start: new Date(2026, 9, 4),
+          end: new Date(2026, 9, 11),
+          view: ViewType.Week,
+        });
+      });
+
+      it("reports again when the user navigates", () => {
+        const onRangeChange = vi.fn();
+        render(
+          <ResourceScheduler
+            resources={ann}
+            initialView={ViewType.Week}
+            onRangeChange={onRangeChange}
+          />
+        );
+        fireEvent.click(screen.getByLabelText("Next period"));
+        expect(onRangeChange).toHaveBeenCalledTimes(2);
+        expect(onRangeChange).toHaveBeenLastCalledWith({
+          start: new Date(2026, 9, 11),
+          end: new Date(2026, 9, 18),
+          view: ViewType.Week,
+        });
+      });
+
+      it("does not report again when only the callback identity changes", () => {
+        const first = vi.fn();
+        const second = vi.fn();
+        const { rerender } = render(
+          <ResourceScheduler resources={ann} initialView={ViewType.Week} onRangeChange={first} />
+        );
+        rerender(
+          <ResourceScheduler resources={ann} initialView={ViewType.Week} onRangeChange={second} />
+        );
+        expect(first).toHaveBeenCalledTimes(1);
+        expect(second).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("ref handle", () => {
+      const mount = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}) => {
+        const ref = createRef<ResourceSchedulerHandle>();
+        render(
+          <ResourceScheduler ref={ref} resources={ann} initialView={ViewType.Week} {...props} />
+        );
+        return ref;
+      };
+
+      it("goTo shows the date and tells onDateChange", () => {
+        const onDateChange = vi.fn();
+        const onRangeChange = vi.fn();
+        const ref = mount({ onDateChange, onRangeChange });
+        const target = new Date(2026, 10, 18);
+
+        act(() => ref.current!.goTo(target));
+
+        expect(onDateChange).toHaveBeenCalledWith(target);
+        expect(onRangeChange).toHaveBeenLastCalledWith({
+          start: new Date(2026, 10, 15),
+          end: new Date(2026, 10, 22),
+          view: ViewType.Week,
+        });
+      });
+
+      it("setView switches the view and keeps the date", () => {
+        const onViewChange = vi.fn();
+        const ref = mount({ onViewChange });
+
+        act(() => ref.current!.setView(ViewType.Month));
+
+        expect(onViewChange).toHaveBeenCalledWith(ViewType.Month);
+        expect(ref.current!.getVisibleRange()).toEqual({
+          start: new Date(2026, 9, 1),
+          end: new Date(2026, 10, 1),
+        });
+      });
+
+      it("getVisibleRange returns what is on screen", () => {
+        const ref = mount({ hideWeekends: true });
+        expect(ref.current!.getVisibleRange()).toEqual({
+          start: new Date(2026, 9, 5),
+          end: new Date(2026, 9, 10),
+        });
+      });
+
+      it("scrollToTime scrolls within the shown range", () => {
+        const ref = mount();
+        scrollTo.mockClear();
+
+        act(() => ref.current!.scrollToTime(new Date(2026, 9, 9, 8)));
+
+        // Friday is column 5: 5 * 140px + half a column (clientWidth is 0 in jsdom)
+        expect(scrollTo).toHaveBeenCalledWith({ left: 770, behavior: "smooth" });
+      });
+
+      it("scrollToTime outside the range navigates there", () => {
+        const onDateChange = vi.fn();
+        const ref = mount({ onDateChange });
+        const target = new Date(2026, 11, 2);
+
+        act(() => ref.current!.scrollToTime(target));
+
+        expect(onDateChange).toHaveBeenCalledWith(target);
+      });
     });
   });
 });

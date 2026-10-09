@@ -4,6 +4,7 @@ description: Day, week, month, quarter and year views, plus slot length and visi
 ---
 
 import SlotsDemo from "../../../components/demos/SlotsDemo";
+import WeekDemo from "../../../components/demos/WeekDemo";
 
 ## Views
 
@@ -42,6 +43,21 @@ Dragging, resizing, selecting and scroll-to-time all snap to these slots. Events
   slotDuration={30}
   dayStartHour={8}
   dayEndHour={18}
+/>
+```
+
+## Week start and weekends
+
+The week view starts on Sunday. Set `weekStartsOn` (`0` Sunday to `6` Saturday) to change it, and `hideWeekends` to leave Saturday and Sunday out of the week, month, quarter and year views. The title, keyboard navigation and drag all follow the days that are shown. An event that only falls on hidden days is not drawn; one that spans a weekend simply continues over the gap.
+
+<WeekDemo client:only="react" />
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Week}
+  weekStartsOn={1}
+  hideWeekends
 />
 ```
 

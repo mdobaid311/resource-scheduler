@@ -13,14 +13,15 @@ All of these are exported from `resource-scheduler`.
 ## Dates and slots
 
 - **`getTimeSlots(date, viewType, options?)`** returns the slots of the day view as `Date[]`.
-- **`getDatesInView(date, viewType)`** returns the days shown.
+- **`getDatesInView(date, viewType, viewOptions?)`** returns the days shown. `viewOptions` is `{ weekStartsOn?, hideWeekends? }`.
+- **`getVisibleRange(date, viewType, options?)`** returns `{ start, end }` for what the grid covers (`end` exclusive). `options` takes the slot and view options.
 - **`navigateDate(date, viewType, "prev" | "next")`**
 - **`resolveSlotOptions(options)`** returns sanitised `slotMinutes`, `dayStartHour` and `dayEndHour`, falling back to the defaults for invalid values.
-- **`getVisibleEvents(events, date, viewType, options?)`**
+- **`getVisibleEvents(events, date, viewType, slotOptions?, viewOptions?)`**
 - **`getDropRange(event, slot, viewType)`**, **`getResizeRange(event, edge, slot, viewType, slotMinutes?)`** and **`getSelectionBounds(a, b, viewType, slotMinutes?)`**: the range arithmetic behind move, resize and select.
 - **`isSlotInRange(slot, range, viewType, slotMinutes?)`**
 - **`formatEventTime(event)`**, **`formatSlotLabel(slot, viewType)`** and **`formatRangeLabel(start, end, viewType)`**: the labels the component uses.
-- **`scrollToDate(date, viewType, scroller, timeColumnWidth, dateColumnWidth, stickyOffset?, options?)`**
+- **`scrollToDate(date, viewType, scroller, timeColumnWidth, dateColumnWidth, stickyOffset?, slotOptions?, viewOptions?)`**
 
 ## Hooks and parts
 

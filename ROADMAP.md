@@ -96,7 +96,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 ### P1: Table-stakes features (the research-backed list)
 - [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
 - [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
-- [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`). Still open: weekend toggle, `weekStartsOn`
+- [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`), plus `weekStartsOn` and `hideWeekends` (done on branch `feat/view-controls`)
 - [ ] **Business hours / unavailable ranges** shading per resource, and capacity per resource (M)
 - [ ] **Flat data model**: `events[]` with `resourceId` or `resourceIds[]` as the primary API; keep nested `resource.events` via adapter (M)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
@@ -106,14 +106,14 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] **Touch** drag/resize/create (M, comes with Pointer Events)
 - [ ] **Virtualization** for rows and columns; publish a benchmark (L-XL). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); report your own numbers honestly
 - [ ] **i18n**: `locale` (date-fns), 12/24h, RTL, IANA `timeZone` prop (M-L)
-- [ ] **Lazy loading**: `onRangeChange({start,end})` for fetching per visible window (S)
+- [x] **Lazy loading**: `onRangeChange({ start, end, view })` for fetching per visible window (done on branch `feat/view-controls`)
 
 ### P2: Customisability (your stated goal)
 - [ ] **Theming tokens**: `--rs-*` CSS variables, light/dark, density (compact/comfortable), documented theme gallery (M)
 - [ ] **`classNames` and `components` override maps** (slots pattern), replacing the pile of `render*` props; keep the old ones as aliases (L)
 - [ ] **Headless layer**: split pure logic (layout, conflicts, recurrence, date math) from UI; export `useSchedulerState` etc. (L)
 - [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Still open: it only resolves once this lands on `main`, so merge, then tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR) after that.
-- [ ] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (S)
+- [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)
 - [ ] **Recurring events** (RRULE, exceptions, DST-safe) in an optional module (L-XL). Premium in MUI X, so strong differentiator
 - [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)
 - [ ] **ICS import/export, CSV, print stylesheet** (M)

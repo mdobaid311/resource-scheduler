@@ -85,39 +85,95 @@ const wallMinutes = (date: Date, day: Date): number =>
   date.getSeconds() / 60 +
   date.getMilliseconds() / 60000;
 
+/** Which days the date-based views (week, month, quarter, year) show. */
+export interface ViewOptions {
+  /** First day of the week, 0 (Sunday) to 6 (Saturday). Default 0. */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Leave Saturday and Sunday out of the date-based views. */
+  hideWeekends?: boolean;
+}
+
 export const getDatesInView = (
   currentDate: Date,
-  viewType: ViewType
+  viewType: ViewType,
+  { weekStartsOn, hideWeekends }: ViewOptions = {}
 ): Date[] => {
+  const week = { weekStartsOn };
+  let dates: Date[];
   switch (viewType) {
     case ViewType.Day:
       return [currentDate];
-    case ViewType.Week:
-      return eachDayOfInterval({
-        start: startOfWeek(currentDate),
-        end: endOfWeek(currentDate),
-      });
     case ViewType.Month:
-      return eachDayOfInterval({
+      dates = eachDayOfInterval({
         start: startOfMonth(currentDate),
         end: endOfMonth(currentDate),
       });
+      break;
     case ViewType.Quarter:
-      return eachDayOfInterval({
+      dates = eachDayOfInterval({
         start: startOfQuarter(currentDate),
         end: endOfQuarter(currentDate),
       });
+      break;
     case ViewType.Year:
-      return eachDayOfInterval({
+      dates = eachDayOfInterval({
         start: startOfYear(currentDate),
         end: endOfYear(currentDate),
       });
+      break;
     default:
-      return eachDayOfInterval({
-        start: startOfWeek(currentDate),
-        end: endOfWeek(currentDate),
+      dates = eachDayOfInterval({
+        start: startOfWeek(currentDate, week),
+        end: endOfWeek(currentDate, week),
       });
   }
+  return hideWeekends
+    ? dates.filter((date) => date.getDay() !== 0 && date.getDay() !== 6)
+    : dates;
+};
+
+// Hidden days leave gaps, so columns can no longer be counted in calendar days.
+const hasHiddenDays = (dates: Date[]): boolean =>
+  dates.length !==
+  differenceInCalendarDays(dates[dates.length - 1], dates[0]) + 1;
+
+// First and last column an event touches, or null when it only occupies
+// hidden days.
+const visibleColumns = (
+  event: SchedulerEvent,
+  dates: Date[]
+): { first: number; last: number } | null => {
+  const from = startOfDay(event.startDate).getTime();
+  const to = startOfDay(lastInstant(event)).getTime();
+  let first = -1;
+  let last = -1;
+  dates.forEach((date, i) => {
+    const time = startOfDay(date).getTime();
+    if (time < from || time > to) return;
+    if (first === -1) first = i;
+    last = i;
+  });
+  return first === -1 ? null : { first, last };
+};
+
+/** The range the grid covers. `end` is exclusive. */
+export const getVisibleRange = (
+  currentDate: Date,
+  viewType: ViewType,
+  options: SlotOptions & ViewOptions = {}
+): { start: Date; end: Date } => {
+  if (viewType === ViewType.Day) {
+    const { dayStartHour, dayEndHour } = resolveSlotOptions(options);
+    const y = currentDate.getFullYear();
+    const m = currentDate.getMonth();
+    const d = currentDate.getDate();
+    return { start: new Date(y, m, d, dayStartHour), end: new Date(y, m, d, dayEndHour) };
+  }
+  const dates = getDatesInView(currentDate, viewType, options);
+  return {
+    start: startOfDay(dates[0]),
+    end: addDays(startOfDay(dates[dates.length - 1]), 1),
+  };
 };
 
 export const navigateDate = (
@@ -177,6 +233,13 @@ const getEventColumns = (
     return { position, span: Math.max(1, lastIndex - position + 1) };
   }
 
+  if (hasHiddenDays(datesInView)) {
+    const columns = visibleColumns(event, datesInView);
+    return columns
+      ? { position: columns.first, span: columns.last - columns.first + 1 }
+      : { position: 0, span: 1 };
+  }
+
   const lastDay = startOfDay(datesInView[datesInView.length - 1]);
   const startDay = max([startOfDay(event.startDate), first]);
   const endDay = min([startOfDay(lastInstant(event)), lastDay]);
@@ -205,7 +268,8 @@ export const getVisibleEvents = (
   events: SchedulerEvent[],
   currentDate: Date,
   viewType: ViewType,
-  slotOptions?: SlotOptions
+  slotOptions?: SlotOptions,
+  viewOptions?: ViewOptions
 ): SchedulerEvent[] => {
   if (viewType === ViewType.Day) {
     // Only the visible hours count, so events outside them are not drawn.
@@ -219,12 +283,15 @@ export const getVisibleEvents = (
       (event) => event.startDate < to && lastInstant(event) >= from
     );
   }
-  const dates = getDatesInView(currentDate, viewType);
+  const dates = getDatesInView(currentDate, viewType, viewOptions);
   const rangeStart = startOfDay(dates[0]);
   const rangeEnd = endOfDay(dates[dates.length - 1]);
+  const hidden = hasHiddenDays(dates);
   return events.filter(
     (event) =>
-      event.startDate <= rangeEnd && lastInstant(event) >= rangeStart
+      event.startDate <= rangeEnd &&
+      lastInstant(event) >= rangeStart &&
+      (!hidden || visibleColumns(event, dates))
   );
 };
 
