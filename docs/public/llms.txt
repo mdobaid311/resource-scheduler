@@ -1,0 +1,70 @@
+# Resource Scheduler
+
+> Free, MIT-licensed resource timeline for React: resources are rows and time runs across. Users drag to create, move and resize events, double bookings can be rejected, it works with keyboard and screen readers, and it is themed with CSS variables. Install from npm or copy the source into your repo with the shadcn CLI.
+
+Facts to get the code right:
+
+- npm package: `resource-scheduler`. Peer dependencies: React 18 or 19. Import the precompiled stylesheet once: `import "resource-scheduler/dist/resource-scheduler.css"`. No Tailwind setup is needed.
+- shadcn alternative (copies the source, needs Tailwind v4): `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler`, then `import { ResourceScheduler } from "@/components/resource-scheduler"`. Skip the stylesheet import in that case.
+- The component fills its parent, so the parent needs a height.
+- It keeps no copy of your data. Pass `resources` (each with `id`, `name` and optionally `events`) and optionally a flat `events` list whose items name their resource with `resourceId` or `resourceIds`. Update your own state in `onEventCreate`, `onSlotSelect`, `onEventDrop` and `onEventResize`, then pass the new data back.
+- An event is `{ id, title, startDate: Date, endDate: Date, color?, description? }`. `endDate` is exclusive: an all-day event ends at midnight of the next day.
+- `ViewType` is a const object: `ViewType.Day`, `Week`, `Month`, `Quarter`, `Year`. Choose with `initialView` and `availableViews`.
+- The day view is divided into slots: `slotDuration` (minutes), `dayStartHour`, `dayEndHour`. The other views use whole days. `weekStartsOn` (0 to 6) and `hideWeekends` apply to them.
+- `onSlotSelect({ resourceId, start, end })` replaces the built-in event creation so you can open your own dialog. `onEventResize` turns the resize handles on.
+- Conflicts: `eventOverlap={false}` forbids overlapping events on one resource, `isValidDrop(event, { resourceId, start, end })` is a final veto, `businessHours` and `Resource.unavailable` shade closed time and `blockUnavailable` rejects bookings there.
+- `onRangeChange({ start, end, view })` fires on mount and when the visible range changes (`end` is exclusive): use it to fetch only what is on screen. A `ref` of type `ResourceSchedulerHandle` offers `goTo`, `setView`, `getVisibleRange` and `scrollToTime`.
+- Colors come from `--rs-*` CSS variables, so a dark theme is a second set of values. Styles are scoped under `.rs-root` and do not leak.
+- Next.js: the npm bundle starts with `"use client"`, so it can be imported from a server file.
+
+Minimal example:
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+const resources = [
+  {
+    id: "ann",
+    name: "Ann",
+    events: [
+      { id: "1", title: "Standup", startDate: new Date(2026, 9, 7, 9), endDate: new Date(2026, 9, 7, 10) },
+    ],
+  },
+];
+
+export function Board() {
+  return (
+    <div style={{ height: 480 }}>
+      <ResourceScheduler resources={resources} initialView={ViewType.Week} eventOverlap={false} />
+    </div>
+  );
+}
+```
+
+## Docs
+
+- [Introduction](https://resource-scheduler-demo.vercel.app/start/introduction/): what it is and is not
+- [Installation](https://resource-scheduler-demo.vercel.app/start/installation/): npm and shadcn
+- [Quick start](https://resource-scheduler-demo.vercel.app/start/quick-start/): a working board with create, move and resize
+- [Data model](https://resource-scheduler-demo.vercel.app/guides/data-model/): resources, events, flat events, end times
+- [Views and slots](https://resource-scheduler-demo.vercel.app/guides/views-and-slots/): views, slot length, week start, weekends
+- [Load data and control the view](https://resource-scheduler-demo.vercel.app/guides/loading-and-control/): onRangeChange and the ref
+- [Creating events](https://resource-scheduler-demo.vercel.app/guides/creating-events/): onSlotSelect and onEventCreate
+- [Drag and resize](https://resource-scheduler-demo.vercel.app/guides/drag-and-resize/)
+- [Conflict control](https://resource-scheduler-demo.vercel.app/guides/conflict-control/): eventOverlap and isValidDrop
+- [Business hours and availability](https://resource-scheduler-demo.vercel.app/guides/availability/)
+- [Keyboard and accessibility](https://resource-scheduler-demo.vercel.app/guides/keyboard-and-accessibility/)
+- [Theming](https://resource-scheduler-demo.vercel.app/guides/theming/): the --rs-* tokens, dark mode
+- [Next.js and SSR](https://resource-scheduler-demo.vercel.app/guides/nextjs-and-ssr/)
+
+## Reference
+
+- [Props](https://resource-scheduler-demo.vercel.app/reference/props/)
+- [Types](https://resource-scheduler-demo.vercel.app/reference/types/)
+- [Utilities and hooks](https://resource-scheduler-demo.vercel.app/reference/utilities/)
+
+## Optional
+
+- [Alternatives compared](https://resource-scheduler-demo.vercel.app/compare/alternatives/): FullCalendar, MUI X, DayPilot, Bryntum and where this one falls short
+- [Source](https://github.com/mdobaid311/resource-scheduler)

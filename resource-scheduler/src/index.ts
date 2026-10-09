@@ -12,6 +12,7 @@ export type {
   BusinessHours,
   Event,
   Resource,
+  ResourceInput,
   SchedulerEvent,
   SlotSelection,
   UnavailableRange,
@@ -33,6 +34,7 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 // Utility exports
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
+export { withEvents } from "./components/ResourceScheduler/utils/events";
 export {
   isCellUnavailable,
   resolveBusinessHours,

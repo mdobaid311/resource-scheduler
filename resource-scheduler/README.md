@@ -146,7 +146,8 @@ import "resource-scheduler/dist/resource-scheduler.css"
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `resources` | `Resource[]` | **Required** | Array of resources to display |
+| `resources` | `Resource[]` | **Required** | Array of resources to display. Each may hold its own `events` |
+| `events` | `SchedulerEvent[]` | `undefined` | The same events as one flat list: each names its resource with `resourceId` (or `resourceIds`). Added to what the resources hold, so `resources` can be just `{ id, name }` |
 | `initialDate` | `Date` | `new Date()` | Initial date to display |
 | `initialView` | `ViewType` | `ViewType.Day` | Initial view type |
 | `onEventClick` | `(event: Event, resource: Resource) => void` | `undefined` | Callback when event is clicked |

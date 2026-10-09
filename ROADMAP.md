@@ -98,7 +98,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
 - [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`), plus `weekStartsOn` and `hideWeekends` (done on branch `feat/view-controls`)
 - [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). Still open: capacity per resource
-- [ ] **Flat data model**: `events[]` with `resourceId` or `resourceIds[]` as the primary API; keep nested `resource.events` via adapter (M)
+- [x] **Flat data model**: `events` prop with `resourceId` or `resourceIds`, alongside the nested `resource.events`; `resource.events` is optional on input (done on branch `feat/flat-events`)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [ ] **Resource grouping / hierarchy** with collapse (L)
 - [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
@@ -112,7 +112,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] **Theming tokens**: `--rs-*` CSS variables, light/dark, density (compact/comfortable), documented theme gallery (M)
 - [ ] **`classNames` and `components` override maps** (slots pattern), replacing the pile of `render*` props; keep the old ones as aliases (L)
 - [ ] **Headless layer**: split pure logic (layout, conflicts, recurrence, date math) from UI; export `useSchedulerState` etc. (L)
-- [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Still open: it only resolves once this lands on `main`, so merge, then tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR) after that.
+- [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Merged to `main` and confirmed to resolve with `shadcn view`. Still open: tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR).
 - [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)
 - [ ] **Recurring events** (RRULE, exceptions, DST-safe) in an optional module (L-XL). Premium in MUI X, so strong differentiator
 - [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)

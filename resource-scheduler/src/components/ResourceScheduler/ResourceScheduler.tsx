@@ -24,6 +24,7 @@ import {
 } from "./types";
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
+import { withEvents } from "./utils/events";
 import {
   isPlacementAllowed,
   type Placement,
@@ -35,7 +36,8 @@ export const ResourceScheduler = forwardRef<
   ResourceSchedulerHandle,
   ResourceSchedulerProps
 >(function ResourceScheduler({
-  resources: initialResources,
+  resources: resourcesProp,
+  events,
   initialDate = new Date(),
   initialView = ViewType.Day,
   onEventClick,
@@ -73,6 +75,11 @@ export const ResourceScheduler = forwardRef<
   const viewOptions = useMemo(
     () => ({ weekStartsOn, hideWeekends }),
     [weekStartsOn, hideWeekends]
+  );
+  // Flat `events` join the resources first, so every rule below sees them.
+  const initialResources = useMemo(
+    () => withEvents(resourcesProp, events),
+    [resourcesProp, events]
   );
   const helpId = `rs-help${useId()}`;
   // Spoken by screen readers through the live region below.

@@ -667,4 +667,65 @@ describe("ResourceScheduler", () => {
       expect(line()!.style.left).toBe("75%");
     });
   });
+
+  describe("flat events prop", () => {
+    // The clock reads Wednesday 7 October 2026; the week view shows Oct 4 to 10.
+    const rows: Resource[] = [
+      { id: "r1", name: "Ann", events: [] },
+      { id: "r2", name: "Bob", events: [] },
+    ];
+    const flat = (id: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      title: id,
+      startDate: new Date(2026, 9, 7, 9),
+      endDate: new Date(2026, 9, 7, 10),
+      ...extra,
+    });
+    const rowOf = (id: string) =>
+      [...document.querySelectorAll<HTMLElement>(`[data-rs-event="${id}"]`)].map((el) =>
+        el.closest('[role="row"]')?.getAttribute("aria-rowindex")
+      );
+    const week = (props: Partial<React.ComponentProps<typeof ResourceScheduler>>) =>
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Week} {...props} />);
+
+    it("draws an event under the resource named by resourceId", () => {
+      week({ events: [flat("e1", { resourceId: "r2" })] });
+      expect(rowOf("e1")).toEqual(["2"]);
+    });
+
+    it("draws an event under every resource in resourceIds", () => {
+      week({ events: [flat("e1", { resourceIds: ["r1", "r2"] })] });
+      expect(rowOf("e1")).toEqual(["1", "2"]);
+    });
+
+    it("shows flat events next to the ones on the resources", () => {
+      const own = flat("own");
+      week({
+        resources: [{ ...rows[0], events: [own] }, rows[1]],
+        events: [flat("e1", { resourceId: "r1" })],
+      });
+      expect(rowOf("own")).toEqual(["1"]);
+      expect(rowOf("e1")).toEqual(["1"]);
+    });
+
+    it("applies the overlap rules to flat events", () => {
+      const onSlotSelect = vi.fn();
+      week({
+        events: [flat("e1", { resourceId: "r2" })],
+        eventOverlap: false,
+        onSlotSelect,
+      });
+      const bobCells = [...document.querySelectorAll<HTMLElement>('[data-rs-resource="r2"]')];
+      const click = (cell: HTMLElement) => {
+        fireEvent.mouseDown(cell);
+        fireEvent.mouseUp(window);
+      };
+
+      click(bobCells[3]); // Wednesday, where e1 is
+      expect(onSlotSelect).not.toHaveBeenCalled();
+
+      click(bobCells[4]); // Thursday, free
+      expect(onSlotSelect).toHaveBeenCalledTimes(1);
+    });
+  });
 });
