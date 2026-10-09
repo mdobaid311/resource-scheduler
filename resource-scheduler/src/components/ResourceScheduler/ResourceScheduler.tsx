@@ -60,6 +60,7 @@ export const ResourceScheduler = forwardRef<
   ariaLabel,
   locale,
   hour12,
+  dir,
   labels,
   slotDuration,
   dayStartHour,
@@ -88,8 +89,8 @@ export const ResourceScheduler = forwardRef<
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
   const i18n = useMemo(
-    () => buildI18n({ locale, hour12, labels }),
-    [locale, hour12, labels]
+    () => buildI18n({ locale, hour12, labels, dir }),
+    [locale, hour12, labels, dir]
   );
   // The locale knows which day its weeks start on; `weekStartsOn` overrides it.
   const firstDay = weekStartsOn ?? locale?.options?.weekStartsOn;
@@ -292,7 +293,8 @@ export const ResourceScheduler = forwardRef<
         dateColumnWidth,
         stickyOffset,
         { slotDuration, dayStartHour, dayEndHour },
-        viewOptions
+        viewOptions,
+        i18n.dir === "rtl"
       );
     },
     [
@@ -303,6 +305,7 @@ export const ResourceScheduler = forwardRef<
       dayStartHour,
       dayEndHour,
       viewOptions,
+      i18n.dir,
     ]
   );
 
@@ -338,6 +341,7 @@ export const ResourceScheduler = forwardRef<
   return (
     <I18nContext.Provider value={i18n}>
       <div
+        dir={i18n.dir}
         className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden"
         style={
           {

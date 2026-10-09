@@ -74,8 +74,21 @@ Messages that need a number or a name are functions, so each language can word a
 
 `ariaLabel` still overrides `gridName`. The translations in the demo above are examples written for these docs: have a native speaker review a language before you ship it.
 
+## `dir`: right-to-left languages
+
+For Arabic, Hebrew, Persian and other right-to-left languages, set `dir="rtl"`. Try the Arabic option in the demo above.
+
+```tsx
+import { ar } from "date-fns/locale";
+
+<ResourceScheduler resources={resources} locale={ar} dir="rtl" />
+```
+
+The whole layout mirrors: the resource column moves to the right, time runs leftwards, the previous and next arrows flip, event accents and resize handles move to the other edge, and the view menu opens the right way. Keyboard users get the matching behaviour: the left arrow moves forward in time, because that is the direction it points on screen.
+
+`dir` does not choose a language by itself, so combine it with `locale` and `labels`. The default is `"ltr"`.
+
 ## What is not translated
 
 - **Your own text**: event titles, resource names, and anything you render with `renderEventPopover`, `renderTimeSlot` or the other `render*` props.
 - **Time zones.** Dates are shown in the viewer's own zone, like the rest of the scheduler.
-- **Right-to-left layout** is covered in its own section below once you set `dir`.

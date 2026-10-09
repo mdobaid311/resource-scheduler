@@ -43,7 +43,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       data-rs-resource={resource.id}
       data-rs-unavailable={isUnavailable ? "" : undefined}
       data-rs-footprint={inFootprint ? "" : undefined}
-      className={`border-b border-r cursor-pointer overflow-hidden ${
+      className={`border-b border-e cursor-pointer overflow-hidden ${
         isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
       }${
         rejected
@@ -62,7 +62,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
         gridRow: rowIndex + 2,
         gridColumn: colIndex + 1,
         // Keep scrolled-to cells clear of the sticky resource column / header.
-        scrollMarginLeft: "var(--rs-sticky-left, 0px)",
+        scrollMarginInlineStart: "var(--rs-sticky-left, 0px)",
         scrollMarginTop: "var(--rs-sticky-top, 0px)",
       }}
       onMouseDown={(e) => {

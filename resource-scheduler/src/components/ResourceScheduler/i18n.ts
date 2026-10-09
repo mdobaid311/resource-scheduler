@@ -90,17 +90,21 @@ export interface I18nInput {
   /** `true` for a 12-hour clock, `false` for 24-hour. Default: what the locale uses. */
   hour12?: boolean;
   labels?: PartialLabels;
+  /** Reading direction of the layout. Default "ltr". */
+  dir?: "ltr" | "rtl";
 }
 
 export interface I18n {
   locale?: Locale;
   hour12?: boolean;
   labels: SchedulerLabels;
+  dir: "ltr" | "rtl";
 }
 
-export const resolveI18n = ({ locale, hour12, labels }: I18nInput = {}): I18n => ({
+export const resolveI18n = ({ locale, hour12, labels, dir = "ltr" }: I18nInput = {}): I18n => ({
   locale,
   hour12,
+  dir,
   labels: {
     ...defaultLabels,
     ...labels,

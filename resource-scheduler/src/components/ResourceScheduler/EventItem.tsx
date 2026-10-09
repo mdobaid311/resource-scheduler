@@ -10,6 +10,7 @@ import {
 import { Calendar, User } from "lucide-react";
 import { type EventItemProps, ViewType } from "./types";
 import { formatEventTime, formatRangeLabel } from "./utils/dateUtils";
+import { flipHorizontal } from "./utils/keyboard";
 
 const MOVE_STEPS: Record<string, { cols?: number; rows?: number }> = {
   ArrowLeft: { cols: -1 },
@@ -44,7 +45,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             aria-hidden="true"
             data-rs-resize={edge}
             className={`absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
-              edge === "start" ? "left-0" : "right-0"
+              edge === "start" ? "start-0" : "end-0"
             }`}
             style={{ touchAction: "none" }}
             onPointerDown={(e) => {
@@ -72,7 +73,8 @@ export const EventItem: React.FC<EventItemProps> = ({
       e.stopPropagation();
     };
     if (grabbed) {
-      const step = e.shiftKey ? RESIZE_STEPS[e.key] : MOVE_STEPS[e.key];
+      const key = flipHorizontal(e.key, i18n.dir === "rtl");
+      const step = e.shiftKey ? RESIZE_STEPS[key] : MOVE_STEPS[key];
       if (step) {
         handled();
         drag.stepGrab(step);
@@ -143,7 +145,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             style={{
               backgroundColor: `${event.color}20`,
               borderColor: event.color,
-              borderLeftWidth: "3px",
+              borderInlineStartWidth: "3px",
               position: "relative",
               zIndex: 5,
               opacity,
@@ -165,7 +167,7 @@ export const EventItem: React.FC<EventItemProps> = ({
           </div>
         )}
       </PopoverTrigger>
-      <PopoverContent side="top" className="z-[2000] w-fit p-3">
+      <PopoverContent side="top" dir={i18n.dir} className="z-[2000] w-fit p-3">
         {renderEventPopover ? (
           renderEventPopover(event, resource!, onClose)
         ) : (

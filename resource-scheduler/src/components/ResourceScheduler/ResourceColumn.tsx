@@ -22,10 +22,10 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
 
   return (
     <div
-      className="bg-ocrs-white z-20 sticky left-0 shrink-0"
+      className="bg-ocrs-white z-20 sticky start-0 shrink-0"
       style={{ width: resourceColumnWidth }}
     >
-      <div className="border-r bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
+      <div className="border-e bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
         <span className="text-sm font-medium text-ocrs-muted-foreground">{labels.resources}</span>
       </div>
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}
@@ -34,7 +34,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         return renderResourceHeader ? (
           <div
             key={resource.id}
-            className="p-3 border-b border-r flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
+            className="p-3 border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
             style={{ height: rowHeight + "px" }}
           >
             {renderResourceHeader(resource)}
@@ -42,7 +42,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         ) : (
           <div
             key={resource.id}
-            className="p-3 border-b border-r flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
+            className="p-3 border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
             style={{ height: rowHeight + "px" }}
           >
             <span className="w-full block break-words whitespace-pre-line">

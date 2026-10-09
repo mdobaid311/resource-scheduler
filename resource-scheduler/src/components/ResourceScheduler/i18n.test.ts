@@ -67,6 +67,11 @@ describe("createFormat with a locale", () => {
 });
 
 describe("resolveI18n", () => {
+  it("is left-to-right unless dir says otherwise", () => {
+    expect(resolveI18n({}).dir).toBe("ltr");
+    expect(resolveI18n({ dir: "rtl" }).dir).toBe("rtl");
+  });
+
   it("returns the English labels by default", () => {
     expect(resolveI18n({}).labels).toEqual(defaultLabels);
     expect(defaultLabels.today).toBe("Today");

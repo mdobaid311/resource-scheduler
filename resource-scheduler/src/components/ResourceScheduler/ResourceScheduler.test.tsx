@@ -856,6 +856,77 @@ describe("ResourceScheduler", () => {
     });
   });
 
+  describe("right-to-left", () => {
+    // The clock reads Wednesday 7 October 2026.
+    const standup = {
+      id: "e",
+      title: "Standup",
+      startDate: new Date(2026, 9, 7, 9),
+      endDate: new Date(2026, 9, 7, 10),
+    };
+    const rows: Resource[] = [{ id: "r1", name: "Ann", events: [standup] }];
+    const week = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}) =>
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Week} {...props} />);
+    const root = () => document.querySelector<HTMLElement>(".rs-root")!;
+
+    it("sets the document direction on the scheduler", () => {
+      week();
+      expect(root().getAttribute("dir")).toBe("ltr");
+      cleanup();
+      week({ dir: "rtl" });
+      expect(root().getAttribute("dir")).toBe("rtl");
+    });
+
+    it("moves a carried event the way the arrows point: left is later in a right-to-left layout", () => {
+      const carryLeft = (dir: "ltr" | "rtl") => {
+        const onEventDrop = vi.fn();
+        week({ dir, onEventDrop });
+        const event = document.querySelector('[data-rs-event="e"]')!;
+        fireEvent.keyDown(event, { key: " " });
+        fireEvent.keyDown(event, { key: "ArrowLeft" });
+        fireEvent.keyDown(event, { key: " " });
+        cleanup();
+        return onEventDrop.mock.calls[0][3] as Date;
+      };
+      expect(carryLeft("ltr")).toEqual(new Date(2026, 9, 6, 9)); // Tuesday
+      expect(carryLeft("rtl")).toEqual(new Date(2026, 9, 8, 9)); // Thursday
+    });
+
+    it("moves the slot cursor the way the arrows point too", () => {
+      const columnAfterRight = (dir: "ltr" | "rtl") => {
+        week({ dir });
+        const grid = screen.getByRole("grid");
+        fireEvent.focus(grid); // starts on today, column 3
+        fireEvent.keyDown(grid, { key: "ArrowRight" });
+        const id = grid.getAttribute("aria-activedescendant")!;
+        cleanup();
+        return Number(id.split("-c")[1]);
+      };
+      expect(columnAfterRight("ltr")).toBe(4);
+      expect(columnAfterRight("rtl")).toBe(2);
+    });
+
+    it("draws the now line from the right edge", () => {
+      render(
+        <ResourceScheduler resources={rows} initialView={ViewType.Day} dir="rtl" nowIndicator />
+      );
+      const line = document.querySelector<HTMLElement>("[data-rs-now]")!;
+      expect(line.style.right).toBe("50%");
+      expect(line.style.left).toBe("");
+    });
+
+    it("mirrors the previous and next arrows", () => {
+      week({ dir: "rtl" });
+      const icon = (label: string) =>
+        screen.getByLabelText(label).querySelector("svg")!.getAttribute("class");
+      expect(icon("Previous period")).toContain("rotate-180");
+      expect(icon("Next period")).toContain("rotate-180");
+      cleanup();
+      week();
+      expect(icon("Previous period")).not.toContain("rotate-180");
+    });
+  });
+
   describe("recurring events", () => {
     // The clock reads Wednesday 7 October 2026; the week view shows Oct 4 to 10.
     const standup = {

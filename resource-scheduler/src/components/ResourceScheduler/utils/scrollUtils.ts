@@ -13,7 +13,8 @@ import { ViewType } from "../types";
  * timeline. `stickyOffset` is the width of the sticky resource column, which
  * covers the left edge of the scroller and is not part of the timeline area.
  * `slotOptions` must match the ones the day view was rendered with. Times
- * outside the visible hours scroll to the nearest edge slot.
+ * outside the visible hours scroll to the nearest edge slot. `rtl` is for a
+ * right-to-left layout.
  * Column widths must be px values.
  */
 export const scrollToDate = (
@@ -24,7 +25,8 @@ export const scrollToDate = (
   dateColumnWidth: string,
   stickyOffset = 0,
   slotOptions?: SlotOptions,
-  viewOptions?: ViewOptions
+  viewOptions?: ViewOptions,
+  rtl = false
 ) => {
   let targetIndex = -1;
 
@@ -46,11 +48,12 @@ export const scrollToDate = (
       ? parseInt(timeColumnWidth.replace("px", ""))
       : parseInt(dateColumnWidth.replace("px", ""));
 
-  scroller.scrollTo({
-    left:
-      targetIndex * slotWidth +
-      slotWidth / 2 -
-      (scroller.clientWidth - stickyOffset) / 2,
-    behavior: "smooth",
-  });
+  const offset =
+    targetIndex * slotWidth +
+    slotWidth / 2 -
+    (scroller.clientWidth - stickyOffset) / 2;
+
+  // Right to left, the timeline starts at the right edge and scrollLeft
+  // counts down from 0.
+  scroller.scrollTo({ left: rtl ? -offset : offset, behavior: "smooth" });
 };

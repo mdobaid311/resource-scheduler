@@ -308,8 +308,14 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           <div
             aria-hidden="true"
             data-rs-now=""
-            className="absolute top-0 bottom-0 w-0.5 -ml-px bg-ocrs-destructive pointer-events-none z-10"
-            style={{ left: `${nowPercent}%` }}
+            className={`absolute top-0 bottom-0 w-0.5 ${
+              i18n.dir === "rtl" ? "-mr-px" : "-ml-px"
+            } bg-ocrs-destructive pointer-events-none z-10`}
+            style={
+              i18n.dir === "rtl"
+                ? { right: `${nowPercent}%` }
+                : { left: `${nowPercent}%` }
+            }
           />
         )}
       </div>

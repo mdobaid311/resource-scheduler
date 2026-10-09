@@ -179,6 +179,13 @@ export interface ResourceSchedulerProps {
   /** `true` for a 12-hour clock, `false` for 24-hour. Default: what the locale uses. */
   hour12?: boolean;
   /**
+   * `"rtl"` lays the scheduler out right to left for Arabic, Hebrew and other
+   * right-to-left languages: the resource column on the right, time running
+   * leftwards, mirrored arrows, and the left arrow key moving forward in time.
+   * Default `"ltr"`.
+   */
+  dir?: "ltr" | "rtl";
+  /**
    * The text the scheduler shows and reads out: toolbar, headers, view names
    * and screen reader messages. Pass any subset; the rest stays English.
    */

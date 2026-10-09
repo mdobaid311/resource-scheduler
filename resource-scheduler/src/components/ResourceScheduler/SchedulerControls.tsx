@@ -25,7 +25,9 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   weekStartsOn,
   hideWeekends,
 }) => {
-  const { labels, fmt, locale } = useI18n();
+  const { labels, fmt, locale, dir } = useI18n();
+  // Previous and next point the other way when time runs right to left.
+  const arrow = `h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`;
 
   const getDateTitle = () => {
     switch (viewType) {
@@ -62,7 +64,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             aria-label={labels.previousPeriod}
             onClick={() => onNavigate("prev")}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className={arrow} />
           </Button>
 
           {/* Announces the new period when the user navigates. */}
@@ -85,7 +87,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             aria-label={labels.nextPeriod}
             onClick={() => onNavigate("next")}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className={arrow} />
           </Button>
         </div>
 
@@ -102,7 +104,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
       </div>
 
       {allowViewChange && (
-        <Select value={viewType} onValueChange={onViewChange}>
+        <Select value={viewType} onValueChange={onViewChange} dir={dir}>
           <SelectTrigger
             className="lg:w-[140px] w-full bg-ocrs-white"
             aria-label={labels.view}

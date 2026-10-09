@@ -1,20 +1,24 @@
 import { useMemo, useState } from "react";
-import { de as deLocale, es as esLocale, fr as frLocale, ja as jaLocale } from "date-fns/locale";
+import { ar as arLocale, de as deLocale, es as esLocale, fr as frLocale, ja as jaLocale } from "date-fns/locale";
 import type { Locale } from "date-fns";
 import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { PartialLabels } from "@scheduler/i18n";
 import { Frame } from "./Frame";
-import { de, es, fr, ja } from "./labels";
+import { ar, de, es, fr, ja } from "./labels";
 import { teamDay } from "./sample";
 import { useSchedule } from "./useSchedule";
 
-const LANGUAGES: Record<string, { locale?: Locale; labels?: PartialLabels }> = {
+const LANGUAGES: Record<
+  string,
+  { locale?: Locale; labels?: PartialLabels; dir?: "ltr" | "rtl" }
+> = {
   "English (default)": {}, // no locale: the English the scheduler always had
   Deutsch: { locale: deLocale, labels: de },
   Español: { locale: esLocale, labels: es },
   Français: { locale: frLocale, labels: fr },
   "日本語 (toolbar only)": { locale: jaLocale, labels: ja },
+  "العربية (right to left, toolbar only)": { locale: arLocale, labels: ar, dir: "rtl" },
 };
 
 /** locale, hour12 and labels. */
@@ -22,7 +26,7 @@ export default function I18nDemo() {
   const { resources, move, resize, log } = useSchedule(teamDay);
   const [language, setLanguage] = useState("Deutsch");
   const [clock, setClock] = useState<"locale" | "12" | "24">("locale");
-  const { locale, labels } = LANGUAGES[language];
+  const { locale, labels, dir } = LANGUAGES[language];
   const hour12 = useMemo(() => (clock === "locale" ? undefined : clock === "12"), [clock]);
 
   return (
@@ -58,6 +62,7 @@ export default function I18nDemo() {
         availableViews={[ViewType.Day, ViewType.Week, ViewType.Month]}
         locale={locale}
         hour12={hour12}
+        dir={dir}
         labels={labels}
         resourceColumnWidth="150px"
         timeColumnWidth="80px"

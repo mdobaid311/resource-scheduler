@@ -55,6 +55,7 @@ Only `resources` is required.
 
 - **`locale`**: a date-fns `Locale`, for example `import { de } from "date-fns/locale"`. Names, date formats, the 12 or 24-hour clock and the first day of the week follow it. Default: English, Sunday first, 12-hour.
 - **`hour12`**: `boolean`. `true` for a 12-hour clock, `false` for 24-hour. Default: what the locale uses.
+- **`dir`**: `"ltr" | "rtl"`, default `"ltr"`. `"rtl"` mirrors the layout for right-to-left languages and flips the left and right arrow keys.
 - **`labels`**: `PartialLabels`. The text of the toolbar, headers, view names and screen reader messages. Any subset; the rest stays English. See [Languages and clocks](/guides/internationalization/).
 
 ## Performance

@@ -108,6 +108,19 @@ export const fr: PartialLabels = {
 };
 
 // Only the toolbar: anything you leave out stays English.
+export const ar: PartialLabels = {
+  resources: "الموارد",
+  today: "اليوم",
+  previousPeriod: "الفترة السابقة",
+  nextPeriod: "الفترة التالية",
+  view: "العرض",
+  views: { day: "يوم", week: "أسبوع", month: "شهر", quarter: "ربع سنة", year: "سنة" },
+  viewTitle: (view) => `العرض: ${view}`,
+  allDay: "طوال اليوم",
+  unavailable: "غير متاح",
+  to: "إلى",
+};
+
 export const ja: PartialLabels = {
   resources: "リソース",
   today: "今日",
