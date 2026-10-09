@@ -5,6 +5,7 @@ import type { Locale } from "date-fns";
 import type { PartialLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
+import type { Utilization } from "./utils/utilization";
 
 // A const object plus a union (not an `enum`) so the source compiles in apps
 // that enable `erasableSyntaxOnly`, which is the create-vite default.
@@ -94,6 +95,12 @@ export interface Resource {
   businessHours?: BusinessHours | false;
   /** Time off and other blocked periods. Shaded in the grid. */
   unavailable?: UnavailableRange[];
+  /**
+   * How many bookings can run at the same time: seats in a room, units of a
+   * piece of equipment. Only utilization uses it, as a multiplier on the
+   * available time. Default 1.
+   */
+  capacity?: number;
 }
 
 /** What the grid covers. `end` is exclusive. */
@@ -226,6 +233,12 @@ export interface ResourceSchedulerProps {
   /** Day view: draw a line at the current time, moved every minute. */
   nowIndicator?: boolean;
   /**
+   * Under each resource name, show how much of its available time is booked in
+   * the visible range. Available time follows `businessHours`, a resource's
+   * `unavailable` ranges and its `capacity`; `getUtilization` does the same sum.
+   */
+  showUtilization?: boolean;
+  /**
    * Render only the rows near the viewport. Default: on above 100 resources.
    * It needs the scheduler to sit in a box with a fixed height; without one
    * every row is drawn, as before.
@@ -259,6 +272,8 @@ export interface ResourceColumnProps {
   resourceColumnWidth?: string;
   getResourceRowHeight: (resource: Resource) => number;
   renderResourceHeader?: (resource: Resource) => React.ReactNode;
+  /** Booked against available time by resource id. Resources without an entry show no bar. */
+  utilization?: Map<string, Utilization>;
   /** Render only these rows (end exclusive); spacers keep the full height. */
   rowRange?: { start: number; end: number };
 }

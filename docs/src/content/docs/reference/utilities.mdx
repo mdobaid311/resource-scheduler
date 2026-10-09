@@ -30,6 +30,10 @@ All of these are exported from `resource-scheduler`.
 - **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
 - **`findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })`** returns `{ start, end }[]`, the free slots earliest first. With several resources, only times when all are free. See [Business hours and availability](/guides/availability/).
 
+## Utilization
+
+- **`getUtilization(resource, { start, end }, { businessHours? })`** returns `{ bookedMinutes, availableMinutes, ratio }`. Booked time inside the available time (business hours minus `unavailable`, times `capacity`) over a range (`end` exclusive); `ratio` is `null` when nothing is available. What `showUtilization` draws. See [Utilization](/guides/utilization/).
+
 ## Dates and slots
 
 - **`getTimeSlots(date, viewType, options?)`** returns the slots of the day view as `Date[]`.

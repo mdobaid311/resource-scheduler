@@ -1134,4 +1134,117 @@ describe("ResourceScheduler", () => {
       expect(document.getElementById(active!)).not.toBeNull();
     });
   });
+
+  describe("utilization", () => {
+    // The system time is Wednesday 7 October 2026.
+    const at = (hour: number) => new Date(2026, 9, 7, hour);
+    const ann = (extra: Partial<Resource> = {}): Resource[] => [
+      {
+        id: "r1",
+        name: "Ann",
+        events: [{ id: "e", title: "E", startDate: at(9), endDate: at(13) }],
+        ...extra,
+      },
+    ];
+    // Business hours {} are Monday to Friday, 9 to 17: 40 hours in the week.
+    const show = (
+      resources: Resource[],
+      props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}
+    ) =>
+      render(
+        <ResourceScheduler
+          resources={resources}
+          initialView={ViewType.Week}
+          businessHours={{}}
+          showUtilization
+          {...props}
+        />
+      );
+
+    it("draws nothing unless showUtilization is set", () => {
+      render(
+        <ResourceScheduler resources={ann()} initialView={ViewType.Week} businessHours={{}} />
+      );
+      expect(screen.queryByRole("meter")).toBeNull();
+    });
+
+    it("shows booked against available time for the visible range", () => {
+      show(ann());
+      const meter = screen.getByRole("meter", { name: "4 of 40 hours booked" });
+      expect(meter.getAttribute("aria-valuenow")).toBe("10");
+      expect(meter.textContent).toBe("10%");
+    });
+
+    it("rounds half up: 23 of 40 hours is 58%, not 57%", () => {
+      const day = (d: number, to: number) => ({
+        id: `e${d}`,
+        title: "E",
+        startDate: new Date(2026, 9, d, 9),
+        endDate: new Date(2026, 9, d, to),
+      });
+      show(ann({ events: [day(5, 17), day(6, 17), day(7, 16)] }));
+      expect(screen.getByRole("meter", { name: "23 of 40 hours booked" }).textContent).toBe("58%");
+    });
+
+    it("follows the view: a day is measured on its own", () => {
+      show(ann(), { initialView: ViewType.Day });
+      expect(screen.getByRole("meter", { name: "4 of 8 hours booked" }).textContent).toBe("50%");
+    });
+
+    it("goes past 100% when overbooked, with a full red bar", () => {
+      const double = [
+        { id: "a", title: "A", startDate: at(9), endDate: at(17) },
+        { id: "b", title: "B", startDate: at(9), endDate: at(17) },
+      ];
+      show(ann({ events: double }), { initialView: ViewType.Day });
+      const meter = screen.getByRole("meter", { name: "16 of 8 hours booked" });
+      expect(meter.textContent).toBe("200%");
+      expect(meter.getAttribute("aria-valuenow")).toBe("100");
+      expect(meter.querySelector(".bg-ocrs-destructive")).not.toBeNull();
+    });
+
+    it("multiplies the available time by capacity", () => {
+      show(ann({ capacity: 2 }));
+      expect(screen.getByRole("meter", { name: "4 of 80 hours booked" }).textContent).toBe("5%");
+    });
+
+    it("counts flat events, resource hours and time off", () => {
+      const resource: Resource = {
+        id: "r1",
+        name: "Ann",
+        events: [],
+        businessHours: { startHour: 8, endHour: 12 },
+        unavailable: [{ start: new Date(2026, 9, 5), end: new Date(2026, 9, 6) }], // Monday
+      };
+      show([resource], {
+        events: [{ id: "f", title: "F", resourceId: "r1", startDate: at(8), endDate: at(10) }],
+      });
+      // 4 working days of 4 hours, 2 of them booked.
+      expect(screen.getByRole("meter", { name: "2 of 16 hours booked" }).textContent).toBe("13%");
+    });
+
+    it("shows a dash when nothing is available", () => {
+      show(ann({ events: [] }), { businessHours: { daysOfWeek: [] } });
+      const meter = screen.getByRole("meter", { name: "0 of 0 hours booked" });
+      expect(meter.textContent).toBe("–");
+    });
+
+    it("uses your labels", () => {
+      show(ann(), {
+        labels: { utilization: (booked, available) => `${booked} von ${available} Stunden` },
+      });
+      expect(screen.getByRole("meter", { name: "4 von 40 Stunden" })).toBeTruthy();
+    });
+
+    it("has no detectable accessibility violations", async () => {
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+      const { container } = show(ann());
+      const results = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(
+        results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)
+      ).toEqual([]);
+    });
+  });
 });

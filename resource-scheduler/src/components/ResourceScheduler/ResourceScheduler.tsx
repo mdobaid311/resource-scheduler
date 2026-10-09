@@ -33,6 +33,7 @@ import {
 } from "./utils/placement";
 import { getRowWindow } from "./utils/rowWindow";
 import { scrollToDate } from "./utils/scrollUtils";
+import { getUtilization } from "./utils/utilization";
 
 // Row virtualization: on above this many resources unless `virtualize` says otherwise.
 const VIRTUALIZE_ABOVE = 100;
@@ -71,6 +72,7 @@ export const ResourceScheduler = forwardRef<
   businessHours,
   blockUnavailable,
   nowIndicator,
+  showUtilization,
   virtualize,
   renderEventPopover,
   allowViewChange = true,
@@ -174,6 +176,15 @@ export const ResourceScheduler = forwardRef<
         ...viewOptions,
       }),
     [currentDate, viewType, slotDuration, dayStartHour, dayEndHour, viewOptions]
+  );
+
+  // `resources` already holds the occurrences of recurring events in range.
+  const utilization = useMemo(
+    () =>
+      showUtilization
+        ? new Map(resources.map((r) => [r.id, getUtilization(r, range, { businessHours })]))
+        : undefined,
+    [showUtilization, resources, range, businessHours]
   );
 
   // Fires on mount and whenever the range changes; the latest callback is
@@ -378,6 +389,7 @@ export const ResourceScheduler = forwardRef<
             resourceColumnWidth={resourceColumnWidth}
             getResourceRowHeight={getResourceRowHeight}
             renderResourceHeader={renderResourceHeader}
+            utilization={utilization}
             rowRange={rowRange}
           />
 

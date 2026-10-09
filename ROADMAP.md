@@ -97,7 +97,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
 - [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
 - [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`), plus `weekStartsOn` and `hideWeekends` (done on branch `feat/view-controls`)
-- [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). Still open: capacity per resource
+- [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). `Resource.capacity` (simultaneous bookings) feeds utilization only; it does not enforce anything
 - [x] **Flat data model**: `events` prop with `resourceId` or `resourceIds`, alongside the nested `resource.events`; `resource.events` is optional on input (done on branch `feat/flat-events`)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [ ] **Resource grouping / hierarchy** with collapse (L)
@@ -116,7 +116,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Merged to `main` and confirmed to resolve with `shadcn view`. Still open: tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR).
 - [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)
 - [x] **Recurring events** (done on branch `feat/recurring-events`): daily, weekly (byWeekday), monthly, yearly with interval, until, count and exceptions; wall-clock stable across DST; occurrences carry `seriesId`; `expandRecurrence` / `expandEvents` exported. Premium in MUI X, so a strong differentiator. Still open: RRULE strings and the rarer rules (bySetPos, byMonthDay, hourly), time zones, an "edit this and following" helper
-- [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)
+- [~] **Utilization row** (done on branch `feat/utilization`): `showUtilization` draws a booked-vs-available bar per resource for the visible range, from business hours, `unavailable` and the new `Resource.capacity`; `getUtilization` is exported. Still open: a per-column histogram or total row across resources
 - [ ] **ICS import/export, CSV, print stylesheet** (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
 - [ ] **Recipes** with complete data models: room booking, shift roster, equipment, field service dispatch, project allocation (M each)
