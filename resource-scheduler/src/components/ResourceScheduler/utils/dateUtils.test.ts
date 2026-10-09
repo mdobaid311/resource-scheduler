@@ -6,7 +6,9 @@ import {
   getDropRange,
   getEventSpan,
   getEventStartPosition,
+  getResizeRange,
   getSelectionBounds,
+  isSlotInRange,
   getTimeSlots,
   getVisibleEvents,
 } from "./dateUtils";
@@ -150,5 +152,73 @@ describe("formatEventTime", () => {
 
   it("labels events spanning whole days as All day", () => {
     expect(formatEventTime(ev(d(3, 10), d(3, 13)))).toBe("All day");
+  });
+});
+
+describe("getResizeRange", () => {
+  const timed = ev(d(3, 10, 9, 30), d(3, 10, 11));
+
+  it("snaps the start edge to the hour slot in day view", () => {
+    expect(getResizeRange(timed, "start", d(3, 10, 8), ViewType.Day)).toEqual({
+      start: d(3, 10, 8),
+      end: d(3, 10, 11),
+    });
+  });
+
+  it("includes the whole slot under the end edge in day view", () => {
+    expect(getResizeRange(timed, "end", d(3, 10, 13), ViewType.Day)).toEqual({
+      start: d(3, 10, 9, 30),
+      end: d(3, 10, 14),
+    });
+  });
+
+  it("rejects an edge dragged past the opposite edge", () => {
+    expect(getResizeRange(timed, "start", d(3, 10, 11), ViewType.Day)).toBeNull();
+    expect(getResizeRange(timed, "end", d(3, 10, 8), ViewType.Day)).toBeNull();
+  });
+
+  it("moves whole days and keeps the time of day in date views", () => {
+    const e = ev(d(3, 10, 14, 30), d(3, 10, 16));
+    expect(getResizeRange(e, "end", d(3, 12), ViewType.Week)).toEqual({
+      start: d(3, 10, 14, 30),
+      end: d(3, 12, 16),
+    });
+    expect(getResizeRange(e, "start", d(3, 8), ViewType.Week)).toEqual({
+      start: d(3, 8, 14, 30),
+      end: d(3, 10, 16),
+    });
+  });
+
+  it("keeps all-day events midnight-aligned and includes the dragged day", () => {
+    const allDay = ev(d(3, 10), d(3, 11));
+    expect(getResizeRange(allDay, "end", d(3, 12), ViewType.Month)).toEqual({
+      start: d(3, 10),
+      end: d(3, 13),
+    });
+  });
+
+  it("rejects a date-view resize that inverts the event", () => {
+    const e = ev(d(3, 10, 14, 30), d(3, 10, 16));
+    expect(getResizeRange(e, "start", d(3, 12), ViewType.Week)).toBeNull();
+  });
+});
+
+describe("isSlotInRange", () => {
+  const range = { start: d(3, 10, 9, 30), end: d(3, 10, 11) };
+
+  it("matches every hour slot the range touches in day view", () => {
+    const hours = [8, 9, 10, 11].map((h) => isSlotInRange(d(3, 10, h), range, ViewType.Day));
+    expect(hours).toEqual([false, true, true, false]);
+  });
+
+  it("matches every day the range touches in date views", () => {
+    const r = { start: d(3, 10, 14, 30), end: d(3, 12, 16) };
+    const days = [9, 10, 11, 12, 13].map((day) => isSlotInRange(d(3, day), r, ViewType.Week));
+    expect(days).toEqual([false, true, true, true, false]);
+  });
+
+  it("excludes the day a range ends on exactly at midnight", () => {
+    const r = { start: d(3, 10), end: d(3, 12) };
+    expect(isSlotInRange(d(3, 12), r, ViewType.Week)).toBe(false);
   });
 });

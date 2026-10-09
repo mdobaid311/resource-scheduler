@@ -94,8 +94,8 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] Bundle-size budget check in CI (S)
 
 ### P1: Table-stakes features (the research-backed list)
-- [ ] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, target)`, visual red drop indicator during drag (M)
-- [ ] **Event resize** by edge drag + `onEventResize` (M)
+- [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
+- [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
 - [ ] **Slot config**: `slotDuration` 15/30/60, snapping, `dayStartHour`/`dayEndHour`, weekend toggle, `weekStartsOn` (M)
 - [ ] **Business hours / unavailable ranges** shading per resource, and capacity per resource (M)
 - [ ] **Flat data model**: `events[]` with `resourceId` or `resourceIds[]` as the primary API; keep nested `resource.events` via adapter (M)

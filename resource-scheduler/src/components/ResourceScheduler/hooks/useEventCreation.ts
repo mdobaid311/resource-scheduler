@@ -2,10 +2,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { SchedulerEvent, ViewType } from "../types";
 import { getSelectionBounds } from "../utils/dateUtils";
+import { Placement } from "../utils/placement";
 
 export const useEventCreation = (
   onEventCreate?: (event: Omit<SchedulerEvent, "id">, resourceId: string) => void,
-  viewType: ViewType = ViewType.Day
+  viewType: ViewType = ViewType.Day,
+  checkPlacement?: (event: SchedulerEvent, placement: Placement) => boolean
 ) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{
@@ -60,13 +62,18 @@ export const useEventCreation = (
           .padStart(6, "0")}`,
       };
 
-      onEventCreate(newEvent, dragStart.resourceId);
+      const allowed =
+        checkPlacement?.(
+          { ...newEvent, id: "__new__" },
+          { resourceId: dragStart.resourceId, start, end }
+        ) ?? true;
+      if (allowed) onEventCreate(newEvent, dragStart.resourceId);
     }
 
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart, dragEnd, onEventCreate, viewType]);
+  }, [isDragging, dragStart, dragEnd, onEventCreate, viewType, checkPlacement]);
 
   // Listen on window so releasing the mouse outside the grid still ends the drag.
   useEffect(() => {

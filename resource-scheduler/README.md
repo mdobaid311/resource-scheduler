@@ -114,6 +114,9 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeColumnWidth` | `string` | `"90px"` | Width of time columns (day view) |
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
+| `onEventResize` | `(event, resourceId, newStartDate, newEndDate) => void` | `undefined` | Providing it shows resize handles on every event. Edges snap to whole slots; end times are exclusive |
+| `eventOverlap` | `boolean \| (moving, other) => boolean` | `true` | `false` forbids overlapping events on the same resource; a function decides per overlapping pair (return `true` to allow) |
+| `isValidDrop` | `(event, placement) => boolean` | `undefined` | Final veto for move, resize and drag-create. `placement` is `{ resourceId, start, end }` |
 | `availableViews` | `ViewType[]` | all five | Views offered in the selector |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
@@ -238,6 +241,30 @@ function InteractiveExample() {
   );
 }
 ```
+
+### Resize and conflict control
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  // Resize handles appear on every event when this is provided.
+  onEventResize={(event, resourceId, newStart, newEnd) => {
+    setResources((prev) =>
+      prev.map((r) =>
+        r.id === resourceId
+          ? { ...r, events: r.events.map((e) => (e.id === event.id ? { ...e, startDate: newStart, endDate: newEnd } : e)) }
+          : r
+      )
+    );
+  }}
+  // No double-booking. Rejected drops show a red footprint and never call your handlers.
+  eventOverlap={false}
+  // Anything else, e.g. keep events inside working hours:
+  isValidDrop={(event, { start, end }) => start.getHours() >= 8 && end.getHours() <= 18}
+/>
+```
+
+`eventOverlap` also accepts a function, e.g. `(moving, other) => other.title === "Tentative"` to let tentative events be overlapped. The rules are checked against the full `resources` prop, for drag-move, resize and drag-create alike. `isPlacementAllowed` and `rangesOverlap` are exported if you want the same check in your own code (for example on the server).
 
 ### Custom Event Popover
 

@@ -22,12 +22,19 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   onEventClick,
   renderEventPopover,
   onEventDrop,
+  onEventResize,
+  checkPlacement,
   calculateEventPositions,
   getGridTemplateRows,
   renderTimeSlot,
   renderEmptyCell,
 }) => {
-  const drag = useEventDrag(viewType, onEventDrop);
+  const drag = useEventDrag({
+    viewType,
+    onEventDrop,
+    onEventResize,
+    checkPlacement,
+  });
   const datesInView = getDatesInView();
   const timeSlots = getTimeSlots();
   const slots = viewType === "day" ? timeSlots : datesInView;

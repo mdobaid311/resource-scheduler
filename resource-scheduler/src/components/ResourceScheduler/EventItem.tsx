@@ -19,7 +19,28 @@ export const EventItem: React.FC<EventItemProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const drag = useContext(SchedulerDragContext);
-  const opacity = drag?.activeDrag?.eventId === event.id ? 0.5 : 1;
+  const movingThis =
+    drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
+  const opacity = movingThis ? 0.5 : 1;
+
+  // Edge handles; only shown when the app provided `onEventResize`.
+  const resizeHandles =
+    drag?.canResize && resource
+      ? (["start", "end"] as const).map((edge) => (
+          <div
+            key={edge}
+            data-rs-resize={edge}
+            className={`absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
+              edge === "start" ? "left-0" : "right-0"
+            }`}
+            style={{ touchAction: "none" }}
+            onPointerDown={(e) => {
+              e.stopPropagation(); // don't start a move
+              drag.startEventResize(e, event, resource, edge);
+            }}
+          />
+        ))
+      : null;
 
   const dragProps = {
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
@@ -43,11 +64,12 @@ export const EventItem: React.FC<EventItemProps> = ({
       <PopoverTrigger asChild>
         {renderTimeSlot ? (
           <div
-            className="w-full h-full overflow-hidden"
+            className="relative w-full h-full overflow-hidden"
             style={{ touchAction: "none", opacity }}
             {...dragProps}
           >
             {renderTimeSlot(event, resource ? [resource] : [])}
+            {resizeHandles}
           </div>
         ) : (
           <div
@@ -73,6 +95,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             <div className="text-xs truncate text-gray-500">
               {formatEventTime(event)}
             </div>
+            {resizeHandles}
           </div>
         )}
       </PopoverTrigger>

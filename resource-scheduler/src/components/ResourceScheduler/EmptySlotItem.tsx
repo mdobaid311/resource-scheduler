@@ -2,6 +2,7 @@
 import React, { useContext } from "react";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import { EmptySlotItemProps } from "./types";
+import { isSlotInRange } from "./utils/dateUtils";
 
 export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   colIndex,
@@ -15,9 +16,15 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   onCellClick,
   renderEmptyCell,
 }) => {
-  const target = useContext(SchedulerDragContext)?.activeDrag?.target;
-  const isDropTarget =
-    target?.resourceId === resource.id && target.slot === slot.getTime();
+  // While an event is moved or resized, tint every slot it would cover.
+  const drag = useContext(SchedulerDragContext);
+  const footprint = drag?.activeDrag?.placement;
+  const inFootprint =
+    !!drag &&
+    !!footprint &&
+    footprint.resourceId === resource.id &&
+    isSlotInRange(slot, footprint, drag.viewType);
+  const rejected = inFootprint && !drag?.activeDrag?.allowed;
 
   return (
     <div
@@ -25,8 +32,10 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       data-rs-slot={slot.getTime()}
       data-rs-resource={resource.id}
       className={`border-b border-r cursor-pointer overflow-hidden ${
-        isDropTarget
-          ? "bg-ocrs-blue-50 outline-2 -outline-offset-2 outline-ocrs-primary"
+        rejected
+          ? "bg-ocrs-destructive/15 outline outline-1 -outline-offset-1 outline-ocrs-destructive"
+          : inFootprint
+          ? "bg-ocrs-accent outline outline-1 -outline-offset-1 outline-ocrs-primary"
           : isToday
           ? "bg-ocrs-blue-50"
           : isSelected
