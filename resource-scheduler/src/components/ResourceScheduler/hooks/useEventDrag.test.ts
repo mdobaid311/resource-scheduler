@@ -274,6 +274,27 @@ describe("useEventDrag: resize", () => {
     );
   });
 
+  it("resizes by the configured slot length in day view", () => {
+    const onEventResize = vi.fn();
+    document.body.removeChild(cell!);
+    overCell("r1", d(3, 10, 17, 30));
+    const { result } = renderHook(() =>
+      useEventDrag({ viewType: ViewType.Day, slotMinutes: 30, onEventResize })
+    );
+
+    downResize(result, "end");
+    move(60);
+    up(60);
+
+    expect(onEventResize).toHaveBeenCalledWith(
+      event,
+      "r1",
+      d(3, 10, 14, 30),
+      d(3, 10, 18)
+    );
+    expect(result.current.slotMinutes).toBe(30);
+  });
+
   it("ignores slots of another resource", () => {
     const onEventResize = vi.fn();
     document.body.removeChild(cell!);

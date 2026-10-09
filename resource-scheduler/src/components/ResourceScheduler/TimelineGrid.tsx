@@ -1,5 +1,5 @@
 // src/components/ResourceScheduler/TimelineGrid.tsx
-import { isSameDay, isSameHour } from "date-fns";
+import { addMinutes, isSameDay } from "date-fns";
 import React from "react";
 import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
@@ -24,6 +24,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   onEventDrop,
   onEventResize,
   checkPlacement,
+  slotMinutes = 60,
   calculateEventPositions,
   getGridTemplateRows,
   renderTimeSlot,
@@ -31,6 +32,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
 }) => {
   const drag = useEventDrag({
     viewType,
+    slotMinutes,
     onEventDrop,
     onEventResize,
     checkPlacement,
@@ -42,14 +44,15 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   const getSelectionRange = () => {
     if (!isDragging || !dragStart || !dragEnd) return null;
     const dates = viewType === "day" ? getTimeSlots() : getDatesInView();
+    // Day view slots are exact Dates, so compare timestamps.
     const startIdx = dates.findIndex((d) =>
       viewType === "day"
-        ? isSameHour(d, dragStart.date)
+        ? d.getTime() === dragStart.date.getTime()
         : isSameDay(d, dragStart.date)
     );
     const endIdx = dates.findIndex((d) =>
       viewType === "day"
-        ? isSameHour(d, dragEnd.date)
+        ? d.getTime() === dragEnd.date.getTime()
         : isSameDay(d, dragEnd.date)
     );
     if (startIdx === -1 || endIdx === -1) return null;
@@ -67,7 +70,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     if (!resource) return;
     const event = resource.events.find((e) =>
       viewType === "day"
-        ? isSameDay(e.startDate, date) && isSameHour(e.startDate, date)
+        ? e.startDate >= date && e.startDate < addMinutes(date, slotMinutes)
         : isSameDay(e.startDate, date)
     );
     if (event && onEventClick) onEventClick(event, resource);
@@ -78,10 +81,9 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     <div
       className="grid relative"
       style={{
-        gridTemplateColumns:
-          viewType === "day"
-            ? `repeat(24, ${timeColumnWidth})`
-            : `repeat(${slots.length}, ${dateColumnWidth})`,
+        gridTemplateColumns: `repeat(${slots.length}, ${
+          viewType === "day" ? timeColumnWidth : dateColumnWidth
+        })`,
         gridTemplateRows: getGridTemplateRows(),
       }}
     >

@@ -8,6 +8,7 @@ import { SchedulerControls } from "./SchedulerControls";
 import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
 import { ResourceSchedulerProps, SchedulerEvent, ViewType } from "./types";
+import { resolveSlotOptions } from "./utils/dateUtils";
 import { isPlacementAllowed, Placement } from "./utils/placement";
 import { scrollToDate } from "./utils/scrollUtils";
 
@@ -20,6 +21,10 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   onViewChange,
   onEventDrop,
   onEventCreate,
+  onSlotSelect,
+  slotDuration,
+  dayStartHour,
+  dayEndHour,
   onEventResize,
   eventOverlap,
   isValidDrop,
@@ -49,7 +54,12 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     calculateEventPositions,
     getResourceRowHeight,
     getGridTemplateRows,
-  } = useScheduler(initialResources, initialDate, initialView);
+  } = useScheduler(initialResources, initialDate, initialView, {
+    slotDuration,
+    dayStartHour,
+    dayEndHour,
+  });
+  const { slotMinutes } = resolveSlotOptions({ slotDuration });
 
   // Checked against the full `resources` prop, not just the visible range.
   const checkPlacement = useMemo<
@@ -64,8 +74,22 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
       });
   }, [initialResources, eventOverlap, isValidDrop]);
 
+  // `onSlotSelect` replaces event creation so apps can open their own dialog.
+  const handleCreate = useMemo(
+    () =>
+      onSlotSelect
+        ? (event: Omit<SchedulerEvent, "id">, resourceId: string) =>
+            onSlotSelect({
+              resourceId,
+              start: event.startDate,
+              end: event.endDate,
+            })
+        : onEventCreate,
+    [onSlotSelect, onEventCreate]
+  );
+
   const { isDragging, dragStart, dragEnd, handleMouseDown, handleMouseEnter } =
-    useEventCreation(onEventCreate, viewType, checkPlacement);
+    useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes);
 
   const resourceColumnWidth =
     propResourceColumnWidth || (isMobile ? "140px" : "220px");
@@ -104,10 +128,19 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
         scroller,
         timeColumnWidth,
         dateColumnWidth,
-        stickyOffset
+        stickyOffset,
+        { slotDuration, dayStartHour, dayEndHour }
       );
     }
-  }, [currentDate, viewType, timeColumnWidth, dateColumnWidth]);
+  }, [
+    currentDate,
+    viewType,
+    timeColumnWidth,
+    dateColumnWidth,
+    slotDuration,
+    dayStartHour,
+    dayEndHour,
+  ]);
 
   return (
     <>
@@ -161,6 +194,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
               onEventDrop={onEventDrop}
               onEventResize={onEventResize}
               checkPlacement={checkPlacement}
+              slotMinutes={slotMinutes}
               calculateEventPositions={calculateEventPositions}
               getGridTemplateRows={getGridTemplateRows}
               renderTimeSlot={renderTimeSlot}

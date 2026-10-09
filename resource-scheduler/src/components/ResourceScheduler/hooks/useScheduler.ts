@@ -4,6 +4,7 @@ import {
   getTimeSlots,
   getDatesInView,
   getVisibleEvents,
+  SlotOptions,
   navigateDate,
   getEventSpan,
   getEventStartPosition,
@@ -14,23 +15,31 @@ import { SchedulerEvent, Resource, ViewType } from "../types";
 export const useScheduler = (
   initialResources: Resource[],
   initialDate: Date = new Date(),
-  initialView: ViewType = ViewType.Day
+  initialView: ViewType = ViewType.Day,
+  slotOptions?: SlotOptions
 ) => {
   const [currentDate, setCurrentDate] = useState<Date>(initialDate);
   const [viewType, setViewType] = useState<ViewType>(initialView);
+
+  // Depend on the primitives so callers can pass an inline object.
+  const { slotDuration, dayStartHour, dayEndHour } = slotOptions ?? {};
+  const slots = useMemo<SlotOptions>(
+    () => ({ slotDuration, dayStartHour, dayEndHour }),
+    [slotDuration, dayStartHour, dayEndHour]
+  );
 
   const resources = useMemo<Resource[]>(
     () =>
       initialResources.map((resource) => ({
         ...resource,
-        events: getVisibleEvents(resource.events, currentDate, viewType),
+        events: getVisibleEvents(resource.events, currentDate, viewType, slots),
       })),
-    [initialResources, currentDate, viewType]
+    [initialResources, currentDate, viewType, slots]
   );
 
   const getTimeSlotsMemoized = useCallback(() => {
-    return getTimeSlots(currentDate, viewType);
-  }, [currentDate, viewType]);
+    return getTimeSlots(currentDate, viewType, slots);
+  }, [currentDate, viewType, slots]);
 
   const getDatesInViewMemoized = useCallback(() => {
     return getDatesInView(currentDate, viewType);
