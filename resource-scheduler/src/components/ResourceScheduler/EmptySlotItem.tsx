@@ -11,6 +11,9 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   slot,
   isSelected,
   isToday,
+  id,
+  label,
+  isActive,
   onMouseDown,
   onMouseEnter,
   onCellClick,
@@ -28,10 +31,18 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
 
   return (
     <div
+      id={id}
+      role="gridcell"
+      aria-label={label}
+      aria-colindex={colIndex + 1}
+      aria-selected={isSelected || undefined}
+      aria-current={isToday ? "date" : undefined}
       // Read by useEventDrag to find the cell under the pointer.
       data-rs-slot={slot.getTime()}
       data-rs-resource={resource.id}
       className={`border-b border-r cursor-pointer overflow-hidden ${
+        isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
+      }${
         rejected
           ? "bg-ocrs-destructive/15 outline outline-1 -outline-offset-1 outline-ocrs-destructive"
           : inFootprint
@@ -45,6 +56,9 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       style={{
         gridRow: rowIndex + 2,
         gridColumn: colIndex + 1,
+        // Keep scrolled-to cells clear of the sticky resource column / header.
+        scrollMarginLeft: "var(--rs-sticky-left, 0px)",
+        scrollMarginTop: "var(--rs-sticky-top, 0px)",
       }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {

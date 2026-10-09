@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "../../hooks/use-media-query";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";
 import { ResourceColumn } from "./ResourceColumn";
@@ -22,6 +22,7 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   onEventDrop,
   onEventCreate,
   onSlotSelect,
+  ariaLabel,
   slotDuration,
   dayStartHour,
   dayEndHour,
@@ -41,6 +42,9 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
 }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const helpId = `rs-help${useId()}`;
+  // Spoken by screen readers through the live region below.
+  const [announcement, setAnnouncement] = useState("");
 
   const {
     currentDate,
@@ -88,8 +92,14 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     [onSlotSelect, onEventCreate]
   );
 
-  const { isDragging, dragStart, dragEnd, handleMouseDown, handleMouseEnter } =
-    useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes);
+  const {
+    isDragging,
+    dragStart,
+    dragEnd,
+    handleMouseDown,
+    handleMouseEnter,
+    commitRange,
+  } = useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes);
 
   const resourceColumnWidth =
     propResourceColumnWidth || (isMobile ? "140px" : "220px");
@@ -144,7 +154,25 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
 
   return (
     <>
-      <div className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden">
+      <div
+        className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden"
+        style={
+          {
+            "--rs-sticky-left": resourceColumnWidth,
+            "--rs-sticky-top": "3.5rem", // the sticky date header (h-14)
+          } as React.CSSProperties
+        }
+      >
+        <p id={helpId} className="sr-only">
+          Arrow keys move between slots. Enter or Space selects a slot; hold
+          Shift with Left or Right to select several. Tab to an event: Enter
+          opens its details, Space picks it up, arrow keys move it
+          {onEventResize ? ", Shift with Left or Right resizes it" : ""}, Space
+          drops it and Escape cancels.
+        </p>
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          {announcement}
+        </div>
         <SchedulerControls
           currentDate={currentDate}
           viewType={viewType}
@@ -195,6 +223,10 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
               onEventResize={onEventResize}
               checkPlacement={checkPlacement}
               slotMinutes={slotMinutes}
+              ariaLabel={ariaLabel}
+              describedBy={helpId}
+              announce={setAnnouncement}
+              onSelectRange={commitRange}
               calculateEventPositions={calculateEventPositions}
               getGridTemplateRows={getGridTemplateRows}
               renderTimeSlot={renderTimeSlot}

@@ -40,17 +40,13 @@ export const useEventCreation = (
     [isDragging, dragStart]
   );
 
-  const handleMouseUp = useCallback(() => {
-    if (
-      isDragging &&
-      dragStart &&
-      dragEnd &&
-      dragStart.resourceId === dragEnd.resourceId &&
-      onEventCreate
-    ) {
+  // Shared by mouse and keyboard selection: first and last selected slot.
+  const commitRange = useCallback(
+    (resourceId: string, fromSlot: Date, toSlot: Date) => {
+      if (!onEventCreate) return;
       const { start, end } = getSelectionBounds(
-        dragStart.date,
-        dragEnd.date,
+        fromSlot,
+        toSlot,
         viewType,
         slotMinutes
       );
@@ -67,23 +63,27 @@ export const useEventCreation = (
       const allowed =
         checkPlacement?.(
           { ...newEvent, id: "__new__" },
-          { resourceId: dragStart.resourceId, start, end }
+          { resourceId, start, end }
         ) ?? true;
-      if (allowed) onEventCreate(newEvent, dragStart.resourceId);
+      if (allowed) onEventCreate(newEvent, resourceId);
+    },
+    [onEventCreate, viewType, checkPlacement, slotMinutes]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    if (
+      isDragging &&
+      dragStart &&
+      dragEnd &&
+      dragStart.resourceId === dragEnd.resourceId
+    ) {
+      commitRange(dragStart.resourceId, dragStart.date, dragEnd.date);
     }
 
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [
-    isDragging,
-    dragStart,
-    dragEnd,
-    onEventCreate,
-    viewType,
-    checkPlacement,
-    slotMinutes,
-  ]);
+  }, [isDragging, dragStart, dragEnd, commitRange]);
 
   // Listen on window so releasing the mouse outside the grid still ends the drag.
   useEffect(() => {
@@ -99,5 +99,6 @@ export const useEventCreation = (
     handleMouseDown,
     handleMouseEnter,
     handleMouseUp,
+    commitRange,
   };
 };

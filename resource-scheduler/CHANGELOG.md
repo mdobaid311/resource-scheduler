@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- **Keyboard navigation and ARIA.** The timeline is a `role="grid"` (single tab stop with `aria-activedescendant`) of rows and named gridcells. Arrow keys/Home/End move a slot cursor, Shift+Left/Right extends a range, Enter or Space selects it. Events are focusable buttons: Enter opens details, Space picks one up, arrows move it, Shift+Left/Right resizes its end, Space drops it, Escape cancels. Moves honour `eventOverlap`/`isValidDrop`, stay inside the visible range, and focus returns to the moved event. This gives keyboard equivalents for dragging, resizing and creating (WCAG 2.5.7).
+- Screen reader support: a polite live region announces pick-up, moves, rejected places, drops and selections; a visually hidden description explains the keys; toolbar buttons and the view select have accessible names; the period title is a live region; slots expose `aria-current="date"` for today. New `ariaLabel` prop.
+- axe-core check in the test suite (no violations on the rendered scheduler).
+- `commitRange` from `useEventCreation`, `formatSlotLabel` / `formatRangeLabel`, `moveCursor` / `stepPlacement` helpers.
 - **`onSlotSelect({ resourceId, start, end })`.** Click or drag-select empty slots and open your own create dialog. When provided it replaces the built-in event creation; the overlap rules apply and rejected selections are not reported.
 - **Day view slot options.** `slotDuration` (minutes per slot), `dayStartHour` and `dayEndHour`. Dragging, resizing, selecting and scroll-to-time all snap to the configured slots; events outside the visible hours are not drawn. `resolveSlotOptions` and the `SlotOptions` type are exported, `getTimeSlots` takes an optional options argument, and `useScheduler` takes slot options as a 4th argument.
 - **Event resize.** Pass `onEventResize(event, resourceId, newStart, newEnd)` to show edge handles. Edges snap to whole slots (hours in Day view, days elsewhere, keeping the time of day), end times are exclusive, and the new footprint is highlighted while dragging.

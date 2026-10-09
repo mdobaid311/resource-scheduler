@@ -357,3 +357,148 @@ describe("useEventDrag: resize", () => {
     expect(result.current.wasDragged()).toBe(true);
   });
 });
+
+describe("useEventDrag: keyboard grab", () => {
+  const r2: Resource = { id: "r2", name: "Bob", events: [] };
+  const base = {
+    viewType: ViewType.Week,
+    resources: [from, r2],
+    visibleRange: { start: d(3, 8), end: d(3, 15) },
+  };
+  const grab = (result: Api) =>
+    act(() => result.current.startGrab(event, from));
+  const step = (result: Api, s: Parameters<Api["current"]["stepGrab"]>[0]) =>
+    act(() => result.current.stepGrab(s));
+
+  it("picks an event up and announces how to move it", () => {
+    const announce = vi.fn();
+    const { result } = renderHook(() => useEventDrag({ ...base, announce }));
+
+    grab(result);
+
+    expect(result.current.grabbedEventId).toBe("e1");
+    expect(result.current.activeDrag).toEqual({
+      eventId: "e1",
+      mode: "move",
+      placement: { resourceId: "r1", start: d(3, 10, 14, 30), end: d(3, 10, 16) },
+      allowed: true,
+    });
+    expect(announce).toHaveBeenCalledWith(expect.stringContaining("Picked up Standup"));
+  });
+
+  it("moves with steps, announces the new place and drops it", () => {
+    const announce = vi.fn();
+    const onEventDrop = vi.fn();
+    const { result } = renderHook(() =>
+      useEventDrag({ ...base, announce, onEventDrop })
+    );
+
+    grab(result);
+    step(result, { cols: 1 });
+    step(result, { rows: 1 });
+    expect(announce).toHaveBeenLastCalledWith(
+      expect.stringContaining("Bob, Wednesday, March 11, 2026")
+    );
+    act(() => result.current.dropGrab());
+
+    expect(onEventDrop).toHaveBeenCalledWith(
+      event,
+      "r1",
+      "r2",
+      d(3, 11, 14, 30),
+      d(3, 11, 16)
+    );
+    expect(result.current.grabbedEventId).toBeNull();
+    expect(result.current.activeDrag).toBeNull();
+    expect(result.current.pendingFocus.current).toBe("e1");
+  });
+
+  it("cancels without calling anything", () => {
+    const onEventDrop = vi.fn();
+    const announce = vi.fn();
+    const { result } = renderHook(() =>
+      useEventDrag({ ...base, announce, onEventDrop })
+    );
+
+    grab(result);
+    step(result, { cols: 1 });
+    act(() => result.current.cancelGrab());
+
+    expect(onEventDrop).not.toHaveBeenCalled();
+    expect(result.current.activeDrag).toBeNull();
+    expect(announce).toHaveBeenLastCalledWith(expect.stringContaining("Cancelled"));
+  });
+
+  it("stays picked up when the place is not allowed", () => {
+    const onEventDrop = vi.fn();
+    const announce = vi.fn();
+    const checkPlacement = vi.fn(() => false);
+    const { result } = renderHook(() =>
+      useEventDrag({ ...base, announce, onEventDrop, checkPlacement })
+    );
+
+    grab(result);
+    step(result, { cols: 1 });
+    expect(result.current.activeDrag?.allowed).toBe(false);
+    expect(announce).toHaveBeenLastCalledWith(expect.stringContaining("Not allowed"));
+    act(() => result.current.dropGrab());
+
+    expect(onEventDrop).not.toHaveBeenCalled();
+    expect(result.current.grabbedEventId).toBe("e1");
+  });
+
+  it("resizes the end and reports it as a resize", () => {
+    const onEventResize = vi.fn();
+    const onEventDrop = vi.fn();
+    const { result } = renderHook(() =>
+      useEventDrag({ ...base, onEventResize, onEventDrop })
+    );
+
+    grab(result);
+    step(result, { resizeEnd: 1 });
+    expect(result.current.activeDrag?.mode).toBe("resize");
+    act(() => result.current.dropGrab());
+
+    expect(onEventResize).toHaveBeenCalledWith(
+      event,
+      "r1",
+      d(3, 10, 14, 30),
+      d(3, 11, 16)
+    );
+    expect(onEventDrop).not.toHaveBeenCalled();
+  });
+
+  it("ignores resize steps when resizing is not enabled", () => {
+    const announce = vi.fn();
+    const { result } = renderHook(() => useEventDrag({ ...base, announce }));
+
+    grab(result);
+    step(result, { resizeEnd: 1 });
+
+    expect(result.current.activeDrag?.placement?.end).toEqual(d(3, 10, 16));
+  });
+
+  it("says so at the edge of the visible range", () => {
+    const announce = vi.fn();
+    const { result } = renderHook(() =>
+      useEventDrag({ ...base, visibleRange: { start: d(3, 10), end: d(3, 11) }, announce })
+    );
+
+    grab(result);
+    step(result, { cols: 1 });
+
+    expect(announce).toHaveBeenLastCalledWith(expect.stringContaining("further"));
+    expect(result.current.activeDrag?.placement?.start).toEqual(d(3, 10, 14, 30));
+  });
+
+  it("drops without callbacks when nothing changed", () => {
+    const onEventDrop = vi.fn();
+    const { result } = renderHook(() => useEventDrag({ ...base, onEventDrop }));
+
+    grab(result);
+    act(() => result.current.dropGrab());
+
+    expect(onEventDrop).not.toHaveBeenCalled();
+    expect(result.current.grabbedEventId).toBeNull();
+  });
+});

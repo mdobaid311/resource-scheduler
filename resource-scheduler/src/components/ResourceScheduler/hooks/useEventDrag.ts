@@ -1,7 +1,8 @@
 // src/components/ResourceScheduler/hooks/useEventDrag.ts
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { Resource, ResourceSchedulerProps, SchedulerEvent, ViewType } from "../types";
-import { getDropRange, getResizeRange } from "../utils/dateUtils";
+import { formatRangeLabel, getDropRange, getResizeRange } from "../utils/dateUtils";
+import { Step, stepPlacement } from "../utils/keyboard";
 import { Placement } from "../utils/placement";
 
 // Pixels the pointer must travel before a press becomes a drag, so plain
@@ -37,10 +38,24 @@ export interface EventDragApi {
     edge: ResizeEdge
   ) => void;
   wasDragged: () => boolean;
+  /** Keyboard equivalent of dragging: pick an event up, step it, drop or cancel. */
+  grabbedEventId: string | null;
+  startGrab: (event: SchedulerEvent, resource: Resource) => void;
+  stepGrab: (step: Step) => void;
+  dropGrab: () => void;
+  cancelGrab: () => void;
+  /** Id of the event to refocus after a keyboard drop re-renders it. */
+  pendingFocus: { current: string | null };
 }
 
 export interface EventDragOptions {
   viewType: ViewType;
+  /** Resources in display order; keyboard moves step between them. */
+  resources?: Resource[];
+  /** Visible time range (end exclusive); keyboard moves cannot leave it. */
+  visibleRange?: { start: Date; end: Date };
+  /** Screen reader announcements for keyboard moves. */
+  announce?: (message: string) => void;
   /** Minutes per slot in day view. Default 60. */
   slotMinutes?: number;
   onEventDrop?: ResourceSchedulerProps["onEventDrop"];
@@ -210,7 +225,137 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
   );
   const wasDragged = useCallback(() => didDrag.current, []);
 
+  // --- Keyboard grab -------------------------------------------------------
+  interface Grab {
+    event: SchedulerEvent;
+    resource: Resource;
+    placement: Placement;
+    moved: boolean;
+    resized: boolean;
+  }
+  const grab = useRef<Grab | null>(null);
+  const [grabbedEventId, setGrabbedEventId] = useState<string | null>(null);
+  const pendingFocus = useRef<string | null>(null);
+
+  const say = (message: string) => latest.current.announce?.(message);
+  const nameOf = (resourceId: string) =>
+    latest.current.resources?.find((r) => r.id === resourceId)?.name ?? "";
+  const describe = (g: Grab) =>
+    `${nameOf(g.placement.resourceId)}, ${formatRangeLabel(
+      g.placement.start,
+      g.placement.end,
+      latest.current.viewType
+    )}`;
+
+  const publish = (g: Grab): boolean => {
+    const allowed = latest.current.checkPlacement?.(g.event, g.placement) ?? true;
+    setActiveDrag({
+      eventId: g.event.id,
+      mode: g.resized && !g.moved ? "resize" : "move",
+      placement: g.placement,
+      allowed,
+    });
+    return allowed;
+  };
+
+  const endGrab = () => {
+    grab.current = null;
+    setGrabbedEventId(null);
+    setActiveDrag(null);
+  };
+
+  const startGrab = useCallback<EventDragApi["startGrab"]>((event, resource) => {
+    stop.current?.(); // a pointer drag in progress yields to the keyboard
+    const g: Grab = {
+      event,
+      resource,
+      placement: { resourceId: resource.id, start: event.startDate, end: event.endDate },
+      moved: false,
+      resized: false,
+    };
+    grab.current = g;
+    setGrabbedEventId(event.id);
+    publish(g);
+    const resizeHint = latest.current.onEventResize
+      ? " Hold Shift with left or right arrow to resize."
+      : "";
+    say(
+      `Picked up ${event.title}. Arrow keys move it, Space drops it, Escape cancels.${resizeHint}`
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const stepGrab = useCallback<EventDragApi["stepGrab"]>((step) => {
+    const g = grab.current;
+    const { viewType, slotMinutes = 60, resources = [], visibleRange } = latest.current;
+    if (!g || !visibleRange) return;
+    if (step.resizeEnd && !latest.current.onEventResize) return;
+
+    const next = stepPlacement(g.placement, step, {
+      viewType,
+      slotMinutes,
+      resourceIds: resources.map((r) => r.id),
+      range: visibleRange,
+    });
+    if (!next) {
+      say("Can't go any further.");
+      return;
+    }
+    g.placement = next;
+    if (step.resizeEnd) g.resized = true;
+    if (step.cols || step.rows) g.moved = true;
+    const allowed = publish(g);
+    say(`${g.event.title}: ${describe(g)}${allowed ? "" : ". Not allowed here"}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dropGrab = useCallback(() => {
+    const g = grab.current;
+    if (!g) return;
+    if (!(latest.current.checkPlacement?.(g.event, g.placement) ?? true)) {
+      say("Not allowed here. Move somewhere else, or press Escape to cancel.");
+      return;
+    }
+    const { event, resource, placement } = g;
+    const unchanged =
+      placement.resourceId === resource.id &&
+      placement.start.getTime() === event.startDate.getTime() &&
+      placement.end.getTime() === event.endDate.getTime();
+
+    endGrab();
+    pendingFocus.current = event.id;
+    setTimeout(() => {
+      if (pendingFocus.current === event.id) pendingFocus.current = null;
+    }, 1500);
+
+    if (unchanged) {
+      say(`Dropped ${event.title}, no change.`);
+      return;
+    }
+    const { onEventDrop, onEventResize } = latest.current;
+    if (g.resized && !g.moved && onEventResize)
+      onEventResize(event, resource.id, placement.start, placement.end);
+    else
+      onEventDrop?.(event, resource.id, placement.resourceId, placement.start, placement.end);
+    say(`Dropped ${event.title}. ${describe(g)}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cancelGrab = useCallback(() => {
+    const g = grab.current;
+    if (!g) return;
+    endGrab();
+    pendingFocus.current = g.event.id;
+    say(`Cancelled. ${g.event.title} stays where it was.`);
+  }, []);
+
   return {
+    grabbedEventId,
+    startGrab,
+    stepGrab,
+    dropGrab,
+    cancelGrab,
+    pendingFocus,
     activeDrag,
     viewType: options.viewType,
     slotMinutes: options.slotMinutes ?? 60,

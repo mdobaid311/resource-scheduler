@@ -322,6 +322,33 @@ export const isSlotInRange = (
   return slot < range.end && slotEnd > range.start;
 };
 
+// Labels read out by screen readers.
+export const formatSlotLabel = (slot: Date, viewType: ViewType): string =>
+  format(
+    slot,
+    viewType === ViewType.Day ? "EEEE, MMMM d, h:mm a" : "EEEE, MMMM d, yyyy"
+  );
+
+// End times are exclusive; date views name the last day the range touches.
+export const formatRangeLabel = (
+  start: Date,
+  end: Date,
+  viewType: ViewType
+): string => {
+  if (viewType === ViewType.Day) {
+    return isSameDay(start, end) || end.getTime() === startOfDay(end).getTime()
+      ? `${format(start, "EEEE, MMMM d, h:mm a")} to ${format(end, "h:mm a")}`
+      : `${format(start, "EEEE, MMMM d, h:mm a")} to ${format(
+          end,
+          "EEEE, MMMM d, h:mm a"
+        )}`;
+  }
+  const lastDay = new Date(Math.max(start.getTime(), end.getTime() - 1));
+  return isSameDay(start, lastDay)
+    ? format(start, "EEEE, MMMM d, yyyy")
+    : `${format(start, "EEEE, MMMM d")} to ${format(lastDay, "EEEE, MMMM d, yyyy")}`;
+};
+
 // "9:30 AM - 11:00 AM", or "All day" for events that start and end at midnight.
 export const formatEventTime = (event: SchedulerEvent): string => {
   const atMidnight = (d: Date) => startOfDay(d).getTime() === d.getTime();
