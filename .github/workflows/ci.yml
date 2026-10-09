@@ -26,6 +26,10 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - name: Validate the shadcn registry with the real CLI
+        # registry.json lives at the repo root, not in the package folder.
+        working-directory: .
+        run: npx --yes shadcn@latest build registry.json -o "$RUNNER_TEMP/registry"
       - name: Bundle sanity
         run: |
           head -c 12 dist/index.esm.js | grep -q '"use client"'

@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **shadcn registry.** `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the component into `components/resource-scheduler/`, installs its dependencies and adds the `--rs-*` tokens and utilities to the app's Tailwind CSS, without touching the app's own theme or `components/ui`. `registry.json` at the repo root is generated (`npm run registry:build`) from the source and `src/styles/tokens.css`; a test fails if it is stale or ships a file that imports something missing. Verified by installing into a fresh Vite 8 + Tailwind 4 + shadcn app and building it.
 - **Keyboard navigation and ARIA.** The timeline is a `role="grid"` (single tab stop with `aria-activedescendant`) of rows and named gridcells. Arrow keys/Home/End move a slot cursor, Shift+Left/Right extends a range, Enter or Space selects it. Events are focusable buttons: Enter opens details, Space picks one up, arrows move it, Shift+Left/Right resizes its end, Space drops it, Escape cancels. Moves honour `eventOverlap`/`isValidDrop`, stay inside the visible range, and focus returns to the moved event. This gives keyboard equivalents for dragging, resizing and creating (WCAG 2.5.7).
 - Screen reader support: a polite live region announces pick-up, moves, rejected places, drops and selections; a visually hidden description explains the keys; toolbar buttons and the view select have accessible names; the period title is a live region; slots expose `aria-current="date"` for today. New `ariaLabel` prop.
 - axe-core check in the test suite (no violations on the rendered scheduler).
@@ -12,6 +13,12 @@
 - **Event resize.** Pass `onEventResize(event, resourceId, newStart, newEnd)` to show edge handles. Edges snap to whole slots (hours in Day view, days elsewhere, keeping the time of day), end times are exclusive, and the new footprint is highlighted while dragging.
 - **Conflict control.** `eventOverlap` (`false`, or `(moving, other) => boolean`) and `isValidDrop(event, placement)` apply to drag-move, resize and drag-create. Rejected placements show a red footprint and never call your handlers. `isPlacementAllowed` and `rangesOverlap` are exported.
 - Drag and resize now highlight every slot the event would cover, not only the one under the pointer.
+
+### Changed
+- `ViewType` is now a `const` object plus a union type instead of an `enum` (`ViewType.Week` and `view: ViewType` work as before). Needed so the source compiles under `erasableSyntaxOnly`, the `create-vite` default.
+- Type-only imports use `import type` everywhere. Without that the source failed to build in apps with `verbatimModuleSyntax` (a Rolldown/Vite 8 `MISSING_EXPORT` error). The package's own tsconfigs now enable both flags so this cannot regress.
+- The UI primitives, `cn` helper and `use-media-query` moved under `src/components/ResourceScheduler/` so the installed layout matches the package. Public exports are unchanged.
+- `src/styles/tokens.css` split out of `global.css`; the compiled npm stylesheet is byte-identical.
 
 ### Fixed
 - Events can be dropped on a slot that is covered by another event (the slot lookup now uses `elementsFromPoint`).

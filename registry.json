@@ -1,0 +1,244 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "resource-scheduler",
+  "homepage": "https://github.com/mdobaid311/resource-scheduler",
+  "items": [
+    {
+      "name": "resource-scheduler",
+      "type": "registry:block",
+      "title": "Resource Scheduler",
+      "description": "Resource timeline for React: drag, resize, overlap rules, slot selection, keyboard and screen reader support. Installs as source you own.",
+      "dependencies": [
+        "@radix-ui/react-popover",
+        "@radix-ui/react-select",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "clsx",
+        "date-fns",
+        "lucide-react",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/EmptySlotItem.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/EmptySlotItem.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/EventItem.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/EventItem.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ResourceColumn.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ResourceColumn.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ResourceScheduler.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ResourceScheduler.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/SchedulerControls.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/SchedulerControls.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/TimelineGrid.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/TimelineGrid.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/TimelineHeader.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/TimelineHeader.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/use-media-query.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/use-media-query.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useEventCreation.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useEventCreation.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useEventDrag.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useEventDrag.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useGridKeyboard.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useGridKeyboard.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useScheduler.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useScheduler.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/index.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/index.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/lib/utils.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/lib/utils.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/types.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/types.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ui/button.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ui/button.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ui/popover.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ui/popover.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ui/select.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ui/select.tsx"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/dateUtils.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/dateUtils.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/keyboard.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/keyboard.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/placement.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/placement.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/scrollUtils.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/scrollUtils.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-ocrs-background": "var(--rs-background)",
+          "color-ocrs-foreground": "var(--rs-foreground)",
+          "color-ocrs-card": "var(--rs-card)",
+          "color-ocrs-card-foreground": "var(--rs-card-foreground)",
+          "color-ocrs-popover": "var(--rs-popover)",
+          "color-ocrs-popover-foreground": "var(--rs-popover-foreground)",
+          "color-ocrs-primary": "var(--rs-primary)",
+          "color-ocrs-primary-foreground": "var(--rs-primary-foreground)",
+          "color-ocrs-secondary": "var(--rs-secondary)",
+          "color-ocrs-secondary-foreground": "var(--rs-secondary-foreground)",
+          "color-ocrs-muted": "var(--rs-muted)",
+          "color-ocrs-muted-foreground": "var(--rs-muted-foreground)",
+          "color-ocrs-accent": "var(--rs-accent)",
+          "color-ocrs-accent-foreground": "var(--rs-accent-foreground)",
+          "color-ocrs-destructive": "var(--rs-destructive)",
+          "color-ocrs-destructive-foreground": "var(--rs-destructive-foreground)",
+          "color-ocrs-border": "var(--rs-border)",
+          "color-ocrs-input": "var(--rs-input)",
+          "color-ocrs-ring": "var(--rs-ring)",
+          "color-ocrs-white": "var(--rs-surface)",
+          "color-ocrs-gray-50": "var(--rs-surface-muted)",
+          "color-ocrs-gray-100": "var(--rs-surface-hover)",
+          "color-ocrs-gray-800": "var(--rs-tooltip)",
+          "color-ocrs-blue-50": "var(--rs-today)",
+          "color-ocrs-transparent": "transparent"
+        },
+        "light": {
+          "rs-background": "#ffffff",
+          "rs-foreground": "#333333",
+          "rs-card": "#ffffff",
+          "rs-card-foreground": "#333333",
+          "rs-popover": "#ffffff",
+          "rs-popover-foreground": "#333333",
+          "rs-primary": "#3b82f6",
+          "rs-primary-foreground": "#ffffff",
+          "rs-secondary": "#f3f4f6",
+          "rs-secondary-foreground": "#4b5563",
+          "rs-muted": "#f9fafb",
+          "rs-muted-foreground": "#6b7280",
+          "rs-accent": "#e0f2fe",
+          "rs-accent-foreground": "#1e3a8a",
+          "rs-destructive": "#ef4444",
+          "rs-destructive-foreground": "#ffffff",
+          "rs-border": "#e5e7eb",
+          "rs-input": "#e5e7eb",
+          "rs-ring": "#3b82f6",
+          "rs-surface": "#ffffff",
+          "rs-surface-muted": "#f9fafb",
+          "rs-surface-hover": "#f3f4f6",
+          "rs-today": "#eff6ff",
+          "rs-tooltip": "#1f2937",
+          "rs-shadow-xs": "0 1px 3px 0px hsl(0 0% 0% / 0.05)",
+          "rs-shadow-sm": "0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1)",
+          "rs-shadow": "var(--rs-shadow-sm)",
+          "rs-shadow-md": "0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1)"
+        },
+        "dark": {
+          "rs-background": "#171717",
+          "rs-foreground": "#e5e5e5",
+          "rs-card": "#262626",
+          "rs-card-foreground": "#e5e5e5",
+          "rs-popover": "#262626",
+          "rs-popover-foreground": "#e5e5e5",
+          "rs-secondary": "#262626",
+          "rs-secondary-foreground": "#e5e5e5",
+          "rs-muted": "#262626",
+          "rs-muted-foreground": "#a3a3a3",
+          "rs-accent": "#1e3a8a",
+          "rs-accent-foreground": "#bfdbfe",
+          "rs-border": "#404040",
+          "rs-input": "#404040",
+          "rs-surface": "#171717",
+          "rs-surface-muted": "#262626",
+          "rs-surface-hover": "#333333",
+          "rs-today": "#172554",
+          "rs-tooltip": "#e5e5e5"
+        }
+      },
+      "css": {
+        "@utility ocrs-shadow-xs": {
+          "box-shadow": "var(--rs-shadow-xs)"
+        },
+        "@utility ocrs-shadow-sm": {
+          "box-shadow": "var(--rs-shadow-sm)"
+        },
+        "@utility ocrs-shadow": {
+          "box-shadow": "var(--rs-shadow)"
+        },
+        "@utility ocrs-shadow-md": {
+          "box-shadow": "var(--rs-shadow-md)"
+        },
+        "@layer base": {
+          ".rs-root, .rs-root *, .rs-root *::before, .rs-root *::after": {
+            "box-sizing": "border-box",
+            "border-color": "var(--rs-border)"
+          },
+          ".rs-root button": {
+            "background-color": "transparent",
+            "color": "inherit",
+            "font": "inherit"
+          },
+          ".rs-root svg": {
+            "display": "block"
+          }
+        }
+      },
+      "docs": "Added to components/resource-scheduler. Use it with: import { ResourceScheduler } from \"@/components/resource-scheduler\". Its design tokens (--rs-*) and utilities were added to your CSS and are scoped to .rs-root, so your existing theme is untouched. Needs Tailwind v4 (and tw-animate-css for the popover animations, which shadcn installs by default). Docs: https://github.com/mdobaid311/resource-scheduler#readme"
+    }
+  ]
+}

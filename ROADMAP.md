@@ -112,7 +112,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] **Theming tokens**: `--rs-*` CSS variables, light/dark, density (compact/comfortable), documented theme gallery (M)
 - [ ] **`classNames` and `components` override maps** (slots pattern), replacing the pile of `render*` props; keep the old ones as aliases (L)
 - [ ] **Headless layer**: split pure logic (layout, conflicts, recurrence, date math) from UI; export `useSchedulerState` etc. (L)
-- [ ] **shadcn registry**: add `registry.json` so `npx shadcn add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo (M). Offer npm package *and* copy-paste.
+- [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Still open: it only resolves once this lands on `main`, so merge, then tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR) after that.
 - [ ] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (S)
 - [ ] **Recurring events** (RRULE, exceptions, DST-safe) in an optional module (L-XL). Premium in MUI X, so strong differentiator
 - [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)
@@ -169,7 +169,7 @@ Track star velocity, README-to-install conversion (npm + registry), time-to-firs
 - **Maintainer burnout is the main failure mode.** react-big-scheduler sits at 174 open issues and no push since 2023. Keep scope narrow (non-goals above); automate CI, releases, issue templates.
 - **Performance claims are easy to get wrong.** Virtualization is the hardest item. Publish methodology with benchmarks or do not claim "fast".
 - **MUI could open its timeline** or Schedule-X could add one. A moat of docs, recipes and community is more durable than any single feature.
-- **shadcn registry has no confirmed public directory** for GitHub registries, so it helps users who already know you; it does not by itself generate discovery.
+- **A shadcn registry is not discovery by itself.** Installs work from `owner/repo/item` with no listing, but nobody finds it unless you point them at it. The community index registry.directory (79 registries when checked) accepts submissions; do that after the registry is on `main` and a release is tagged.
 - **Tailwind/shadcn coupling shrinks the audience** to that ecosystem. Acceptable for focus; headless core (P2) is the hedge.
 - **Star counts are noisy**; prefer downloads, registry installs and real issues as success signals.
 - Data caveats: competitor prices and features change; vendor blogs are biased; I could not retrieve npm's package page (HTTP 403) and used the downloads API instead.
