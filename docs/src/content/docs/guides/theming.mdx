@@ -1,0 +1,49 @@
+---
+title: Theming
+description: Change colours with CSS variables, follow dark mode, and keep the styles from touching the rest of your app.
+---
+
+import ThemeDemo from "../../../components/demos/ThemeDemo";
+
+All colours come from CSS variables named `--rs-*`. Override them on `:root`, or on any ancestor of the scheduler.
+
+<ThemeDemo client:only="react" />
+
+```css
+:root {
+  --rs-primary: #7c3aed;   /* focus and highlight colour */
+  --rs-accent: #ede9fe;    /* drag footprint */
+  --rs-today: #f5f3ff;     /* today and selected slots */
+  --rs-border: #d1d5db;
+}
+```
+
+Popovers render in a portal outside the scheduler, so put overrides on `:root` (or on `body`) rather than on a wrapper.
+
+## Dark mode
+
+Give any ancestor the class `dark` and the dark tokens apply. Your own event colours are yours to adapt.
+
+## Tokens
+
+| Variable | Used for |
+|---|---|
+| `--rs-background`, `--rs-foreground` | Base surfaces and text |
+| `--rs-surface`, `--rs-surface-muted`, `--rs-surface-hover` | Grid, header and hover backgrounds |
+| `--rs-today` | Today and selected slots |
+| `--rs-primary`, `--rs-ring` | Focus ring and the cursor |
+| `--rs-accent` | Footprint while dragging or resizing |
+| `--rs-destructive` | Rejected places |
+| `--rs-border`, `--rs-input` | Lines and inputs |
+| `--rs-popover`, `--rs-popover-foreground` | Event details popover |
+| `--rs-shadow-xs`, `--rs-shadow-sm`, `--rs-shadow`, `--rs-shadow-md` | Elevation |
+
+Every surface and text colour in the grid reads from these tokens, so a dark theme is just a second set of values. The demo above is one.
+
+## It does not leak
+
+The stylesheet has no global reset and no `body` or `html` rules. Base styles are scoped to the class `rs-root`, and the variables are prefixed so they cannot clash with your own `--background` or `--primary`. This holds for the shadcn install too.
+
+## Custom rendering
+
+For the content itself, use the render props: `renderEventPopover`, `renderTimeSlot` (replace the event card), `renderResourceHeader`, `renderDateHeader` and `renderEmptyCell`. See the [props reference](/reference/props/).

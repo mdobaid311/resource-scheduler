@@ -1,0 +1,57 @@
+---
+title: Props
+description: Every prop of the ResourceScheduler component, grouped by what it does, with types and defaults.
+---
+
+```tsx
+import { ResourceScheduler } from "resource-scheduler";
+```
+
+Only `resources` is required.
+
+## Data
+
+- **`resources`**: `Resource[]`, required. Each resource holds its own `events`. Read as is; the component keeps no copy.
+
+## Starting state and views
+
+- **`initialDate`**: `Date`, default `new Date()`. The date to show first.
+- **`initialView`**: `ViewType`, default `ViewType.Day`.
+- **`availableViews`**: `ViewType[]`, default all five. Views offered in the selector.
+- **`allowViewChange`**: `boolean`, default `true`. Set `false` to hide the selector.
+- **`onDateChange`**: `(date: Date) => void`. The user navigated.
+- **`onViewChange`**: `(view: ViewType) => void`. The user changed view.
+
+## Day view slots
+
+- **`slotDuration`**: `number`, default `60`. Minutes per slot.
+- **`dayStartHour`**: `number`, default `0`. First visible hour, 0 to 23.
+- **`dayEndHour`**: `number`, default `24`. Where the range ends (exclusive), 1 to 24.
+
+## Creating, moving and resizing
+
+- **`onSlotSelect`**: `(selection: SlotSelection) => void`. Click or drag on empty slots; replaces `onEventCreate`. `end` is exclusive.
+- **`onEventCreate`**: `(event: Omit<SchedulerEvent, "id">, resourceId: string) => void`. The scheduler builds the event for you.
+- **`onEventDrop`**: `(event, fromResourceId, toResourceId, newStartDate, newEndDate) => void`. An event was moved.
+- **`onEventResize`**: `(event, resourceId, newStartDate, newEndDate) => void`. Providing it shows the resize handles.
+- **`onEventClick`**: `(event, resource) => void`.
+
+## Conflict rules
+
+- **`eventOverlap`**: `boolean` or `(moving, other) => boolean`, default allow. `false` forbids overlapping events on the same resource; a function decides per pair.
+- **`isValidDrop`**: `(event, { resourceId, start, end }) => boolean`. Final veto for move, resize and create.
+
+## Rendering
+
+- **`renderEventPopover`**: `(event, resource, closePopover) => ReactNode`. Replaces the details popover.
+- **`renderTimeSlot`**: `(event, resources) => ReactNode`. Replaces the event card; `resources` holds the one owning resource.
+- **`renderResourceHeader`**: `(resource) => ReactNode`. The cell in the left column.
+- **`renderDateHeader`**: `(date, view) => ReactNode`. A column header.
+- **`renderEmptyCell`**: `(date, resource) => ReactNode`. Content inside an empty slot.
+
+## Layout and accessibility
+
+- **`resourceColumnWidth`**: `string`, default `"220px"` (`"140px"` on small screens). Pixel values only.
+- **`timeColumnWidth`**: `string`, default `"90px"`. Day view column width.
+- **`dateColumnWidth`**: `string`, default `"140px"`. Week view and longer.
+- **`ariaLabel`**: `string`, default `"Resource schedule"`. Accessible name of the grid.

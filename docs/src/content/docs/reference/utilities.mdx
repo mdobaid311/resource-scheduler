@@ -1,0 +1,31 @@
+---
+title: Utilities and hooks
+description: The helper functions and hooks exported by Resource Scheduler, including the conflict check you can reuse on a server.
+---
+
+All of these are exported from `resource-scheduler`.
+
+## Conflict rules
+
+- **`isPlacementAllowed(event, placement, resources, rules)`** returns `boolean`. The same check the component runs. Works anywhere, so use it before saving on the server.
+- **`rangesOverlap(aStart, aEnd, bStart, bEnd)`** returns `boolean`. End times are exclusive; a zero-length range is one instant.
+
+## Dates and slots
+
+- **`getTimeSlots(date, viewType, options?)`** returns the slots of the day view as `Date[]`.
+- **`getDatesInView(date, viewType)`** returns the days shown.
+- **`navigateDate(date, viewType, "prev" | "next")`**
+- **`resolveSlotOptions(options)`** returns sanitised `slotMinutes`, `dayStartHour` and `dayEndHour`, falling back to the defaults for invalid values.
+- **`getVisibleEvents(events, date, viewType, options?)`**
+- **`getDropRange(event, slot, viewType)`**, **`getResizeRange(event, edge, slot, viewType, slotMinutes?)`** and **`getSelectionBounds(a, b, viewType, slotMinutes?)`**: the range arithmetic behind move, resize and select.
+- **`isSlotInRange(slot, range, viewType, slotMinutes?)`**
+- **`formatEventTime(event)`**, **`formatSlotLabel(slot, viewType)`** and **`formatRangeLabel(start, end, viewType)`**: the labels the component uses.
+- **`scrollToDate(date, viewType, scroller, timeColumnWidth, dateColumnWidth, stickyOffset?, options?)`**
+
+## Hooks and parts
+
+- **`useScheduler`**, **`useEventCreation`**: the state hooks behind the component, for building your own layout.
+- **`ResourceColumn`**, **`SchedulerControls`**, **`TimelineHeader`**, **`TimelineGrid`**, **`EventItem`**, **`EmptySlotItem`**: the building blocks, exported for custom composition. Most apps only need `ResourceScheduler`.
+- **`useMediaQuery`**, **`useIsMobile`**, **`useHeadsObserver`**: small shared hooks.
+
+These lower-level exports follow the same semver as the component, but the component is the supported surface. If you find yourself composing the parts, consider the shadcn install and edit the source instead.

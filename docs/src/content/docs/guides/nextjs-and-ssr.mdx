@@ -1,0 +1,45 @@
+---
+title: Next.js and SSR
+description: Using Resource Scheduler in the Next.js App Router, avoiding hydration mismatches, and passing server data.
+---
+
+## App Router
+
+The bundle starts with `"use client"`, so you can import `ResourceScheduler` from a server component. It still needs props that can be serialised across the boundary, and your handlers are functions, so keep them in a client component:
+
+```tsx
+// app/board/board.tsx
+"use client";
+
+import { useState } from "react";
+import { ResourceScheduler } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+export function Board({ initial }: { initial: Resource[] }) {
+  const [resources, setResources] = useState(initial);
+  return <ResourceScheduler resources={resources} /* handlers here */ />;
+}
+```
+
+## Dates cross the server boundary as strings
+
+A server component cannot pass `Date` objects to a client component the way you might expect: after JSON they arrive as strings. Convert them when you build state:
+
+```tsx
+const revive = (rs: SerializedResource[]): Resource[] =>
+  rs.map((r) => ({
+    ...r,
+    events: r.events.map((e) => ({ ...e, startDate: new Date(e.startDate), endDate: new Date(e.endDate) })),
+  }));
+```
+
+## Hydration
+
+Slots and the "today" highlight depend on the current time, so a page rendered at one moment and hydrated at another can differ. Two ways to avoid a mismatch:
+
+- Pass `initialDate` explicitly (for example from the server) instead of relying on `new Date()`.
+- Render the scheduler only on the client, for example with `next/dynamic` and `ssr: false`.
+
+## The shadcn install
+
+If you installed with the shadcn CLI, import from `@/components/resource-scheduler` and skip the stylesheet import. The copied files do not carry `"use client"` at the top of every file, so import the component from a client component.

@@ -1,0 +1,50 @@
+---
+title: Views and slots
+description: Day, week, month, quarter and year views, plus slot length and visible hours for the day view.
+---
+
+import SlotsDemo from "../../../components/demos/SlotsDemo";
+
+## Views
+
+`ViewType` is `Day`, `Week`, `Month`, `Quarter` or `Year`. Choose where to start with `initialView`, and which ones the selector offers with `availableViews`:
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Week}
+  availableViews={[ViewType.Day, ViewType.Week, ViewType.Month]}
+/>
+```
+
+Set `allowViewChange={false}` to hide the selector. `onViewChange` and `onDateChange` tell you when the user navigates.
+
+`ViewType` is a `const` object plus a union type, so both `ViewType.Week` and `view: ViewType` work.
+
+## Slots in the day view
+
+The day view is divided into slots. The week view and longer use whole days.
+
+- `slotDuration`: minutes per slot. Default `60`. Try `15` or `30`.
+- `dayStartHour`: first visible hour, `0` to `23`. Default `0`.
+- `dayEndHour`: where the range ends (exclusive), `1` to `24`. Default `24`.
+
+Dragging, resizing, selecting and scroll-to-time all snap to these slots. Events entirely outside the visible hours are not drawn; ones that cross the edge are clipped. Invalid values fall back to the defaults.
+
+<SlotsDemo client:only="react" />
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Day}
+  slotDuration={30}
+  dayStartHour={8}
+  dayEndHour={18}
+/>
+```
+
+## Column widths
+
+`resourceColumnWidth`, `timeColumnWidth` (day view) and `dateColumnWidth` (other views) take pixel values such as `"140px"`. On narrow screens the defaults shrink.

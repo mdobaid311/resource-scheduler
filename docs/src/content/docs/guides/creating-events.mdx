@@ -1,0 +1,31 @@
+---
+title: Creating events
+description: Use onSlotSelect to open your own create dialog, or let onEventCreate make an event for you.
+---
+
+import RoomBookingDemo from "../../../components/demos/RoomBookingDemo";
+
+There are two ways to react when someone clicks or drags across empty slots.
+
+## `onSlotSelect`: you own the dialog (recommended)
+
+You receive the range and open your own form, a Radix dialog, a modal, whatever your app already uses:
+
+```tsx
+const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+<ResourceScheduler resources={resources} onSlotSelect={setDraft} />
+{draft && <CreateDialog slot={draft} onClose={() => setDraft(null)} />}
+```
+
+`SlotSelection` is `{ resourceId, start, end }`, with `end` exclusive. The conflict rules apply, so a selection that would overlap an existing event is not reported at all.
+
+<RoomBookingDemo client:only="react" />
+
+## `onEventCreate`: the scheduler makes the event
+
+If you only provide `onEventCreate`, the scheduler builds an event titled "New Event" with a random color and calls you with it (without an `id`). Handy for prototypes. If you provide **both**, `onSlotSelect` wins and `onEventCreate` is not called.
+
+## From the keyboard
+
+Move the cursor with the arrow keys, extend with <kbd>Shift</kbd> + <kbd>&larr;</kbd>/<kbd>&rarr;</kbd>, and press <kbd>Enter</kbd> or <kbd>Space</kbd>. It calls the same handler. See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).

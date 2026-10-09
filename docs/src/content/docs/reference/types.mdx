@@ -1,0 +1,93 @@
+---
+title: Types
+description: The TypeScript types exported by Resource Scheduler.
+---
+
+```ts
+import type {
+  Resource,
+  SchedulerEvent,
+  SlotSelection,
+  ResourceSchedulerProps,
+  Placement,
+  PlacementRules,
+  SlotOptions,
+} from "resource-scheduler";
+import { ViewType } from "resource-scheduler";
+```
+
+## `ViewType`
+
+A `const` object and a union type of the same name:
+
+```ts
+const ViewType = {
+  Day: "day",
+  Week: "week",
+  Month: "month",
+  Quarter: "quarter",
+  Year: "year",
+} as const;
+type ViewType = (typeof ViewType)[keyof typeof ViewType];
+```
+
+## `Resource` and `SchedulerEvent`
+
+```ts
+interface Resource {
+  id: string;
+  name: string;
+  role?: string;
+  events: SchedulerEvent[];
+}
+
+interface SchedulerEvent {
+  id: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;      // exclusive
+  color?: string;
+  description?: string;
+}
+```
+
+`Event` is a deprecated alias of `SchedulerEvent`.
+
+## `SlotSelection`
+
+What `onSlotSelect` receives:
+
+```ts
+interface SlotSelection {
+  resourceId: string;
+  start: Date;
+  end: Date;          // exclusive
+}
+```
+
+## `Placement` and `PlacementRules`
+
+Used by the conflict rules and by `isPlacementAllowed`:
+
+```ts
+interface Placement {
+  resourceId: string;
+  start: Date;
+  end: Date;
+}
+
+interface PlacementRules {
+  eventOverlap?: boolean | ((moving: SchedulerEvent, other: SchedulerEvent) => boolean);
+  isValidDrop?: (event: SchedulerEvent, placement: Placement) => boolean;
+}
+```
+
+## `SlotOptions`
+
+```ts
+interface SlotOptions {
+  slotDuration?: number;
+  dayStartHour?: number;
+  dayEndHour?: number;
+}
+```

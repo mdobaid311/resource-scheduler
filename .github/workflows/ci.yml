@@ -35,3 +35,24 @@ jobs:
           head -c 12 dist/index.esm.js | grep -q '"use client"'
           ! grep -q "react.transitional.element" dist/index.esm.js
           ! grep -Eq "(^|[},])body\{|html,:host|--background:" dist/resource-scheduler.css
+
+  docs:
+    # The docs site embeds the real component, so it also checks that the
+    # package source compiles inside another project.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            resource-scheduler/package-lock.json
+            docs/package-lock.json
+      - name: Install the package (the demos import its source)
+        run: npm ci
+        working-directory: resource-scheduler
+      - run: npm ci
+        working-directory: docs
+      - run: npm run build
+        working-directory: docs

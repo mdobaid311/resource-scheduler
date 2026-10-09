@@ -1,0 +1,42 @@
+---
+title: Keyboard and accessibility
+description: Keyboard equivalents for dragging, resizing and creating, an ARIA grid with named cells, and live announcements. What is tested, and what is not yet.
+---
+
+import KeyboardDemo from "../../../components/demos/KeyboardDemo";
+
+Everything you can do with a pointer has a keyboard equivalent, which is what WCAG 2.5.7 asks of any drag interaction.
+
+<KeyboardDemo client:only="react" />
+
+## Keys
+
+The timeline is one tab stop. Events are tab stops of their own.
+
+| Where | Keys | Does |
+|---|---|---|
+| Grid | Arrow keys, <kbd>Home</kbd>, <kbd>End</kbd> | Move the slot cursor |
+| Grid | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Extend a selection. <kbd>Esc</kbd> drops it |
+| Grid | <kbd>Enter</kbd> or <kbd>Space</kbd> | Select the slot or range (calls `onSlotSelect`, or creates an event) |
+| Event | <kbd>Enter</kbd> | Open its details |
+| Event | <kbd>Space</kbd> | Pick it up. Arrows move it, <kbd>Space</kbd> drops it, <kbd>Esc</kbd> cancels |
+| Picked-up event | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Resize the end (needs `onEventResize`) |
+
+Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced and shown in red, and an event cannot leave the visible range. After a drop, focus returns to the event that moved.
+
+## Semantics
+
+- The timeline is `role="grid"` with rows and gridcells. Every cell has a name such as "Ann, Tuesday, March 10, 9:00 AM", and today is marked with `aria-current="date"`.
+- Events are buttons with a label that includes the title, the resource and the time range.
+- The toolbar buttons and view selector have names, and the period title is a live region.
+- A polite live region announces picking up, moving, rejected places, dropping and selecting. A hidden description explains the keys. Set the grid name with `ariaLabel`.
+
+## What is tested, and what is not
+
+- Keyboard flows are covered by automated tests, and the rendered scheduler is audited with axe-core in CI with no violations.
+- It has **not** been tried with NVDA, JAWS or VoiceOver. Treat it as built to the patterns, not as certified.
+- Colour contrast is up to you: event colors are your data, and axe cannot check contrast in a test environment.
+- Announcements are English only.
+- Resizing the start edge, and paging between periods, are not available by keyboard yet. Use the toolbar buttons to change period.
+
+If you hit a problem with a screen reader, please [open an issue](https://github.com/mdobaid311/resource-scheduler/issues) with the reader and browser you used.

@@ -1,0 +1,54 @@
+---
+title: Conflict control
+description: Stop double booking with eventOverlap and isValidDrop. The same rules apply to drag, resize and create, and you can reuse them on the server.
+---
+
+import ConflictDemo from "../../../components/demos/ConflictDemo";
+
+Two props decide whether a place is allowed. Both apply to **moving, resizing and drag-creating** alike, and both are checked against your full `resources` prop, not just what is on screen.
+
+<ConflictDemo client:only="react" />
+
+## `eventOverlap`
+
+```tsx
+<ResourceScheduler eventOverlap={false} />          // no overlaps on the same resource
+<ResourceScheduler eventOverlap={(moving, other) => other.title === "Tentative"} />
+```
+
+`false` forbids an event from overlapping another one on the same resource. A function decides per overlapping pair: return `true` to allow it. Touching is not overlapping, because end times are exclusive. The default is to allow overlap.
+
+## `isValidDrop`
+
+A final veto for anything else: working hours, holidays, capacity.
+
+```tsx
+<ResourceScheduler
+  isValidDrop={(event, { resourceId, start, end }) =>
+    start.getHours() >= 9 && end.getHours() <= 17
+  }
+/>
+```
+
+It runs after `eventOverlap`, and only when overlap did not already reject the place.
+
+## What the user sees
+
+While dragging or resizing, the slots the event would cover are tinted blue when allowed and red when not. Releasing on a red place does nothing. From the keyboard, a rejected place is announced ("Not allowed here") and the event stays picked up.
+
+## Check the same rules elsewhere
+
+The check is a plain function, so you can run it on the server before saving, which is where double booking is really prevented:
+
+```ts
+import { isPlacementAllowed } from "resource-scheduler";
+
+const ok = isPlacementAllowed(
+  event,
+  { resourceId: "atlas", start, end },
+  resources,
+  { eventOverlap: false }
+);
+```
+
+`rangesOverlap(aStart, aEnd, bStart, bEnd)` is exported too. Both treat end times as exclusive and a zero-length event as a single instant.

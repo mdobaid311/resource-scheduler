@@ -1,0 +1,74 @@
+---
+title: Quick start
+description: A working resource scheduler in a few lines. Create, move and click events.
+---
+
+import BasicDemo from '../../../components/demos/BasicDemo';
+
+Here is the whole thing running live. Drag across empty days to create an event, drag an event to another day or person, click one.
+
+<BasicDemo client:only="react" />
+
+## The code
+
+```tsx
+import { useState } from "react";
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+export function Board() {
+  const [resources, setResources] = useState([
+    {
+      id: "ann",
+      name: "Ann Lee",
+      events: [
+        {
+          id: "e1",
+          title: "Standup",
+          startDate: new Date(2026, 9, 12, 9),
+          endDate: new Date(2026, 9, 12, 10),
+          color: "#3b82f6",
+        },
+      ],
+    },
+  ]);
+
+  return (
+    <div style={{ height: 480 }}>
+      <ResourceScheduler
+        resources={resources}
+        initialView={ViewType.Week}
+        onEventCreate={(event, resourceId) =>
+          setResources((prev) =>
+            prev.map((r) =>
+              r.id === resourceId
+                ? { ...r, events: [...r.events, { ...event, id: crypto.randomUUID() }] }
+                : r
+            )
+          )
+        }
+        onEventDrop={(event, fromId, toId, start, end) =>
+          setResources((prev) =>
+            prev.map((r) => {
+              const rest = r.events.filter((e) => e.id !== event.id);
+              if (r.id === toId) return { ...r, events: [...rest, { ...event, startDate: start, endDate: end }] };
+              return r.id === fromId ? { ...r, events: rest } : r;
+            })
+          )
+        }
+      />
+    </div>
+  );
+}
+```
+
+Two things to notice:
+
+1. **You own the state.** The scheduler calls `onEventCreate` and `onEventDrop` and you update `resources`. It never mutates what you pass in.
+2. **Handlers opt features in.** Without `onEventDrop`, a dropped event just snaps back. Without `onEventResize`, there are no resize handles.
+
+## Where next
+
+- [Data model](/guides/data-model/) for the shapes of `resources` and events.
+- [Creating events](/guides/creating-events/) to open your own dialog instead of auto-creating.
+- [Conflict control](/guides/conflict-control/) to stop double booking.

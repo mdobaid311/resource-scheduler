@@ -1,0 +1,58 @@
+---
+// Not part of the docs: the social card (public/og.png) is a screenshot of this page.
+import "../styles/scheduler.css";
+import HeroDemo from "../components/demos/HeroDemo";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Social card</title>
+    <style is:global>
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        color: #fff;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .wrap {
+        padding: 44px 64px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 58px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0 0 26px;
+        max-width: 960px;
+        font-size: 25px;
+        color: #bfdbfe;
+      }
+      .card {
+        height: 340px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        color: #333;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+      .demo-frame {
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Resource Scheduler</h1>
+      <p>Free, MIT resource timeline for React. Drag, resize, no double booking.</p>
+      <div class="card"><HeroDemo client:only="react" height={340} /></div>
+    </div>
+  </body>
+</html>

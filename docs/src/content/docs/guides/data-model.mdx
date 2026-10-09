@@ -1,0 +1,48 @@
+---
+title: Data model
+description: The shapes of resources and events, how end times work, and why the scheduler never keeps its own copy of your data.
+---
+
+## Resources and events
+
+```ts
+interface Resource {
+  id: string;
+  name: string;
+  role?: string;        // shown under the name by the default header
+  events: SchedulerEvent[];
+}
+
+interface SchedulerEvent {
+  id: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;        // exclusive
+  color?: string;       // any CSS color
+  description?: string;
+}
+```
+
+Every event belongs to exactly one resource: it lives in the `events` array of that resource. Moving an event to another row means taking it out of one array and putting it in another, which `onEventDrop` tells you to do.
+
+`Event` is still exported as a deprecated alias of `SchedulerEvent`. Prefer the new name: `Event` shadows the DOM global.
+
+## End times are exclusive
+
+An event from 9:00 to 10:00 occupies 9:00 up to, but not including, 10:00. Another event starting at 10:00 does not overlap it. For all-day events, end at midnight of the **next** day: Monday to Wednesday inclusive is `start = Mon 00:00`, `end = Thu 00:00`, and the default card shows "All day".
+
+## You own the state
+
+The scheduler does not copy `resources`. It reads the prop on every render, and when the user does something it calls a handler:
+
+| Handler | When |
+|---|---|
+| `onEventCreate(event, resourceId)` | A click or drag on empty slots, if you did not provide `onSlotSelect` |
+| `onSlotSelect({ resourceId, start, end })` | The same gesture, handing you the range so you open your own dialog |
+| `onEventDrop(event, fromId, toId, start, end)` | An event was moved |
+| `onEventResize(event, resourceId, start, end)` | An event edge was dragged |
+| `onEventClick(event, resource)` | An event was clicked |
+
+Update your state in those and pass the new `resources` back. If you load data from a server, do the request in the handler and update state when it succeeds.
+
+Only the events inside the visible range are drawn, so passing a whole year of events is fine for a week view.

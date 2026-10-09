@@ -1,0 +1,35 @@
+---
+title: Drag and resize
+description: How moving and resizing behave, which handlers to provide, and what snaps where.
+---
+
+## Moving
+
+Drag an event to another time or another resource. When the pointer is released over a valid place, `onEventDrop` is called:
+
+```tsx
+onEventDrop={(event, fromResourceId, toResourceId, newStart, newEnd) => { /* update state */ }}
+```
+
+- In the **day view** the start of the event snaps to the slot under the pointer.
+- In the **week view and longer** the event moves by whole days and **keeps its time of day**.
+- The duration is kept. Slots covered by other events are valid targets (so the conflict rules can judge them).
+- <kbd>Esc</kbd> while dragging cancels.
+
+## Resizing
+
+Provide `onEventResize` and every event gets edge handles:
+
+```tsx
+onEventResize={(event, resourceId, newStart, newEnd) => { /* update state */ }}
+```
+
+Edges snap to whole slots (or whole days). The slot under the pointer is always included in the result, and an edge cannot cross the opposite one. While you drag, every slot the event would cover is tinted.
+
+## Touch and pen
+
+Dragging uses Pointer Events, so it works with touch and pen as well as the mouse, and it never touches a drag-and-drop setup your app already has. Events set `touch-action: none` so the page does not scroll under a dragging finger. That means swiping on an event does not scroll the board; swipe on empty space instead.
+
+## Rejecting a change
+
+Everything above is subject to the [conflict rules](/guides/conflict-control/). A rejected place shows in red and your handler is never called.

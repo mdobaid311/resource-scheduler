@@ -1,0 +1,65 @@
+---
+title: Free resource timeline for React
+description: A free, MIT-licensed resource timeline for React. Drag, resize, conflict rules, slot selection, keyboard and screen reader support. Install from npm or copy the source with the shadcn CLI.
+template: splash
+hero:
+  title: A resource timeline for React that you own
+  tagline: Rows are people, rooms or machines; columns are time. Drag, resize, stop double booking, and drive it from the keyboard. Free and MIT, with nothing held back for a paid tier.
+  actions:
+    - text: Quick start
+      link: /start/quick-start/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/mdobaid311/resource-scheduler
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+import HeroDemo from '../../components/demos/HeroDemo';
+
+<HeroDemo client:only="react" />
+
+This is the real component, running live. Drag across empty days to create an event, drag an event to move it, grab an edge to resize it. Try dropping one on top of another: it turns red and is refused.
+
+## Install
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install resource-scheduler
+    ```
+  </TabItem>
+  <TabItem label="shadcn CLI">
+    ```bash
+    npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+    ```
+  </TabItem>
+</Tabs>
+
+## What you get
+
+<CardGrid stagger>
+  <Card title="Move, resize, create" icon="random">
+    Pointer-based drag and drop for mouse, pen and touch. No drag-and-drop library to wire up, and no clash with one you already use.
+  </Card>
+  <Card title="Conflict rules" icon="approve-check">
+    Forbid overlaps or write your own rule. Rejected places show in red before you drop, for drag, resize and create alike.
+  </Card>
+  <Card title="Your own dialogs" icon="pencil">
+    `onSlotSelect` hands you the range; you open your own form. Day view slots of 15, 30 or 60 minutes, with visible hours.
+  </Card>
+  <Card title="Keyboard and screen readers" icon="open-book">
+    An ARIA grid with named cells, keyboard move, resize and create, and live announcements. Checked with axe in CI.
+  </Card>
+  <Card title="Themeable, and isolated" icon="setting">
+    Design tokens are CSS variables and every rule is scoped, so importing it never restyles your app.
+  </Card>
+  <Card title="Copy the source" icon="laptop">
+    Prefer to own the code? The shadcn CLI copies it into your project and adds the styles to your Tailwind CSS.
+  </Card>
+</CardGrid>
+
+## Why not FullCalendar or MUI X?
+
+They are good libraries. Their resource timeline, though, is a paid tier. See the [comparison](/compare/alternatives/) for what each one includes and costs.

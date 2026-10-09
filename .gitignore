@@ -25,5 +25,8 @@ dist-ssr
 
 *.tgz
 
+# Astro cache and generated types (docs site)
+.astro/
+
 # graphify knowledge-graph output
 graphify-out/
