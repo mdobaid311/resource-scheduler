@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: resource-scheduler
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: resource-scheduler/package-lock.json
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Bundle sanity
+        run: |
+          head -c 12 dist/index.esm.js | grep -q '"use client"'
+          ! grep -q "react.transitional.element" dist/index.esm.js
+          ! grep -Eq "(^|[},])body\{|html,:host|--background:" dist/resource-scheduler.css

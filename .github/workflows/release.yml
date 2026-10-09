@@ -1,0 +1,35 @@
+name: Release
+
+# Publishes to npm with provenance when a GitHub Release is published.
+# Needs the repository secret NPM_TOKEN (an npm automation token).
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resource-scheduler
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: resource-scheduler/package-lock.json
+      - run: npm ci
+      - name: Release tag matches package version
+        run: test "v$(node -p "require('./package.json').version")" = "${{ github.event.release.tag_name }}"
+      - run: npm run type-check
+      - run: npm run lint
+      # prepublishOnly also runs the tests and the build.
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

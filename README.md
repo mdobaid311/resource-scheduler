@@ -14,7 +14,7 @@ Try the Resource Scheduler in action: [resource-scheduler-demo.vercel.app](https
 - 🎯 **Drag & Drop**: Create events by dragging and move events between resources
 - 🎨 **Customizable**: Fully customizable styling and event rendering
 - 📱 **Responsive**: Works seamlessly across desktop and mobile devices
-- ♿ **Accessible**: Built with accessibility best practices
+- 👆 **Pointer-events drag & drop**: mouse, pen and touch, no extra DnD library
 - 🎪 **Event Popovers**: Customizable event detail popovers
 - 📊 **Resource Management**: Manage multiple resources with individual events
 - 🎯 **TypeScript**: Fully typed for better developer experience
@@ -97,6 +97,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ```bash
 # Clone the repository
 git clone https://github.com/mdobaid311/resource-scheduler.git
+cd resource-scheduler/resource-scheduler
 
 # Install dependencies
 npm install
@@ -128,7 +129,6 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Date utilities from [date-fns](https://date-fns.org/)
-- Drag & drop with [React DnD](https://react-dnd.github.io/react-dnd/)
 
 ---
 
