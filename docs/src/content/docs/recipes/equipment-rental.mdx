@@ -1,0 +1,107 @@
+---
+title: Equipment rental
+description: Rent out equipment by the day with stock counts, a service day, a rule that stops overbooking, and a search for the next free days.
+---
+
+import EquipmentRentalDemo from "../../../components/demos/EquipmentRentalDemo";
+
+Each row is something you rent out. A pool, like the projectors, is one row with a stock count. Rentals are whole days, a full day refuses another booking, and a service day refuses all of them.
+
+<EquipmentRentalDemo client:only="react" />
+
+## The data model
+
+```ts
+import type { ResourceInput, SchedulerEvent } from "resource-scheduler";
+
+const items: ResourceInput[] = [
+  { id: "projector", name: "Projector (3 units)", capacity: 3 },   // three in stock
+  { id: "pa", name: "PA system", unavailable: [{ start: new Date(2026, 9, 7), end: new Date(2026, 9, 8) }] }, // serviced Wednesday
+  { id: "van", name: "Van" },                                      // one unit: capacity defaults to 1
+];
+
+const rentals: SchedulerEvent[] = [
+  {
+    id: "r1",
+    title: "Acme Co",
+    resourceId: "projector",
+    startDate: new Date(2026, 9, 5),    // pickup day, midnight
+    endDate: new Date(2026, 9, 8),      // exclusive: the last day rented is the 7th
+  },
+];
+```
+
+A rental is a row in a `rentals` table with `item_id`, `from_day` and `to_day` (inclusive in the database, exclusive in the event: add one day when you load it). `capacity` is the number of units in stock.
+
+The unit of time is the day because the grid is the week or month view. For hourly rental use the day view and `slotDuration`; nothing else changes.
+
+## How each rule is expressed
+
+| You want | Use |
+|---|---|
+| A pool with several units | `capacity` on the resource, one row for the whole pool |
+| Never more bookings than units | `isValidDrop` with the check below |
+| A service or maintenance day | `unavailable` on the item, with `blockUnavailable` to refuse bookings |
+| Fleet usage | `showUtilization`: unit-days rented over unit-days in stock |
+| The next N free days for one item | `findAvailableSlots` |
+| Your own booking form | `onSlotSelect` |
+
+## Never more bookings than units
+
+`eventOverlap={false}` is right for a single unit, but a pool with three units may overlap up to three times. `capacity` only feeds the utilization numbers, so enforce the count yourself in `isValidDrop`. It runs for every move, resize and selection, with the row and range being tried:
+
+```tsx
+import { rangesOverlap } from "resource-scheduler";
+
+// Does one more booking on [start, end) fit without more than `capacity` at once?
+// The count only changes where a booking starts, so check those moments.
+const fits = (others: SchedulerEvent[], start: Date, end: Date, capacity: number) => {
+  const busy = others.filter((e) => rangesOverlap(start, end, e.startDate, e.endDate));
+  const moments = [start, ...busy.map((e) => e.startDate).filter((t) => t > start)];
+  return moments.every((t) => busy.filter((e) => e.startDate <= t && t < e.endDate).length < capacity);
+};
+
+<ResourceScheduler
+  resources={items}
+  events={rentals}
+  showUtilization
+  blockUnavailable
+  isValidDrop={(event, { resourceId, start, end }) =>
+    fits(
+      rentals.filter((e) => e.resourceId === resourceId && e.id !== event.id),
+      start,
+      end,
+      items.find((i) => i.id === resourceId)?.capacity ?? 1
+    )
+  }
+/>
+```
+
+A plain "count the overlaps" would refuse a booking that fits between two others that never overlap each other; checking at each start does not. Run the same function in your API before saving, because a second browser can book the last unit after yours has loaded.
+
+## Find the next free days
+
+`findAvailableSlots` knows an item's rentals and service time, so it can answer "when is the van free for three days?":
+
+```ts
+import { findAvailableSlots, withEvents } from "resource-scheduler";
+
+const [van] = withEvents(items, rentals).filter((r) => r.id === "van");
+const [slot] = findAvailableSlots(van, {
+  from: new Date(),
+  to: new Date(Date.now() + 120 * 86_400_000),
+  duration: 3 * 24 * 60,   // minutes
+  step: 24 * 60,           // start on whole days
+  limit: 1,
+});
+if (slot) ref.current?.goTo(slot.start);
+```
+
+It treats any overlap as busy, so use it for single-unit items. For a pool with a stock count, step through the days yourself with `fits`.
+
+## Make it real
+
+- **Quantities.** One booking is one unit here. If a customer can take two projectors, put `quantity` in your own data and sum it in `fits` instead of counting events.
+- **Turnaround time.** If a unit needs a day to be cleaned between rentals, make the booking one day longer in your database and draw the extra day as part of the event.
+- **Pickup and return times** are your data. The grid shows whole days; show the hours in `renderEventPopover`.
+- **Prices and deposits** belong on the booking row, not in the scheduler.
