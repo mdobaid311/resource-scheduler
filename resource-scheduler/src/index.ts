@@ -37,6 +37,6 @@ export type {
 } from "./components/ResourceScheduler/utils/placement";
 
 // Shared hooks exports
-export { useMediaQuery } from "./hooks/use-media-query";
+export { useMediaQuery } from "./components/ResourceScheduler/hooks/use-media-query";
 export { useIsMobile } from "./hooks/use-mobile";
 export { useHeadsObserver } from "./hooks/use-heads-observer";

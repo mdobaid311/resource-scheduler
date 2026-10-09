@@ -8,6 +8,8 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "noEmit": false,
     "jsx": "react-jsx",
     "strict": true,

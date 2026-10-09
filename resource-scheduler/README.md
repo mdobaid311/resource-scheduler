@@ -30,6 +30,24 @@ yarn add resource-scheduler
 pnpm add resource-scheduler
 ```
 
+### Or copy the source into your project (shadcn CLI)
+
+Prefer to own the code? Add it as a [shadcn registry](https://ui.shadcn.com/docs/registry/github) item straight from GitHub:
+
+```bash
+npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+```
+
+```tsx
+import { ResourceScheduler } from "@/components/resource-scheduler";
+```
+
+This copies the component to `components/resource-scheduler/` (it mirrors this package's `src`), installs its dependencies (date-fns, lucide-react, Radix popover/select and friends) and adds the `--rs-*` design tokens plus a few utilities to your Tailwind CSS. Your own theme variables and your `components/ui` folder are not touched, and everything is scoped to `.rs-root`.
+
+- Needs Tailwind v4, which is what shadcn sets up by default. Skip the `resource-scheduler.css` import from the npm instructions; the registry adds the styles to your CSS itself.
+- Preview first with `npx shadcn@latest view mdobaid311/resource-scheduler/resource-scheduler` or `--dry-run`, and pin a release tag or commit for reproducible installs: `...resource-scheduler#<tag>`.
+- It is the same code as the npm package and compiles under `verbatimModuleSyntax` and `erasableSyntaxOnly` (the `create-vite` defaults). Use npm if you want updates with `npm update`; use the registry if you want to edit the source.
+
 ## Requirements
 
 - React 18 or 19 (`react` and `react-dom` are peer dependencies).
@@ -136,13 +154,15 @@ Column widths must be `px` values. Event end times are exclusive: an event endin
 ### Type Definitions
 
 ```typescript
-enum ViewType {
-  Day = "day",
-  Week = "week",
-  Month = "month",
-  Quarter = "quarter",
-  Year = "year"
-}
+// A const object plus a union type: ViewType.Week and `view: ViewType` both work.
+const ViewType = {
+  Day: "day",
+  Week: "week",
+  Month: "month",
+  Quarter: "quarter",
+  Year: "year",
+} as const;
+type ViewType = (typeof ViewType)[keyof typeof ViewType];
 
 interface Resource {
   id: string;

@@ -29,6 +29,12 @@ yarn add resource-scheduler
 pnpm add resource-scheduler
 ```
 
+Or copy the source into your project with the [shadcn CLI](https://ui.shadcn.com/docs/registry/github) (Tailwind v4):
+
+```bash
+npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+```
+
 ## Quick Start
 
 ```tsx

@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/EmptySlotItem.tsx
 import React, { useContext } from "react";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
-import { EmptySlotItemProps } from "./types";
+import type { EmptySlotItemProps } from "./types";
 import { isSlotInRange } from "./utils/dateUtils";
 
 export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({

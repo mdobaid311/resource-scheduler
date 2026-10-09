@@ -3,13 +3,16 @@
 // src/components/ResourceScheduler/types.ts
 import type { Placement, PlacementRules } from "./utils/placement";
 
-export enum ViewType {
-  Day = "day",
-  Week = "week",
-  Month = "month",
-  Quarter = "quarter",
-  Year = "year",
-}
+// A const object plus a union (not an `enum`) so the source compiles in apps
+// that enable `erasableSyntaxOnly`, which is the create-vite default.
+export const ViewType = {
+  Day: "day",
+  Week: "week",
+  Month: "month",
+  Quarter: "quarter",
+  Year: "year",
+} as const;
+export type ViewType = (typeof ViewType)[keyof typeof ViewType];
 
 export interface SchedulerEvent {
   id: string;

@@ -26,6 +26,7 @@ CI runs the same commands on Node 20 and 22.
 
 - **Tests first for logic.** Date math, layout and interaction hooks live in `src/components/ResourceScheduler/utils` and `hooks`, each with a `*.test.ts(x)` next to it. Bug fixes should come with a test that fails without the fix.
 - **Don't leak styles.** The shipped CSS must not contain global resets, `body`/`html` rules or unprefixed variables. Use `--rs-*` tokens and the `rs-root` class; CI checks the built CSS.
+- **The shadcn registry is generated.** `registry.json` (repo root) is built from the files in `src/components/ResourceScheduler` and `src/styles/tokens.css`. After adding, removing or renaming a file there, or changing the tokens, run `npm run registry:build` and commit the result; `npm test` fails when it is stale or when a shipped file imports something that is not shipped. Shipped code must compile under `verbatimModuleSyntax` and `erasableSyntaxOnly` (use `import type` for types, no `enum`).
 - **No new runtime dependencies** without discussion. Keep `react`/`react-dom` as peers.
 - Keep PRs small and focused; describe the user-visible change.
 - See [ROADMAP.md](ROADMAP.md) for planned work. Issues labelled `good first issue` are a good start.

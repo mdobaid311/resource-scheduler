@@ -4,13 +4,13 @@ import {
   getTimeSlots,
   getDatesInView,
   getVisibleEvents,
-  SlotOptions,
+  type SlotOptions,
   navigateDate,
   getEventSpan,
   getEventStartPosition,
   isToday,
 } from "../utils/dateUtils";
-import { SchedulerEvent, Resource, ViewType } from "../types";
+import { type SchedulerEvent, type Resource, ViewType } from "../types";
 
 export const useScheduler = (
   initialResources: Resource[],

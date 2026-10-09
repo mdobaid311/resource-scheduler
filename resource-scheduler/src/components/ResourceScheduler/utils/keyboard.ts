@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/utils/keyboard.ts
 import { addDays, addMinutes } from "date-fns";
 import { ViewType } from "../types";
-import { Placement } from "./placement";
+import type { Placement } from "./placement";
 
 export interface Cursor {
   row: number;

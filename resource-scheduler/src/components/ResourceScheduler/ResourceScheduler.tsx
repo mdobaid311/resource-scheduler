@@ -1,5 +1,5 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
-import { useMediaQuery } from "../../hooks/use-media-query";
+import { useMediaQuery } from "./hooks/use-media-query";
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";
@@ -7,9 +7,9 @@ import { ResourceColumn } from "./ResourceColumn";
 import { SchedulerControls } from "./SchedulerControls";
 import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
-import { ResourceSchedulerProps, SchedulerEvent, ViewType } from "./types";
+import { type ResourceSchedulerProps, type SchedulerEvent, ViewType } from "./types";
 import { resolveSlotOptions } from "./utils/dateUtils";
-import { isPlacementAllowed, Placement } from "./utils/placement";
+import { isPlacementAllowed, type Placement } from "./utils/placement";
 import { scrollToDate } from "./utils/scrollUtils";
 
 export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({

@@ -24,7 +24,7 @@ import {
   startOfWeek,
   startOfYear,
 } from "date-fns";
-import { SchedulerEvent, ViewType } from "../types";
+import { type SchedulerEvent, ViewType } from "../types";
 
 /** Day view slot axis. Date-based views always use whole days. */
 export interface SlotOptions {

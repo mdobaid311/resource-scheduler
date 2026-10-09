@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/utils/scrollUtils.ts
 import { isSameDay } from "date-fns";
-import { getTimeSlots, getDatesInView, SlotOptions } from "./dateUtils";
+import { getTimeSlots, getDatesInView, type SlotOptions } from "./dateUtils";
 import { ViewType } from "../types";
 
 /**

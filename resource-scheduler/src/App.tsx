@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ResourceScheduler } from "./components/ResourceScheduler";
-import { Button } from "./components/ui/button";
+import { Button } from "./components/ResourceScheduler/ui/button";
 import {
   Card,
   CardContent,
@@ -11,9 +11,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Badge } from "./components/ui/badge";
 import {
-  Event,
-  Resource,
-  SlotSelection,
+  type Event,
+  type Resource,
+  type SlotSelection,
   ViewType,
 } from "./components/ResourceScheduler/types";
 import { sampleResources } from "./constants/data";

@@ -1,5 +1,5 @@
 // src/components/ResourceScheduler/utils/placement.ts
-import { Resource, SchedulerEvent } from "../types";
+import type { Resource, SchedulerEvent } from "../types";
 
 /** Where an event would end up after a drop, resize or create. */
 export interface Placement {
