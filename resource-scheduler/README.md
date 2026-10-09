@@ -114,6 +114,10 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeColumnWidth` | `string` | `"90px"` | Width of time columns (day view) |
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
+| `onSlotSelect` | `({ resourceId, start, end }) => void` | `undefined` | Called when the user clicks or drag-selects empty slots. Providing it replaces the built-in creation (`onEventCreate` is not called) so you can open your own dialog. The overlap rules apply. `end` is exclusive |
+| `slotDuration` | `number` | `60` | Day view only: minutes per slot (15, 30, 60, ...) |
+| `dayStartHour` | `number` | `0` | Day view only: first visible hour, 0-23 |
+| `dayEndHour` | `number` | `24` | Day view only: hour the visible range ends (exclusive), 1-24 |
 | `onEventResize` | `(event, resourceId, newStartDate, newEndDate) => void` | `undefined` | Providing it shows resize handles on every event. Edges snap to whole slots; end times are exclusive |
 | `eventOverlap` | `boolean \| (moving, other) => boolean` | `true` | `false` forbids overlapping events on the same resource; a function decides per overlapping pair (return `true` to allow) |
 | `isValidDrop` | `(event, placement) => boolean` | `undefined` | Final veto for move, resize and drag-create. `placement` is `{ resourceId, start, end }` |
@@ -241,6 +245,24 @@ function InteractiveExample() {
   );
 }
 ```
+
+### Your own create dialog and finer slots
+
+```tsx
+const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Day}
+  slotDuration={30}      // 30-minute columns
+  dayStartHour={8}       // show 08:00 ...
+  dayEndHour={18}        // ... to 18:00
+  onSlotSelect={setDraft} // { resourceId, start, end }: open your dialog, then add the event yourself
+/>
+{draft && <MyCreateDialog slot={draft} onClose={() => setDraft(null)} />}
+```
+
+Events snap to slots when dragged or resized in Day view. Events outside the visible hours are not drawn; ones that cross the edge are clipped. Invalid values fall back to the defaults.
 
 ### Resize and conflict control
 

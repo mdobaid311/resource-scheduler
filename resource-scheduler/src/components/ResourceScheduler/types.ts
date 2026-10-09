@@ -26,6 +26,13 @@ export interface SchedulerEvent {
 /** @deprecated Use `SchedulerEvent`. The name `Event` shadows the DOM global. */
 export type Event = SchedulerEvent;
 
+/** A range of empty slots the user selected. `end` is exclusive. */
+export interface SlotSelection {
+  resourceId: string;
+  start: Date;
+  end: Date;
+}
+
 export interface Resource {
   id: string;
   name: string;
@@ -54,6 +61,20 @@ export interface ResourceSchedulerProps {
     newStartDate: Date,
     newEndDate: Date
   ) => void;
+  /**
+   * Called with the selected range when the user drag-selects or clicks empty
+   * slots. Providing it replaces the built-in event creation (`onEventCreate`
+   * is not called), so the app can open its own create dialog. The overlap
+   * rules (`eventOverlap`, `isValidDrop`) apply: rejected selections are not
+   * reported. End is exclusive.
+   */
+  onSlotSelect?: (selection: SlotSelection) => void;
+  /** Day view only: minutes per slot, e.g. 15, 30 or 60 (default 60). */
+  slotDuration?: number;
+  /** Day view only: first visible hour, 0-23 (default 0). */
+  dayStartHour?: number;
+  /** Day view only: hour the visible range ends (exclusive), 1-24 (default 24). */
+  dayEndHour?: number;
   /**
    * Called when an event edge is dragged to a new start or end. Providing it
    * turns the resize handles on. End times are exclusive.
@@ -134,6 +155,8 @@ export interface TimelineGridProps {
     newEndDate: Date
   ) => void;
   onEventResize?: ResourceSchedulerProps["onEventResize"];
+  /** Minutes per slot in day view. Default 60. */
+  slotMinutes?: number;
   /** Whether an event may be placed there; rejected placements show in red and are not applied. */
   checkPlacement?: (event: SchedulerEvent, placement: Placement) => boolean;
   calculateEventPositions: (events: SchedulerEvent[], datesInView: Date[]) => any[];

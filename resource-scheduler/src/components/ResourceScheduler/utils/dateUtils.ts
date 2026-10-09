@@ -1,14 +1,13 @@
 // src/components/ResourceScheduler/utils/dateUtils.ts
 import {
   addDays,
-  addHours,
+  addMinutes,
   addMonths,
   addQuarters,
   addWeeks,
   addYears,
   differenceInCalendarDays,
   eachDayOfInterval,
-  eachHourOfInterval,
   endOfDay,
   format,
   endOfMonth,
@@ -20,7 +19,6 @@ import {
   max,
   min,
   startOfDay,
-  startOfHour,
   startOfMonth,
   startOfQuarter,
   startOfWeek,
@@ -28,13 +26,64 @@ import {
 } from "date-fns";
 import { SchedulerEvent, ViewType } from "../types";
 
-export const getTimeSlots = (currentDate: Date, viewType: ViewType): Date[] => {
-  if (viewType !== ViewType.Day) return [];
-  return eachHourOfInterval({
-    start: startOfDay(currentDate),
-    end: endOfDay(currentDate),
-  });
+/** Day view slot axis. Date-based views always use whole days. */
+export interface SlotOptions {
+  /** Minutes per slot. Default 60. */
+  slotDuration?: number;
+  /** First visible hour, 0-23. Default 0. */
+  dayStartHour?: number;
+  /** Hour the visible range ends (exclusive), 1-24. Default 24. */
+  dayEndHour?: number;
+}
+
+/** Sanitises user options; anything invalid falls back to the defaults. */
+export const resolveSlotOptions = ({
+  slotDuration,
+  dayStartHour,
+  dayEndHour,
+}: SlotOptions = {}) => {
+  const slotMinutes =
+    Number.isInteger(slotDuration) && slotDuration! >= 1 && slotDuration! <= 1440
+      ? slotDuration!
+      : 60;
+  const hoursOk =
+    Number.isInteger(dayStartHour) &&
+    Number.isInteger(dayEndHour) &&
+    dayStartHour! >= 0 &&
+    dayEndHour! <= 24 &&
+    dayStartHour! < dayEndHour!;
+  return {
+    slotMinutes,
+    dayStartHour: hoursOk ? dayStartHour! : 0,
+    dayEndHour: hoursOk ? dayEndHour! : 24,
+  };
 };
+
+export const getTimeSlots = (
+  currentDate: Date,
+  viewType: ViewType,
+  options?: SlotOptions
+): Date[] => {
+  if (viewType !== ViewType.Day) return [];
+  const { slotMinutes, dayStartHour, dayEndHour } = resolveSlotOptions(options);
+  const count = Math.ceil(((dayEndHour - dayStartHour) * 60) / slotMinutes);
+  const y = currentDate.getFullYear();
+  const m = currentDate.getMonth();
+  const d = currentDate.getDate();
+  // Built from wall-clock minutes so slot labels stay stable across DST days.
+  return Array.from(
+    { length: count },
+    (_, i) => new Date(y, m, d, 0, dayStartHour * 60 + i * slotMinutes)
+  );
+};
+
+// Wall-clock minutes of `date` counted from midnight of `day` (may exceed 1440).
+const wallMinutes = (date: Date, day: Date): number =>
+  differenceInCalendarDays(date, day) * 1440 +
+  date.getHours() * 60 +
+  date.getMinutes() +
+  date.getSeconds() / 60 +
+  date.getMilliseconds() / 60000;
 
 export const getDatesInView = (
   currentDate: Date,
@@ -99,8 +148,9 @@ const lastInstant = (event: SchedulerEvent): Date =>
     ? new Date(event.endDate.getTime() - 1)
     : event.startDate;
 
-// Day view clamps to the day of `datesInView[0]` (hourly slots), other views
-// clamp to the first/last day. Returns column index and column count.
+// Day view clamps to the slots in `datesInView` (slot size and visible range
+// are inferred from them), other views clamp to the first/last day.
+// Returns column index and column count.
 const getEventColumns = (
   event: SchedulerEvent,
   datesInView: Date[],
@@ -109,10 +159,22 @@ const getEventColumns = (
   const first = startOfDay(datesInView[0]);
 
   if (viewType === ViewType.Day) {
-    const start = max([event.startDate, first]);
-    const last = min([lastInstant(event), endOfDay(first)]);
-    const position = start.getHours();
-    return { position, span: Math.max(1, last.getHours() - position + 1) };
+    // ponytail: a single slot is assumed to be 60 min; only matters for odd
+    // configs like one 2h slot, add a slotMinutes param if that appears.
+    const slotMinutes =
+      datesInView.length > 1
+        ? wallMinutes(datesInView[1], first) - wallMinutes(datesInView[0], first)
+        : 60;
+    const rangeStart = wallMinutes(datesInView[0], first);
+    const rangeEnd = rangeStart + datesInView.length * slotMinutes;
+    const from = Math.max(wallMinutes(event.startDate, first), rangeStart);
+    const to = Math.min(wallMinutes(lastInstant(event), first), rangeEnd - 0.001);
+    const position = Math.min(
+      Math.floor((from - rangeStart) / slotMinutes),
+      datesInView.length - 1
+    );
+    const lastIndex = Math.floor((to - rangeStart) / slotMinutes);
+    return { position, span: Math.max(1, lastIndex - position + 1) };
   }
 
   const lastDay = startOfDay(datesInView[datesInView.length - 1]);
@@ -142,8 +204,21 @@ export const getEventStartPosition = (
 export const getVisibleEvents = (
   events: SchedulerEvent[],
   currentDate: Date,
-  viewType: ViewType
+  viewType: ViewType,
+  slotOptions?: SlotOptions
 ): SchedulerEvent[] => {
+  if (viewType === ViewType.Day) {
+    // Only the visible hours count, so events outside them are not drawn.
+    const { dayStartHour, dayEndHour } = resolveSlotOptions(slotOptions);
+    const y = currentDate.getFullYear();
+    const m = currentDate.getMonth();
+    const d = currentDate.getDate();
+    const from = new Date(y, m, d, dayStartHour);
+    const to = new Date(y, m, d, dayEndHour);
+    return events.filter(
+      (event) => event.startDate < to && lastInstant(event) >= from
+    );
+  }
   const dates = getDatesInView(currentDate, viewType);
   const rangeStart = startOfDay(dates[0]);
   const rangeEnd = endOfDay(dates[dates.length - 1]);
@@ -181,23 +256,25 @@ export const getDropRange = (
 export const getSelectionBounds = (
   a: Date,
   b: Date,
-  viewType: ViewType
+  viewType: ViewType,
+  slotMinutes = 60
 ): { start: Date; end: Date } => {
   const [first, last] = a <= b ? [a, b] : [b, a];
   return viewType === ViewType.Day
-    ? { start: first, end: addHours(startOfHour(last), 1) }
+    ? { start: first, end: addMinutes(last, slotMinutes) }
     : { start: first, end: addDays(startOfDay(last), 1) };
 };
 
 // New range when `edge` of `event` is dragged onto `slot`; the slot under the
-// pointer is always included. Day view snaps to hours; date views move whole
+// pointer is always included. Day view snaps to slots; date views move whole
 // days and keep the time of day (an all-day event stays midnight-aligned).
 // Returns null when the edge would cross the opposite edge.
 export const getResizeRange = (
   event: SchedulerEvent,
   edge: "start" | "end",
   slot: Date,
-  viewType: ViewType
+  viewType: ViewType,
+  slotMinutes = 60
 ): { start: Date; end: Date } | null => {
   const { startDate, endDate } = event;
   const onSlotDay = (time: Date) =>
@@ -221,7 +298,7 @@ export const getResizeRange = (
   const end =
     edge === "end"
       ? viewType === ViewType.Day
-        ? addHours(slot, 1)
+        ? addMinutes(slot, slotMinutes)
         : endsAtMidnight
         ? addDays(startOfDay(slot), 1)
         : onSlotDay(endDate)
@@ -230,15 +307,18 @@ export const getResizeRange = (
   return start < end ? { start, end } : null;
 };
 
-// Whether the hour (day view) or day (other views) starting at `slot` is
+// Whether the slot (day view) or day (other views) starting at `slot` is
 // touched by `range`. Used to draw the footprint of a drag or resize.
 export const isSlotInRange = (
   slot: Date,
   range: { start: Date; end: Date },
-  viewType: ViewType
+  viewType: ViewType,
+  slotMinutes = 60
 ): boolean => {
   const slotEnd =
-    viewType === ViewType.Day ? addHours(slot, 1) : addDays(slot, 1);
+    viewType === ViewType.Day
+      ? addMinutes(slot, slotMinutes)
+      : addDays(slot, 1);
   return slot < range.end && slotEnd > range.start;
 };
 

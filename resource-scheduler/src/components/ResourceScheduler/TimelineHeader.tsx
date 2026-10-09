@@ -18,10 +18,9 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
     <div
       className="grid sticky top-0 z-10 bg-ocrs-background"
       style={{
-        gridTemplateColumns:
-          viewType === "day"
-            ? `repeat(24, ${timeColumnWidth})`
-            : `repeat(${slots.length}, ${dateColumnWidth})`,
+        gridTemplateColumns: `repeat(${slots.length}, ${
+          viewType === "day" ? timeColumnWidth : dateColumnWidth
+        })`,
       }}
     >
       {slots.map((slot, i) => (
@@ -40,7 +39,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                   isToday(slot) ? "text-blue-600" : "text-gray-500"
                 }`}
               >
-                {format(slot, "ha")}
+                {format(slot, slot.getMinutes() ? "h:mma" : "ha")}
               </span>
               <span
                 className={`text-xs ${

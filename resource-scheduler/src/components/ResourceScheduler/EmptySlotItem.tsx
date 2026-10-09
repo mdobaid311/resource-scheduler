@@ -23,7 +23,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
     !!drag &&
     !!footprint &&
     footprint.resourceId === resource.id &&
-    isSlotInRange(slot, footprint, drag.viewType);
+    isSlotInRange(slot, footprint, drag.viewType, drag.slotMinutes);
   const rejected = inFootprint && !drag?.activeDrag?.allowed;
 
   return (

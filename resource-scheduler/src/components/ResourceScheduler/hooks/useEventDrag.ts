@@ -23,6 +23,7 @@ export interface ActiveDrag {
 export interface EventDragApi {
   activeDrag: ActiveDrag | null;
   viewType: ViewType;
+  slotMinutes: number;
   canResize: boolean;
   startEventDrag: (
     e: React.PointerEvent<HTMLElement>,
@@ -40,6 +41,8 @@ export interface EventDragApi {
 
 export interface EventDragOptions {
   viewType: ViewType;
+  /** Minutes per slot in day view. Default 60. */
+  slotMinutes?: number;
   onEventDrop?: ResourceSchedulerProps["onEventDrop"];
   /** Providing this turns the resize handles on. */
   onEventResize?: ResourceSchedulerProps["onEventResize"];
@@ -115,14 +118,14 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
       const resolve = (target: SlotTarget | null): Placement | null => {
         if (!target) return null;
         const slot = new Date(target.slot);
-        const { viewType } = latest.current;
+        const { viewType, slotMinutes = 60 } = latest.current;
         if (mode === "move") {
           const { start, end } = getDropRange(event, slot, viewType);
           return { resourceId: target.resourceId, start, end };
         }
         // Resizing stays on the event's own resource row.
         if (target.resourceId !== resource.id) return null;
-        const range = getResizeRange(event, edge!, slot, viewType);
+        const range = getResizeRange(event, edge!, slot, viewType, slotMinutes);
         return range && { resourceId: resource.id, ...range };
       };
 
@@ -210,6 +213,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
   return {
     activeDrag,
     viewType: options.viewType,
+    slotMinutes: options.slotMinutes ?? 60,
     canResize: !!options.onEventResize,
     startEventDrag,
     startEventResize,

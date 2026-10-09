@@ -96,10 +96,10 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 ### P1: Table-stakes features (the research-backed list)
 - [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
 - [x] **Event resize** by edge drag + `onEventResize` (done on branch `feat/overlap-resize`; touch not yet verified on devices)
-- [ ] **Slot config**: `slotDuration` 15/30/60, snapping, `dayStartHour`/`dayEndHour`, weekend toggle, `weekStartsOn` (M)
+- [x] **Slot config**: `slotDuration`, `dayStartHour`/`dayEndHour` with snapping (done on branch `feat/slot-select-duration`). Still open: weekend toggle, `weekStartsOn`
 - [ ] **Business hours / unavailable ranges** shading per resource, and capacity per resource (M)
 - [ ] **Flat data model**: `events[]` with `resourceId` or `resourceIds[]` as the primary API; keep nested `resource.events` via adapter (M)
-- [ ] **Slot selection callback** `onSlotSelect({start,end,resourceId})` so apps open their own dialog; deprecate auto-create (S)
+- [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [ ] **Resource grouping / hierarchy** with collapse (L)
 - [ ] **Now indicator**, sticky headers/resource column, zoom (S-M)
 - [ ] **Keyboard navigation + ARIA grid**: roving tabindex, Enter/Space grab, arrows move, Shift+Enter resize, Esc cancel, live-region announcements, then publish a short accessibility statement (L)

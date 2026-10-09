@@ -13,6 +13,7 @@ import { Badge } from "./components/ui/badge";
 import {
   Event,
   Resource,
+  SlotSelection,
   ViewType,
 } from "./components/ResourceScheduler/types";
 import { sampleResources } from "./constants/data";
@@ -24,6 +25,32 @@ const App = () => {
   const [eventsDropped, setEventsDropped] = useState(0);
   const [lastAction, setLastAction] = useState<string>("");
   const [noOverlap, setNoOverlap] = useState(false);
+  const [slotDuration, setSlotDuration] = useState(30);
+  // onSlotSelect lets the app own the create flow; here a small inline form.
+  const [pendingSlot, setPendingSlot] = useState<SlotSelection | null>(null);
+  const [pendingTitle, setPendingTitle] = useState("");
+
+  const handleCreateFromSlot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingSlot) return;
+    const { resourceId, start, end } = pendingSlot;
+    const newEvent: Event = {
+      id: `event-${Date.now()}`,
+      title: pendingTitle.trim() || "Untitled",
+      startDate: start,
+      endDate: end,
+      color: "#3b82f6",
+    };
+    setResources((prev) =>
+      prev.map((r) =>
+        r.id === resourceId ? { ...r, events: [...r.events, newEvent] } : r
+      )
+    );
+    setEventsCreated((n) => n + 1);
+    setLastAction(`Event created: ${newEvent.title}`);
+    setPendingSlot(null);
+    setPendingTitle("");
+  };
 
   const [resources, setResources] = useState<Resource[]>(sampleResources);
 
@@ -34,27 +61,6 @@ const App = () => {
 
   const handleEventClick = (event: Event, resource: Resource) => {
     setLastAction(`Event clicked: ${event.title} (${resource.name})`);
-  };
-
-  const handleEventCreate = (
-    eventData: Omit<Event, "id">,
-    resourceId: string
-  ) => {
-    const newEvent: Event = {
-      ...eventData,
-      id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
-
-    setResources((prevResources) =>
-      prevResources.map((resource) =>
-        resource.id === resourceId
-          ? { ...resource, events: [...resource.events, newEvent] }
-          : resource
-      )
-    );
-
-    setEventsCreated((prev) => prev + 1);
-    setLastAction(`Event created on resource: ${resourceId}`);
   };
 
   const handleEventDrop = (
@@ -416,6 +422,50 @@ function App() {
                   Prevent overlapping events (drag, resize and create are
                   rejected, shown in red)
                 </label>
+                <label className="mb-3 flex items-center gap-2 text-sm text-gray-700">
+                  Day view slot length
+                  <select
+                    className="rounded border px-2 py-1"
+                    value={slotDuration}
+                    onChange={(e) => setSlotDuration(Number(e.target.value))}
+                  >
+                    {[15, 30, 60].map((m) => (
+                      <option key={m} value={m}>
+                        {m} min
+                      </option>
+                    ))}
+                  </select>
+                  (08:00 to 20:00 visible)
+                </label>
+                {pendingSlot && (
+                  <form
+                    onSubmit={handleCreateFromSlot}
+                    className="mb-3 flex flex-wrap items-center gap-2 rounded border bg-blue-50 p-3 text-sm"
+                  >
+                    <span>
+                      New event {pendingSlot.start.toLocaleString()} to{" "}
+                      {pendingSlot.end.toLocaleString()}
+                    </span>
+                    <input
+                      autoFocus
+                      className="rounded border px-2 py-1"
+                      placeholder="Title"
+                      value={pendingTitle}
+                      onChange={(e) => setPendingTitle(e.target.value)}
+                    />
+                    <Button type="submit" size="sm">
+                      Create
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPendingSlot(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </form>
+                )}
                 <div className="h-[600px] border rounded-lg bg-white">
                   <ResourceScheduler
                     resources={resources}
@@ -425,7 +475,10 @@ function App() {
                     initialView={ViewType.Week}
                     onDateChange={handleDateChange}
                     onEventClick={handleEventClick}
-                    onEventCreate={handleEventCreate}
+                    onSlotSelect={setPendingSlot}
+                    slotDuration={slotDuration}
+                    dayStartHour={8}
+                    dayEndHour={20}
                     onEventDrop={handleEventDrop}
                     onEventResize={handleEventResize}
                     eventOverlap={noOverlap ? false : true}
@@ -433,7 +486,7 @@ function App() {
                     renderEventPopover={renderEventPopover}
                     resourceColumnWidth="200px"
                     timeColumnWidth="60px"
-                    availableViews={[ViewType.Week, ViewType.Month]}
+                    availableViews={[ViewType.Day, ViewType.Week, ViewType.Month]}
                   />
                 </div>
 

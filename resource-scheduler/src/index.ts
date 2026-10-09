@@ -8,6 +8,7 @@ export type {
   Event,
   Resource,
   SchedulerEvent,
+  SlotSelection,
 } from "./components/ResourceScheduler/types";
 export { ViewType } from "./components/ResourceScheduler/types";
 

@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### Added
+- **`onSlotSelect({ resourceId, start, end })`.** Click or drag-select empty slots and open your own create dialog. When provided it replaces the built-in event creation; the overlap rules apply and rejected selections are not reported.
+- **Day view slot options.** `slotDuration` (minutes per slot), `dayStartHour` and `dayEndHour`. Dragging, resizing, selecting and scroll-to-time all snap to the configured slots; events outside the visible hours are not drawn. `resolveSlotOptions` and the `SlotOptions` type are exported, `getTimeSlots` takes an optional options argument, and `useScheduler` takes slot options as a 4th argument.
 - **Event resize.** Pass `onEventResize(event, resourceId, newStart, newEnd)` to show edge handles. Edges snap to whole slots (hours in Day view, days elsewhere, keeping the time of day), end times are exclusive, and the new footprint is highlighted while dragging.
 - **Conflict control.** `eventOverlap` (`false`, or `(moving, other) => boolean`) and `isValidDrop(event, placement)` apply to drag-move, resize and drag-create. Rejected placements show a red footprint and never call your handlers. `isPlacementAllowed` and `rangesOverlap` are exported.
 - Drag and resize now highlight every slot the event would cover, not only the one under the pointer.

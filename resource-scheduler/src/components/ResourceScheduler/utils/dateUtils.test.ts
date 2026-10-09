@@ -222,3 +222,100 @@ describe("isSlotInRange", () => {
     expect(isSlotInRange(d(3, 12), r, ViewType.Week)).toBe(false);
   });
 });
+
+describe("slot options", () => {
+  it("defaults to 24 hourly slots", () => {
+    expect(getTimeSlots(d(3, 10), ViewType.Day)).toHaveLength(24);
+  });
+
+  it("builds slots of the configured duration between the visible hours", () => {
+    const slots = getTimeSlots(d(3, 10), ViewType.Day, {
+      slotDuration: 30,
+      dayStartHour: 9,
+      dayEndHour: 11,
+    });
+    expect(slots).toEqual([
+      d(3, 10, 9),
+      d(3, 10, 9, 30),
+      d(3, 10, 10),
+      d(3, 10, 10, 30),
+    ]);
+  });
+
+  it("falls back to defaults for invalid options", () => {
+    const slots = getTimeSlots(d(3, 10), ViewType.Day, {
+      slotDuration: 0,
+      dayStartHour: 20,
+      dayEndHour: 10,
+    });
+    expect(slots).toHaveLength(24);
+  });
+});
+
+describe("day view layout with custom slots", () => {
+  const options = { slotDuration: 30, dayStartHour: 8, dayEndHour: 18 };
+  const slots = getTimeSlots(d(3, 10), ViewType.Day, options);
+  const pos = (e: SchedulerEvent) => getEventStartPosition(e, slots, ViewType.Day);
+  const span = (e: SchedulerEvent) => getEventSpan(e, slots, ViewType.Day);
+
+  it("positions events by slot, counting from the first visible hour", () => {
+    const e = ev(d(3, 10, 9, 15), d(3, 10, 10, 20));
+    expect(pos(e)).toBe(2); // 9:00-9:30 is the third slot after 8:00
+    expect(span(e)).toBe(3); // 9:00, 9:30, 10:00
+  });
+
+  it("clamps an event that starts before the visible hours", () => {
+    const e = ev(d(3, 10, 7), d(3, 10, 9));
+    expect(pos(e)).toBe(0);
+    expect(span(e)).toBe(2);
+  });
+
+  it("clamps an event that ends after the visible hours", () => {
+    const e = ev(d(3, 10, 17), d(3, 10, 20));
+    expect(pos(e)).toBe(18);
+    expect(span(e)).toBe(2);
+  });
+});
+
+describe("getVisibleEvents with visible hours", () => {
+  const options = { dayStartHour: 8, dayEndHour: 18 };
+  const early = ev(d(3, 10, 5), d(3, 10, 7));
+  const crossing = ev(d(3, 10, 7), d(3, 10, 9));
+  const inside = ev(d(3, 10, 9), d(3, 10, 10));
+  const late = ev(d(3, 10, 19), d(3, 10, 20));
+
+  it("hides day-view events entirely outside the visible hours", () => {
+    expect(
+      getVisibleEvents([early, crossing, inside, late], d(3, 10, 12), ViewType.Day, options)
+    ).toEqual([crossing, inside]);
+  });
+
+  it("ignores visible hours in date views", () => {
+    expect(getVisibleEvents([early, late], d(3, 10), ViewType.Week, options)).toEqual([early, late]);
+  });
+});
+
+describe("slot-minute aware helpers", () => {
+  it("makes a selection end one slot after the last slot", () => {
+    expect(getSelectionBounds(d(3, 10, 9), d(3, 10, 9, 30), ViewType.Day, 30)).toEqual({
+      start: d(3, 10, 9),
+      end: d(3, 10, 10),
+    });
+  });
+
+  it("resizes the end edge to the end of the slot under the pointer", () => {
+    const e = ev(d(3, 10, 9), d(3, 10, 10));
+    expect(getResizeRange(e, "end", d(3, 10, 13, 30), ViewType.Day, 30)).toEqual({
+      start: d(3, 10, 9),
+      end: d(3, 10, 14),
+    });
+  });
+
+  it("matches slots by their own duration", () => {
+    const range = { start: d(3, 10, 9, 30), end: d(3, 10, 10) };
+    const hits = [9, 9.5, 10].map((h) =>
+      isSlotInRange(d(3, 10, Math.floor(h), (h % 1) * 60), range, ViewType.Day, 30)
+    );
+    expect(hits).toEqual([false, true, false]);
+  });
+});
