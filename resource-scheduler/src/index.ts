@@ -9,10 +9,12 @@ export type {
   VisibleRange,
 } from "./components/ResourceScheduler/types";
 export type {
+  BusinessHours,
   Event,
   Resource,
   SchedulerEvent,
   SlotSelection,
+  UnavailableRange,
 } from "./components/ResourceScheduler/types";
 export { ViewType } from "./components/ResourceScheduler/types";
 
@@ -31,6 +33,11 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 // Utility exports
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
+export {
+  isCellUnavailable,
+  resolveBusinessHours,
+  touchesUnavailable,
+} from "./components/ResourceScheduler/utils/availability";
 export {
   isPlacementAllowed,
   rangesOverlap,

@@ -489,4 +489,182 @@ describe("ResourceScheduler", () => {
       });
     });
   });
+
+  describe("availability", () => {
+    // Tuesday 10 March 2026, 6:00 to 20:00 in hour slots: index 3 is 9:00.
+    const day = new Date(2026, 2, 10);
+    const ann = (extra: Partial<Resource> = {}): Resource[] => [
+      { id: "r1", name: "Ann", events: [], ...extra },
+    ];
+    const dayView = (
+      resources: Resource[],
+      props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}
+    ) =>
+      render(
+        <ResourceScheduler
+          resources={resources}
+          initialDate={day}
+          initialView={ViewType.Day}
+          dayStartHour={6}
+          dayEndHour={20}
+          {...props}
+        />
+      );
+    const slots = () => [...document.querySelectorAll<HTMLElement>("[data-rs-slot]")];
+    const shaded = () => slots().filter((el) => el.hasAttribute("data-rs-unavailable"));
+    const selectSlots = (from: number, to: number) => {
+      fireEvent.mouseDown(slots()[from]);
+      fireEvent.mouseEnter(slots()[to]);
+      fireEvent.mouseUp(window);
+    };
+
+    it("shades nothing by default", () => {
+      dayView(ann());
+      expect(shaded()).toHaveLength(0);
+    });
+
+    it("shades the hours outside businessHours", () => {
+      dayView(ann(), { businessHours: {} });
+      // 6, 7, 8 and 17, 18, 19 of 14 slots
+      expect(shaded()).toHaveLength(6);
+      expect(slots()[3].hasAttribute("data-rs-unavailable")).toBe(false);
+    });
+
+    it("names a shaded slot as unavailable for screen readers", () => {
+      dayView(ann(), { businessHours: {} });
+      expect(slots()[0].getAttribute("aria-label")).toBe(
+        "Ann, Tuesday, March 10, 6:00 AM, unavailable"
+      );
+      expect(slots()[3].getAttribute("aria-label")).toBe("Ann, Tuesday, March 10, 9:00 AM");
+    });
+
+    it("shades a resource's own unavailable ranges", () => {
+      dayView(
+        ann({ unavailable: [{ start: new Date(2026, 2, 10, 12), end: new Date(2026, 2, 10, 13) }] })
+      );
+      expect(shaded()).toHaveLength(1);
+      expect(Number(shaded()[0].dataset.rsSlot)).toBe(new Date(2026, 2, 10, 12).getTime());
+    });
+
+    it("lets a resource opt out of the shared hours", () => {
+      dayView(ann({ businessHours: false }), { businessHours: {} });
+      expect(shaded()).toHaveLength(0);
+    });
+
+    it("still lets the user select shaded slots by default", () => {
+      const onSlotSelect = vi.fn();
+      dayView(ann(), { businessHours: {}, onSlotSelect });
+      selectSlots(0, 1); // 6:00 to 8:00, before opening
+      expect(onSlotSelect).toHaveBeenCalledTimes(1);
+    });
+
+    it("rejects a selection that touches shaded slots with blockUnavailable", () => {
+      const onSlotSelect = vi.fn();
+      dayView(ann(), { businessHours: {}, blockUnavailable: true, onSlotSelect });
+
+      selectSlots(0, 1); // 6:00 to 8:00
+      selectSlots(2, 3); // 8:00 to 10:00 reaches into the shaded 8:00 slot
+      expect(onSlotSelect).not.toHaveBeenCalled();
+
+      selectSlots(3, 4); // 9:00 to 11:00
+      expect(onSlotSelect).toHaveBeenCalledTimes(1);
+    });
+
+    it("still runs isValidDrop alongside blockUnavailable", () => {
+      const onSlotSelect = vi.fn();
+      const isValidDrop = vi.fn(() => false);
+      dayView(ann(), { businessHours: {}, blockUnavailable: true, isValidDrop, onSlotSelect });
+
+      selectSlots(3, 4);
+
+      expect(isValidDrop).toHaveBeenCalled();
+      expect(onSlotSelect).not.toHaveBeenCalled();
+    });
+
+    it("shades non-working days in the week view", () => {
+      render(
+        <ResourceScheduler
+          resources={ann()}
+          initialDate={day}
+          initialView={ViewType.Week}
+          businessHours={{}}
+        />
+      );
+      // Sunday and Saturday of the 7 days shown
+      expect(shaded()).toHaveLength(2);
+    });
+  });
+
+  describe("now indicator", () => {
+    // The clock reads Wednesday 7 October 2026, 12:00.
+    const ann: Resource[] = [{ id: "r1", name: "Ann", events: [] }];
+    const line = () => document.querySelector<HTMLElement>("[data-rs-now]");
+
+    it("is off by default", () => {
+      render(<ResourceScheduler resources={ann} initialView={ViewType.Day} />);
+      expect(line()).toBeNull();
+    });
+
+    it("sits at the current time in today's day view", () => {
+      render(<ResourceScheduler resources={ann} initialView={ViewType.Day} nowIndicator />);
+      expect(line()!.style.left).toBe("50%");
+    });
+
+    it("measures against the visible hours", () => {
+      render(
+        <ResourceScheduler
+          resources={ann}
+          initialView={ViewType.Day}
+          dayStartHour={8}
+          dayEndHour={18}
+          nowIndicator
+        />
+      );
+      expect(line()!.style.left).toBe("40%");
+    });
+
+    it("is hidden when the day shown is not today", () => {
+      render(
+        <ResourceScheduler
+          resources={ann}
+          initialDate={new Date(2026, 9, 8)}
+          initialView={ViewType.Day}
+          nowIndicator
+        />
+      );
+      expect(line()).toBeNull();
+    });
+
+    it("is hidden when now is outside the visible hours", () => {
+      render(
+        <ResourceScheduler
+          resources={ann}
+          initialView={ViewType.Day}
+          dayStartHour={13}
+          dayEndHour={18}
+          nowIndicator
+        />
+      );
+      expect(line()).toBeNull();
+    });
+
+    it("is hidden in the date views", () => {
+      render(<ResourceScheduler resources={ann} initialView={ViewType.Week} nowIndicator />);
+      expect(line()).toBeNull();
+    });
+
+    it("moves as the minutes pass", () => {
+      vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
+      vi.setSystemTime(new Date(2026, 9, 7, 12));
+      render(<ResourceScheduler resources={ann} initialView={ViewType.Day} nowIndicator />);
+
+      act(() => {
+        // advancing the timers also advances the clock by that minute
+        vi.setSystemTime(new Date(2026, 9, 7, 17, 59));
+        vi.advanceTimersByTime(60_000);
+      });
+
+      expect(line()!.style.left).toBe("75%");
+    });
+  });
 });

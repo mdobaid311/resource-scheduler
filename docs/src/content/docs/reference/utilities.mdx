@@ -10,6 +10,12 @@ All of these are exported from `resource-scheduler`.
 - **`isPlacementAllowed(event, placement, resources, rules)`** returns `boolean`. The same check the component runs. Works anywhere, so use it before saving on the server.
 - **`rangesOverlap(aStart, aEnd, bStart, bEnd)`** returns `boolean`. End times are exclusive; a zero-length range is one instant.
 
+## Availability
+
+- **`isCellUnavailable(resource, cell, { businessHours, viewType, slotMinutes? })`** returns `boolean`. Whether the slot (day view) or day (other views) starting at `cell` is shaded for that resource.
+- **`touchesUnavailable(resource, { start, end }, context)`** returns `boolean`. Whether a placement would touch a shaded cell. This is what `blockUnavailable` runs.
+- **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
+
 ## Dates and slots
 
 - **`getTimeSlots(date, viewType, options?)`** returns the slots of the day view as `Date[]`.

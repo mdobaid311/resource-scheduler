@@ -23,7 +23,12 @@ import {
   ViewType,
 } from "./types";
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
-import { isPlacementAllowed, type Placement } from "./utils/placement";
+import { touchesUnavailable } from "./utils/availability";
+import {
+  isPlacementAllowed,
+  type Placement,
+  type PlacementRules,
+} from "./utils/placement";
 import { scrollToDate } from "./utils/scrollUtils";
 
 export const ResourceScheduler = forwardRef<
@@ -46,6 +51,9 @@ export const ResourceScheduler = forwardRef<
   onEventResize,
   eventOverlap,
   isValidDrop,
+  businessHours,
+  blockUnavailable,
+  nowIndicator,
   renderEventPopover,
   allowViewChange = true,
   resourceColumnWidth: propResourceColumnWidth,
@@ -118,18 +126,43 @@ export const ResourceScheduler = forwardRef<
     });
   }, [rangeStart, rangeEnd, viewType]);
 
+  // `blockUnavailable` is one more reason to veto, run before the app's own.
+  const validDrop = useMemo<PlacementRules["isValidDrop"]>(() => {
+    if (!blockUnavailable) return isValidDrop;
+    return (event, placement) => {
+      const resource = initialResources.find((r) => r.id === placement.resourceId);
+      if (
+        resource &&
+        touchesUnavailable(resource, placement, {
+          businessHours,
+          viewType,
+          slotMinutes,
+        })
+      )
+        return false;
+      return isValidDrop?.(event, placement) !== false;
+    };
+  }, [
+    blockUnavailable,
+    isValidDrop,
+    initialResources,
+    businessHours,
+    viewType,
+    slotMinutes,
+  ]);
+
   // Checked against the full `resources` prop, not just the visible range.
   const checkPlacement = useMemo<
     ((event: SchedulerEvent, placement: Placement) => boolean) | undefined
   >(() => {
-    if ((eventOverlap === undefined || eventOverlap === true) && !isValidDrop)
+    if ((eventOverlap === undefined || eventOverlap === true) && !validDrop)
       return undefined; // nothing to enforce
     return (event, placement) =>
       isPlacementAllowed(event, placement, initialResources, {
         eventOverlap,
-        isValidDrop,
+        isValidDrop: validDrop,
       });
-  }, [initialResources, eventOverlap, isValidDrop]);
+  }, [initialResources, eventOverlap, validDrop]);
 
   // `onSlotSelect` replaces event creation so apps can open their own dialog.
   const handleCreate = useMemo(
@@ -309,6 +342,8 @@ export const ResourceScheduler = forwardRef<
               onEventResize={onEventResize}
               checkPlacement={checkPlacement}
               slotMinutes={slotMinutes}
+              businessHours={businessHours}
+              nowIndicator={nowIndicator}
               ariaLabel={ariaLabel}
               describedBy={helpId}
               announce={setAnnouncement}

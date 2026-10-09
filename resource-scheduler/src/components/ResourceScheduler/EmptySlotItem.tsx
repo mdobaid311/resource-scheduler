@@ -11,6 +11,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   slot,
   isSelected,
   isToday,
+  isUnavailable,
   id,
   label,
   isActive,
@@ -40,6 +41,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       // Read by useEventDrag to find the cell under the pointer.
       data-rs-slot={slot.getTime()}
       data-rs-resource={resource.id}
+      data-rs-unavailable={isUnavailable ? "" : undefined}
       className={`border-b border-r cursor-pointer overflow-hidden ${
         isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
       }${
@@ -47,9 +49,11 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
           ? "bg-ocrs-destructive/15 outline outline-1 -outline-offset-1 outline-ocrs-destructive"
           : inFootprint
           ? "bg-ocrs-accent outline outline-1 -outline-offset-1 outline-ocrs-primary"
-          : isToday
-          ? "bg-ocrs-blue-50"
           : isSelected
+          ? "bg-ocrs-blue-50"
+          : isUnavailable
+          ? "bg-ocrs-muted-foreground/15"
+          : isToday
           ? "bg-ocrs-blue-50"
           : "hover:bg-ocrs-gray-50"
       }`}

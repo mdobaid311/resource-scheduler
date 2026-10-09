@@ -39,6 +39,19 @@ interface Resource {
   name: string;
   role?: string;
   events: SchedulerEvent[];
+  businessHours?: BusinessHours | false; // overrides the prop; false = always available
+  unavailable?: UnavailableRange[];      // time off, shaded in the grid
+}
+
+interface BusinessHours {
+  daysOfWeek?: number[]; // 0 = Sunday. Default [1, 2, 3, 4, 5]
+  startHour?: number;    // day view only. Default 9
+  endHour?: number;      // exclusive. Default 17
+}
+
+interface UnavailableRange {
+  start: Date;
+  end: Date;             // exclusive
 }
 
 interface SchedulerEvent {

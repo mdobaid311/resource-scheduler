@@ -5,7 +5,9 @@ import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
 import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
 import { useGridKeyboard } from "./hooks/useGridKeyboard";
+import { useNow } from "./hooks/useNow";
 import type { TimelineGridProps } from "./types";
+import { isCellUnavailable } from "./utils/availability";
 import { formatSlotLabel, isToday } from "./utils/dateUtils";
 
 export const TimelineGrid: React.FC<TimelineGridProps> = ({
@@ -26,6 +28,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   onEventResize,
   checkPlacement,
   slotMinutes = 60,
+  businessHours,
+  nowIndicator,
   ariaLabel = "Resource schedule",
   describedBy,
   announce,
@@ -50,6 +54,18 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           end: addDays(startOfDay(slots[slots.length - 1]), 1),
         }
     : undefined;
+
+  // A line at the current time in today's day view, moved every minute.
+  const clock = useNow(nowIndicator ? 60_000 : undefined);
+  const nowPercent =
+    nowIndicator &&
+    viewType === "day" &&
+    visibleRange &&
+    clock >= visibleRange.start &&
+    clock < visibleRange.end
+      ? ((clock.getTime() - visibleRange.start.getTime()) * 100) /
+        (visibleRange.end.getTime() - visibleRange.start.getTime())
+      : null;
 
   const drag = useEventDrag({
     viewType,
@@ -215,11 +231,20 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     colIndex >= keyboardSelection.from &&
                     colIndex <= keyboardSelection.to);
 
+                const unavailable = isCellUnavailable(resource, slot, {
+                  businessHours,
+                  viewType,
+                  slotMinutes,
+                });
+
                 return (
                   <EmptySlotItem
                     key={`${resource.id}-${colIndex}`}
                     id={keyboard.cellId(rowIndex, colIndex)}
-                    label={`${resource.name}, ${slotLabels[colIndex]}`}
+                    label={`${resource.name}, ${slotLabels[colIndex]}${
+                      unavailable ? ", unavailable" : ""
+                    }`}
+                    isUnavailable={unavailable}
                     isActive={
                       keyboard.cursor?.row === rowIndex &&
                       keyboard.cursor.col === colIndex
@@ -240,6 +265,14 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
             </div>
           );
         })}
+        {nowPercent !== null && (
+          <div
+            aria-hidden="true"
+            data-rs-now=""
+            className="absolute top-0 bottom-0 w-0.5 -ml-px bg-ocrs-destructive pointer-events-none z-10"
+            style={{ left: `${nowPercent}%` }}
+          />
+        )}
       </div>
     </SchedulerDragContext.Provider>
   );
