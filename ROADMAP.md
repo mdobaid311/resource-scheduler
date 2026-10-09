@@ -104,7 +104,8 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
 - [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
 - [ ] **Touch** drag/resize/create (M, comes with Pointer Events)
-- [ ] **Virtualization** for rows and columns; publish a benchmark (L-XL). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); report your own numbers honestly
+- [x] **Row virtualization** with a published, reproducible benchmark (done on branch `feat/virtualization`; `docs/scripts/bench.mjs`). 1,000 resources: 31,458 DOM nodes down to 424, drag 68.9 ms down to 7.1 ms per pointer move. Still open: column virtualization (year view), and the 0.5 s first render at 1,000 resources.
+- [ ] **Column virtualization and a bigger benchmark** (L). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); run ours at that size and report the numbers honestly
 - [ ] **i18n**: `locale` (date-fns), 12/24h, RTL, IANA `timeZone` prop (M-L)
 - [x] **Lazy loading**: `onRangeChange({ start, end, view })` for fetching per visible window (done on branch `feat/view-controls`)
 

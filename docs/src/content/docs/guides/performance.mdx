@@ -1,0 +1,57 @@
+---
+title: Large data and performance
+description: How the scheduler behaves with hundreds of resources, what row virtualization does, the measured numbers and how to reproduce them.
+---
+
+## What it can handle
+
+The grid renders resource rows and one cell per row and day (or slot). That is cheap for tens of rows and costly for thousands, so from 100 resources up the scheduler draws only the rows near the viewport (**row virtualization**) and keeps the rest out of the DOM.
+
+- It switches on by itself **above 100 resources**. Force it with `virtualize` or turn it off with `virtualize={false}`.
+- The grid keeps its full height and `aria-rowcount`, so the scrollbar and assistive technology still know how many rows there are.
+- Rows in use stay mounted: the one holding the keyboard cursor, and the source and target of an event you are dragging. Moving an event by keyboard to a row far away scrolls it into view.
+- **It needs a box with a fixed height.** If the scheduler grows with its content and the page scrolls instead, there is no viewport to measure, so every row is drawn, exactly as without virtualization.
+- The browser's find-in-page only sees the rows that are mounted.
+- Only rows are virtualized. The columns of a year view (365 days) are all drawn.
+
+```tsx
+<div style={{ height: 600 }}>
+  <ResourceScheduler resources={manyResources} /> {/* virtualized above 100 */}
+</div>
+```
+
+## Measured numbers
+
+Week view, 5 events per resource, a production build in Chrome on one Windows machine, October 2026. The median of three loads. Compare the rows with each other, not with your machine.
+
+| Resources | Events | Virtualized | DOM nodes | First grid | Next week | Drag, per pointer move |
+|---:|---:|:--:|---:|---:|---:|---:|
+| 10 | 50 | off | 393 | 154 ms | 15 ms | 3.6 ms |
+| 100 | 500 | off | 3,178 | 275 ms | 18 ms | 10 ms |
+| 300 | 1,500 | off | 9,463 | 520 ms | 64 ms | 23.6 ms |
+| 300 | 1,500 | on | 424 | 271 ms | 17 ms | 4.5 ms |
+| 1,000 | 5,000 | off | 31,458 | 1,361 ms | 126 ms | 68.9 ms |
+| 1,000 | 5,000 | on | 424 | 492 ms | 26 ms | 7.1 ms |
+
+Without virtualization, dragging gets sluggish around 300 rows (a pointer move should stay under about 16 ms to hold 60 frames per second). With it, 1,000 rows drag as smoothly as 100.
+
+What is not solved: the first render at 1,000 resources still takes about 0.5 s, because layout work such as row heights and which events are visible still runs over every resource. Beyond several thousand resources, load a window of resources from your server instead.
+
+## Reproduce it
+
+The benchmark page and script are in the docs app. They use a fixed random seed, so runs compare.
+
+```bash
+cd docs
+npm run build
+npm run preview -- --port 4399   # leave running
+npm run bench                    # or: npm run bench -- 10,100,500 5
+```
+
+Each row is measured with `virtualize={false}` and with the default. If you publish numbers about your own setup, include the machine, the browser and the data size, like the table above.
+
+## Tips
+
+- Pass stable `resources` and event arrays (memoize them) so the scheduler can skip work between renders.
+- Fetch only the visible range with [`onRangeChange`](/guides/loading-and-control/) instead of loading a whole year.
+- Keep `renderEventPopover`, `renderTimeSlot` and `renderEmptyCell` light: they run for every visible event or cell.

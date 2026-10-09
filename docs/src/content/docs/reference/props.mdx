@@ -51,6 +51,10 @@ Only `resources` is required.
 - **`blockUnavailable`**: `boolean`, default `false`. Rejects every move, resize and create that touches a shaded slot.
 - **`nowIndicator`**: `boolean`, default `false`. A line at the current time in today's day view.
 
+## Performance
+
+- **`virtualize`**: `boolean`, default on above 100 resources. Renders only the rows near the viewport. Needs a fixed-height box. See [Large data and performance](/guides/performance/).
+
 ## Rendering
 
 - **`renderEventPopover`**: `(event, resource, closePopover) => ReactNode`. Replaces the details popover.

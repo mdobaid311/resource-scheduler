@@ -1,6 +1,7 @@
 // @ts-check
 import { fileURLToPath } from "node:url";
 import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
@@ -21,6 +22,9 @@ export default defineConfig({
   base,
   integrations: [
     react(),
+    // Starlight adds its own sitemap unless one is listed. These pages are
+    // tools (GIF, social card, benchmark), noindex and disallowed in robots.txt.
+    sitemap({ filter: (page) => !/\/(hero|og|bench)\/?$/.test(page) }),
     starlight({
       title: "Resource Scheduler",
       description:
@@ -81,6 +85,7 @@ export default defineConfig({
             { label: "Drag and resize", slug: "guides/drag-and-resize" },
             { label: "Conflict control", slug: "guides/conflict-control" },
             { label: "Business hours and availability", slug: "guides/availability" },
+            { label: "Large data and performance", slug: "guides/performance" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
             { label: "Theming", slug: "guides/theming" },
             { label: "Next.js and SSR", slug: "guides/nextjs-and-ssr" },

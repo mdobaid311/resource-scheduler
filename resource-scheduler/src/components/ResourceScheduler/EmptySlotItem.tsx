@@ -42,6 +42,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       data-rs-slot={slot.getTime()}
       data-rs-resource={resource.id}
       data-rs-unavailable={isUnavailable ? "" : undefined}
+      data-rs-footprint={inFootprint ? "" : undefined}
       className={`border-b border-r cursor-pointer overflow-hidden ${
         isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
       }${

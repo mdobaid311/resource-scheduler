@@ -728,4 +728,144 @@ describe("ResourceScheduler", () => {
       expect(onSlotSelect).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("row virtualization", () => {
+    // Rows without events are 60px tall; the scroller is 300px high.
+    const many = (n: number): Resource[] =>
+      Array.from({ length: n }, (_, i) => ({ id: `r${i}`, name: `Resource ${i}`, events: [] }));
+    const rowIndexes = () =>
+      [...document.querySelectorAll<HTMLElement>('[role="row"]')].map((el) =>
+        Number(el.getAttribute("aria-rowindex"))
+      );
+    const scroller = () => document.querySelector<HTMLElement>(".overflow-x-auto")!;
+    const scrollGridTo = (top: number) => {
+      Object.defineProperty(scroller(), "scrollTop", { configurable: true, value: top });
+      fireEvent.scroll(scroller());
+    };
+    const week = (resources: Resource[], virtualize?: boolean) =>
+      render(
+        <ResourceScheduler resources={resources} initialView={ViewType.Week} virtualize={virtualize} />
+      );
+
+    const original = Object.getOwnPropertyDescriptor(Element.prototype, "clientHeight");
+    beforeEach(() => {
+      Object.defineProperty(Element.prototype, "clientHeight", {
+        configurable: true,
+        get: () => 300,
+      });
+    });
+    afterEach(() => {
+      if (original) Object.defineProperty(Element.prototype, "clientHeight", original);
+    });
+
+    it("renders only the rows near the viewport once there are many resources", () => {
+      week(many(150));
+      const rows = rowIndexes();
+      expect(rows.length).toBeGreaterThan(3);
+      expect(rows.length).toBeLessThan(40);
+      expect(rows[0]).toBe(1);
+      expect(screen.getByRole("grid").getAttribute("aria-rowcount")).toBe("150");
+    });
+
+    it("renders every row for a short list", () => {
+      week(many(50));
+      expect(rowIndexes()).toHaveLength(50);
+    });
+
+    it("can be switched off or forced on", () => {
+      week(many(150), false);
+      expect(rowIndexes()).toHaveLength(150);
+      cleanup();
+      week(many(20), true);
+      expect(rowIndexes().length).toBeLessThan(20);
+    });
+
+    it("moves the window as the user scrolls, in the grid and the resource column", () => {
+      week(many(150));
+      expect(screen.queryByText("Resource 0")).not.toBeNull();
+
+      scrollGridTo(3000); // rows from about index 49 are in view
+
+      const rows = rowIndexes();
+      expect(rows).toContain(50);
+      expect(rows).not.toContain(1);
+      expect(screen.queryByText("Resource 49")).not.toBeNull();
+      expect(screen.queryByText("Resource 0")).toBeNull();
+    });
+
+    it("keeps the resource column as tall as all the rows together", () => {
+      week(many(150));
+      scrollGridTo(3000);
+      const column = screen.getByText("Resources").parentElement!.parentElement!;
+      const heights = [...column.children]
+        .map((el) => parseFloat((el as HTMLElement).style.height))
+        .filter((h) => !Number.isNaN(h));
+      expect(heights.reduce((a, b) => a + b, 0)).toBe(150 * 60);
+    });
+
+    it("scrolls the target of a keyboard-carried event into view", () => {
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      const resources = many(150);
+      resources[0].events = [
+        {
+          id: "e",
+          title: "E",
+          startDate: new Date(2026, 9, 7, 9),
+          endDate: new Date(2026, 9, 7, 10),
+        },
+      ];
+      week(resources);
+      const event = document.querySelector('[data-rs-event="e"]')!;
+
+      fireEvent.keyDown(event, { key: " " }); // pick up
+      scrollIntoView.mockClear();
+      fireEvent.keyDown(event, { key: "ArrowDown" });
+
+      const { contexts } = scrollIntoView.mock;
+      const target = contexts[contexts.length - 1] as HTMLElement;
+      expect(target.dataset.rsResource).toBe("r1");
+      expect(target.hasAttribute("data-rs-footprint")).toBe(true);
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
+    });
+
+    it("brings focus back to a carried event whose row has scrolled away", () => {
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      const resources = many(150);
+      resources[0].events = [
+        {
+          id: "e",
+          title: "E",
+          startDate: new Date(2026, 9, 7, 9),
+          endDate: new Date(2026, 9, 7, 10),
+        },
+      ];
+      week(resources);
+      const event = document.querySelector<HTMLElement>('[data-rs-event="e"]')!;
+      event.focus();
+
+      fireEvent.keyDown(event, { key: " " }); // pick up
+      scrollGridTo(3000); // the grid followed the carried event far down
+      scrollIntoView.mockClear();
+      fireEvent.keyDown(event, { key: "Escape" }); // cancel
+
+      const back = document.querySelector<HTMLElement>('[data-rs-event="e"]');
+      expect(back).not.toBeNull();
+      expect(document.activeElement).toBe(back);
+      expect(scrollIntoView.mock.contexts).toContain(back);
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
+    });
+
+    it("keeps the row holding the keyboard cursor mounted", () => {
+      week(many(150));
+      const grid = screen.getByRole("grid");
+      fireEvent.focus(grid);
+      for (let i = 0; i < 60; i++) fireEvent.keyDown(grid, { key: "ArrowDown" });
+
+      expect(rowIndexes()).toContain(61);
+      const active = grid.getAttribute("aria-activedescendant");
+      expect(document.getElementById(active!)).not.toBeNull();
+    });
+  });
 });

@@ -30,6 +30,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   slotMinutes = 60,
   businessHours,
   nowIndicator,
+  rowRange,
   ariaLabel = "Resource schedule",
   describedBy,
   announce,
@@ -100,6 +101,39 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     announce,
   });
 
+  // With a row window, rows still in use stay mounted: the one holding the
+  // keyboard cursor, the source and target of an event being carried
+  // (unmounting that event would end the drag), and the event that is about
+  // to get focus back after a drop or cancel.
+  const carried = drag.activeDrag;
+  const rowOfResource = (id: string | null) => resources.findIndex((r) => r.id === id);
+  const rowOfEvent = (id: string | null) =>
+    resources.findIndex((r) => r.events.some((e) => e.id === id));
+  const pinned = new Set<number>();
+  if (rowRange) {
+    if (keyboard.cursor) pinned.add(keyboard.cursor.row);
+    if (carried) {
+      pinned.add(rowOfResource(carried.placement?.resourceId ?? null));
+      pinned.add(rowOfEvent(carried.eventId));
+    }
+    pinned.add(rowOfEvent(drag.pendingFocus.current));
+  }
+  const isRendered = (row: number) =>
+    !rowRange || (row >= rowRange.start && row < rowRange.end) || pinned.has(row);
+
+  // An event carried by keyboard: keep the place it would land in view. (A
+  // pointer drag is already over its target.)
+  const carriedBy = drag.grabbedEventId ? carried?.placement : null;
+  const footprintKey = carriedBy
+    ? `${carriedBy.resourceId}|${carriedBy.start.getTime()}|${carriedBy.end.getTime()}`
+    : null;
+  useEffect(() => {
+    if (!footprintKey) return;
+    gridRef.current
+      ?.querySelector<HTMLElement>("[data-rs-footprint]")
+      ?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [footprintKey]);
+
   // After a keyboard drop the event is re-rendered (possibly under another
   // resource), so focus is put back on it.
   useEffect(() => {
@@ -110,6 +144,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     ].find((node) => node.dataset.rsEvent === id);
     if (el) {
       el.focus();
+      // It may already have focus, which scrolls nothing, and be far away.
+      el.scrollIntoView?.({ block: "nearest", inline: "nearest" });
       drag.pendingFocus.current = null;
     }
   });
@@ -179,6 +215,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
         }}
       >
         {resources.map((resource, rowIndex) => {
+          if (!isRendered(rowIndex)) return null;
           const eventPositions = calculateEventPositions(resource.events, slots);
 
           return (

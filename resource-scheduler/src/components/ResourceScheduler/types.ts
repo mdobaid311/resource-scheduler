@@ -180,6 +180,12 @@ export interface ResourceSchedulerProps {
   blockUnavailable?: boolean;
   /** Day view: draw a line at the current time, moved every minute. */
   nowIndicator?: boolean;
+  /**
+   * Render only the rows near the viewport. Default: on above 100 resources.
+   * It needs the scheduler to sit in a box with a fixed height; without one
+   * every row is drawn, as before.
+   */
+  virtualize?: boolean;
   resourceColumnWidth?: string;
   timeColumnWidth?: string;
   dateColumnWidth?: string;
@@ -208,6 +214,8 @@ export interface ResourceColumnProps {
   resourceColumnWidth?: string;
   getResourceRowHeight: (resource: Resource) => number;
   renderResourceHeader?: (resource: Resource) => React.ReactNode;
+  /** Render only these rows (end exclusive); spacers keep the full height. */
+  rowRange?: { start: number; end: number };
 }
 
 export interface TimelineHeaderProps {
@@ -249,6 +257,8 @@ export interface TimelineGridProps {
   slotMinutes?: number;
   businessHours?: BusinessHours;
   nowIndicator?: boolean;
+  /** Render only these rows (end exclusive), plus the ones in use by keyboard or drag. */
+  rowRange?: { start: number; end: number };
   /** Accessible name of the grid. */
   ariaLabel?: string;
   /** Id of an element describing how to use the keyboard. */
