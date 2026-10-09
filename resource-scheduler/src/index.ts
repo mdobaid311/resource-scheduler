@@ -11,6 +11,7 @@ export type {
 export type {
   BusinessHours,
   Event,
+  Recurrence,
   Resource,
   ResourceInput,
   SchedulerEvent,
@@ -35,6 +36,10 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
 export { withEvents } from "./components/ResourceScheduler/utils/events";
+export {
+  expandEvents,
+  expandRecurrence,
+} from "./components/ResourceScheduler/utils/recurrence";
 export { getRowWindow } from "./components/ResourceScheduler/utils/rowWindow";
 export {
   findAvailableSlots,

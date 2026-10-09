@@ -729,6 +729,74 @@ describe("ResourceScheduler", () => {
     });
   });
 
+  describe("recurring events", () => {
+    // The clock reads Wednesday 7 October 2026; the week view shows Oct 4 to 10.
+    const standup = {
+      id: "s",
+      title: "Standup",
+      startDate: new Date(2026, 9, 5, 9), // Monday
+      endDate: new Date(2026, 9, 5, 10),
+      recurrence: { freq: "daily" as const },
+    };
+    const rows: Resource[] = [{ id: "r1", name: "Ann", events: [standup] }];
+    const week = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}) =>
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Week} {...props} />);
+    const occurrences = () =>
+      [...document.querySelectorAll<HTMLElement>("[data-rs-event]")].map((el) => el.dataset.rsEvent);
+
+    it("draws one event per occurrence inside the visible range", () => {
+      week();
+      expect(occurrences()).toEqual([
+        "s::2026-10-05",
+        "s::2026-10-06",
+        "s::2026-10-07",
+        "s::2026-10-08",
+        "s::2026-10-09",
+        "s::2026-10-10",
+      ]);
+    });
+
+    it("draws the occurrences of the week you navigate to", () => {
+      week();
+      fireEvent.click(screen.getByLabelText("Next period"));
+      expect(occurrences()).toHaveLength(7);
+      expect(occurrences()[0]).toBe("s::2026-10-11");
+    });
+
+    it("applies the overlap rules to occurrences", () => {
+      const onSlotSelect = vi.fn();
+      week({ eventOverlap: false, onSlotSelect });
+      const cells = [...document.querySelectorAll<HTMLElement>('[data-rs-resource="r1"]')];
+      const click = (cell: HTMLElement) => {
+        fireEvent.mouseDown(cell);
+        fireEvent.mouseUp(window);
+      };
+
+      click(cells[3]); // Wednesday: an occurrence is there
+      expect(onSlotSelect).not.toHaveBeenCalled();
+
+      click(cells[0]); // Sunday: before the series starts
+      expect(onSlotSelect).toHaveBeenCalledTimes(1);
+    });
+
+    it("hands an occurrence, with its seriesId, to the handlers", () => {
+      const onEventDrop = vi.fn();
+      week({ onEventDrop });
+      const event = document.querySelector('[data-rs-event="s::2026-10-07"]')!;
+
+      fireEvent.keyDown(event, { key: " " }); // pick up
+      fireEvent.keyDown(event, { key: "ArrowRight" });
+      fireEvent.keyDown(event, { key: " " }); // drop
+
+      expect(onEventDrop).toHaveBeenCalledTimes(1);
+      const [moved, from, to, start] = onEventDrop.mock.calls[0];
+      expect(moved.id).toBe("s::2026-10-07");
+      expect(moved.seriesId).toBe("s");
+      expect([from, to]).toEqual(["r1", "r1"]);
+      expect(start).toEqual(new Date(2026, 9, 8, 9));
+    });
+  });
+
   describe("row virtualization", () => {
     // Rows without events are 60px tall; the scroller is 300px high.
     const many = (n: number): Resource[] =>

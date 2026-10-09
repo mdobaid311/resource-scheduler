@@ -4,6 +4,7 @@ import {
   getTimeSlots,
   getDatesInView,
   getVisibleEvents,
+  getVisibleRange,
   type SlotOptions,
   type ViewOptions,
   navigateDate,
@@ -12,6 +13,7 @@ import {
   isToday,
 } from "../utils/dateUtils";
 import { type SchedulerEvent, type Resource, ViewType } from "../types";
+import { expandEvents } from "../utils/recurrence";
 
 export const useScheduler = (
   initialResources: Resource[],
@@ -35,20 +37,20 @@ export const useScheduler = (
     [weekStartsOn, hideWeekends]
   );
 
-  const resources = useMemo<Resource[]>(
-    () =>
-      initialResources.map((resource) => ({
-        ...resource,
-        events: getVisibleEvents(
-          resource.events,
-          currentDate,
-          viewType,
-          slots,
-          view
-        ),
-      })),
-    [initialResources, currentDate, viewType, slots, view]
-  );
+  // Recurring events become one event per occurrence inside the visible range.
+  const resources = useMemo<Resource[]>(() => {
+    const range = getVisibleRange(currentDate, viewType, { ...slots, ...view });
+    return initialResources.map((resource) => ({
+      ...resource,
+      events: getVisibleEvents(
+        expandEvents(resource.events, range.start, range.end),
+        currentDate,
+        viewType,
+        slots,
+        view
+      ),
+    }));
+  }, [initialResources, currentDate, viewType, slots, view]);
 
   const getTimeSlotsMemoized = useCallback(() => {
     return getTimeSlots(currentDate, viewType, slots);

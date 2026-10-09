@@ -140,6 +140,11 @@
           "target": "@components/resource-scheduler/utils/placement.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/recurrence.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/recurrence.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/rowWindow.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/rowWindow.ts"

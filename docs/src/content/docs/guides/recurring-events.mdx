@@ -1,0 +1,79 @@
+---
+title: Recurring events
+description: Repeat an event daily, weekly, monthly or yearly with exceptions, and decide what moving one occurrence should change.
+---
+
+import RecurringDemo from "../../../components/demos/RecurringDemo";
+
+Give an event a `recurrence` and the scheduler draws one event for each occurrence in the visible range. You keep **one** event in your data, not hundreds.
+
+<RecurringDemo client:only="react" />
+
+## The rule
+
+```tsx
+const standup = {
+  id: "standup",
+  title: "Standup",
+  startDate: new Date(2026, 9, 5, 9),   // the first occurrence: Monday 9:00
+  endDate: new Date(2026, 9, 5, 9, 30),
+  resourceId: "ann",
+  recurrence: {
+    freq: "weekly",                  // "daily" | "weekly" | "monthly" | "yearly"
+    byWeekday: [1, 2, 3, 4, 5],      // weekly only, 0 = Sunday. Default: the weekday of startDate
+    interval: 1,                     // every n days, weeks, months or years
+    until: new Date(2026, 11, 18),   // last day it may start on, inclusive
+    count: 40,                       // or: how many in total, counting the first
+    exceptions: [new Date(2026, 9, 12)], // days to skip
+  },
+};
+```
+
+- The event's own `startDate` and `endDate` are the first occurrence. Its time of day and length repeat, including multi-day events.
+- `until`, `count` and `exceptions` are all optional. With neither `until` nor `count` it repeats for ever.
+- Monthly and yearly keep the day of the month. A month without that day is skipped, as in iCalendar (31 January repeats in March, not on 28 February). The same goes for 29 February.
+- Times follow the wall clock, so 9:00 stays 9:00 across a daylight saving change.
+- Weeks start on Monday for `interval` and `byWeekday`, as in iCalendar.
+- `exceptions` are matched by calendar day and do not change `count`.
+
+Recurring events work wherever events do: in `resource.events`, or in the flat [`events` prop](/guides/data-model/).
+
+## What the handlers receive
+
+The scheduler hands your handlers an **occurrence**: a copy of the event with `id` `"<id>::<yyyy-MM-dd>"`, its own `startDate` and `endDate`, `seriesId` set to the original `id`, and no `recurrence`. Your data is never changed for you.
+
+```tsx
+<ResourceScheduler
+  resources={people}
+  events={events}
+  onEventDrop={(occurrence, fromId, toId, start, end) => {
+    if (!occurrence.seriesId) return setEvents(moveOneOff(occurrence, toId, start, end));
+    // It is part of a series. Decide, or ask the user, what to change.
+  }}
+/>
+```
+
+The two usual choices, both shown in the demo above:
+
+- **This event only.** Add the occurrence's day to the series' `exceptions`, and add a normal one-off event at the new time.
+- **The whole series.** Change the series itself: its `resourceId`, or the time of day of `startDate` and `endDate`.
+
+"This and following events" is the same idea: end the old series with `until` the day before and start a new series from the occurrence.
+
+Conflict rules (`eventOverlap`, `isValidDrop`, `blockUnavailable`) see the occurrences, so a new booking cannot land on top of one.
+
+## Without the component
+
+The same expansion is exported, for a server, an export or your own list:
+
+```ts
+import { expandRecurrence, expandEvents } from "resource-scheduler";
+
+expandRecurrence(standup, from, to);   // the occurrences touching from..to (to exclusive)
+expandEvents(events, from, to);        // expands the recurring ones in a list, passes the rest through
+```
+
+## Not supported yet
+
+- iCalendar `RRULE` strings. The fields above cover the common cases; tell us if you need more (`bySetPos`, `byMonthDay`, hourly).
+- Time zones. Dates are your local dates, like the rest of the scheduler.
