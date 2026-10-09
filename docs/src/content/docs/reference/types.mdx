@@ -41,6 +41,7 @@ interface Resource {
   events?: SchedulerEvent[];             // optional when you pass the flat `events` prop
   businessHours?: BusinessHours | false; // overrides the prop; false = always available
   unavailable?: UnavailableRange[];      // time off, shaded in the grid
+  capacity?: number;                     // simultaneous bookings, for utilization only. Default 1
 }
 
 interface BusinessHours {

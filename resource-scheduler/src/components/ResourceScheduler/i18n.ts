@@ -23,6 +23,8 @@ export interface SchedulerLabels {
   unavailable: string;
   /** In a range read to screen readers: "9:00 AM to 10:00 AM". */
   to: string;
+  /** Utilization of a resource, shown on hover and read out: "6.5 of 8 hours booked". Hours are rounded to 0.1. */
+  utilization: (bookedHours: number, availableHours: number) => string;
   /** Keyboard instructions, visually hidden. */
   help: (canResize: boolean) => string;
   /** Spoken through the live region. */
@@ -60,6 +62,7 @@ export const defaultLabels: SchedulerLabels = {
   allDay: "All day",
   unavailable: "unavailable",
   to: "to",
+  utilization: (booked, available) => `${booked} of ${available} hours booked`,
   help: (canResize) =>
     "Arrow keys move between slots. Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
     "Tab to an event: Enter opens its details, Space picks it up, arrow keys move it" +

@@ -50,6 +50,7 @@ Only `resources` is required.
 - **`businessHours`**: `{ daysOfWeek?, startHour?, endHour? }`. Shades time outside working hours and non-working days. `{}` means Monday to Friday, 9 to 17. A resource's own `businessHours` overrides it. See [Business hours and availability](/guides/availability/).
 - **`blockUnavailable`**: `boolean`, default `false`. Rejects every move, resize and create that touches a shaded slot.
 - **`nowIndicator`**: `boolean`, default `false`. A line at the current time in today's day view.
+- **`showUtilization`**: `boolean`, default `false`. A bar under each resource name showing how much of its available time (business hours minus `unavailable`, times `capacity`) is booked in the visible range. See [Utilization](/guides/utilization/).
 
 ## Language and clock
 

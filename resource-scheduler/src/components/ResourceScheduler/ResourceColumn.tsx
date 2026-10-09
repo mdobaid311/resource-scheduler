@@ -2,12 +2,47 @@
 import React from "react";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
+import type { Utilization } from "./utils/utilization";
+
+const hours = (minutes: number) => Math.round(minutes / 6) / 10;
+
+// A bar and a percentage; the bar stops at 100% and turns red above it.
+const UtilizationBar: React.FC<{ value: Utilization }> = ({ value }) => {
+  const { labels } = useI18n();
+  // From the minutes, not the ratio: 0.575 * 100 is 57.49999999999999.
+  const percent =
+    value.ratio === null ? null : Math.round((value.bookedMinutes * 100) / value.availableMinutes);
+  const filled = Math.min(percent ?? 0, 100);
+  const label = labels.utilization(hours(value.bookedMinutes), hours(value.availableMinutes));
+  return (
+    <div
+      role="meter"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={filled}
+      title={label}
+      className="flex w-full items-center gap-2"
+    >
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ocrs-secondary">
+        <div
+          className={`h-full ${percent !== null && percent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+          style={{ width: filled + "%" }}
+        />
+      </div>
+      <span className="w-9 text-end text-xs tabular-nums text-ocrs-muted-foreground">
+        {percent === null ? "–" : percent + "%"}
+      </span>
+    </div>
+  );
+};
 
 export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   resources,
   resourceColumnWidth = "220px",
   getResourceRowHeight,
   renderResourceHeader,
+  utilization,
   rowRange,
 }) => {
   const { labels } = useI18n();
@@ -31,23 +66,23 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}
       {resources.slice(start, end).map((resource, i) => {
         const rowHeight = heights[start + i];
-        return renderResourceHeader ? (
+        const value = utilization?.get(resource.id);
+        return (
           <div
             key={resource.id}
-            className="p-3 border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
+            className={`${
+              value ? "p-2 flex-col gap-1" : "p-3"
+            } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm`}
             style={{ height: rowHeight + "px" }}
           >
-            {renderResourceHeader(resource)}
-          </div>
-        ) : (
-          <div
-            key={resource.id}
-            className="p-3 border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm"
-            style={{ height: rowHeight + "px" }}
-          >
-            <span className="w-full block break-words whitespace-pre-line">
-              {resource.name}
-            </span>
+            {renderResourceHeader ? (
+              renderResourceHeader(resource)
+            ) : (
+              <span className="w-full block break-words whitespace-pre-line">
+                {resource.name}
+              </span>
+            )}
+            {value && <UtilizationBar value={value} />}
           </div>
         );
       })}

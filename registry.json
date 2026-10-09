@@ -158,6 +158,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/scrollUtils.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/scrollUtils.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/utilization.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/utilization.ts"
         }
       ],
       "cssVars": {

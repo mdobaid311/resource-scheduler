@@ -1,0 +1,90 @@
+---
+title: Utilization
+description: Show how much of each resource's available time is booked for the range on screen, and compute the same numbers on a server.
+---
+
+import UtilizationDemo from "../../../components/demos/UtilizationDemo";
+
+Add `showUtilization` and every resource shows a bar under its name: how much of the time it can be booked is taken, for the range on screen.
+
+<UtilizationDemo client:only="react" />
+
+## Turn it on
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  initialView={ViewType.Week}
+  businessHours={{}}   // Monday to Friday, 9 to 17
+  showUtilization
+/>
+```
+
+Without `showUtilization` nothing changes. With it, the bar fills up to 100% and turns red above that. The text next to it is the rounded percentage, and "–" when the resource has no available time at all in the range (a Sunday, a week of leave). Hovering shows the hours, and screen readers read "6.5 of 8 hours booked" from a `role="meter"`.
+
+**Set `businessHours`.** Without any, every hour of the day counts as available, so a person who works 8 hours a day shows about 33%. Rooms and equipment that really are open all day can leave it out, or use `businessHours: false` on that resource.
+
+## How it is counted
+
+- **Available time** is the working time in the range: the resource's own `businessHours`, else the `businessHours` prop, else every hour. From that, its [`unavailable`](/guides/availability/) ranges are cut out. Then it is multiplied by `capacity` (below).
+- **Booked time** is the part of the resource's events that falls inside the available time. Recurring events are [expanded](/guides/recurring-events/) first. Nights, weekends and time off count on neither side, so an event from Wednesday 9:00 to Friday 17:00 counts as two working days, not as 56 hours.
+- **Events that overlap add up**, so booking someone twice at once shows above 100%. That is the double-booking signal.
+- **The range is what you see**: the day view's visible hours (`dayStartHour` to `dayEndHour`), the week, the month, the quarter or the year. Weekends hidden with `hideWeekends` are still part of a month range, which only matters when you have no `businessHours`.
+
+## Capacity
+
+`capacity` is how many bookings a resource can take at the same time. It defaults to 1 and multiplies the available time, so two bookings at once on a two-station lab are 100%, not 200%:
+
+```tsx
+const resources: Resource[] = [
+  { id: "lab", name: "Test lab", capacity: 2, events: [] },   // two stations
+  { id: "van", name: "Van 3", events: [] },                    // one van: capacity 1
+];
+```
+
+Capacity changes only the utilization numbers. It does not stop anyone from double booking: for that, use [`eventOverlap`](/guides/conflict-control/) or an `isValidDrop` that counts the bookings.
+
+## Without the component
+
+`getUtilization` is the function the bars use. It is pure, so you can run it on a server, in a report or in your own header:
+
+```ts
+import { getUtilization } from "resource-scheduler";
+
+const { bookedMinutes, availableMinutes, ratio } = getUtilization(
+  ann,                                                           // a Resource with its events
+  { start: new Date(2026, 9, 5), end: new Date(2026, 9, 12) },   // end is exclusive
+  { businessHours: {} }
+);
+// ratio is 0.58 for 58%, above 1 when overbooked, and null when nothing is available
+```
+
+If your events are a flat list, merge them first with `withEvents(resources, events)`. For a custom display, keep the visible range from `onRangeChange` and call `getUtilization` in `renderResourceHeader`:
+
+```tsx
+const [range, setRange] = useState<{ start: Date; end: Date }>();
+
+<ResourceScheduler
+  resources={resources}
+  businessHours={{}}
+  onRangeChange={setRange}
+  renderResourceHeader={(resource) => {
+    const u = range && getUtilization(resource, range, { businessHours: {} });
+    return (
+      <div>
+        {resource.name}
+        {u?.ratio != null && <small> {Math.round(u.ratio * 100)}% booked</small>}
+      </div>
+    );
+  }}
+/>
+```
+
+## Words
+
+The hover text and the screen reader label come from `labels.utilization(bookedHours, availableHours)`, with hours rounded to a tenth. Translate it like any other [label](/guides/internationalization/).
+
+## Not included
+
+- A per-day histogram or a total row across resources. `getUtilization` with a one-day range gives you the numbers for your own.
+- A weekly hours budget as a separate number. Express it as `businessHours` (a part-timer working Monday, Wednesday and Friday) and `unavailable` (leave).

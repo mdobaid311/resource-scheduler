@@ -86,6 +86,7 @@ export default defineConfig({
             { label: "Drag and resize", slug: "guides/drag-and-resize" },
             { label: "Conflict control", slug: "guides/conflict-control" },
             { label: "Business hours and availability", slug: "guides/availability" },
+            { label: "Utilization", slug: "guides/utilization" },
             { label: "Large data and performance", slug: "guides/performance" },
             { label: "Languages and clocks", slug: "guides/internationalization" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
