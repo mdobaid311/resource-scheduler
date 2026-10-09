@@ -32,6 +32,8 @@ jobs:
         run: npx --yes shadcn@latest build registry.json -o "$RUNNER_TEMP/registry"
       - name: Size budget and published files
         run: npm run check:size
+      - name: Both entry points load (ESM and CJS)
+        run: npm run check:entries
       - name: Bundle sanity
         run: |
           head -c 12 dist/index.esm.js | grep -q '"use client"'

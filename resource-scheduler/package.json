@@ -1,9 +1,9 @@
 {
   "name": "resource-scheduler",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A React-based resource scheduling component with drag-and-drop functionality",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/resource-scheduler.css",
@@ -15,7 +15,7 @@
       "types": "./dist/index.d.ts",
       "style": "./dist/resource-scheduler.css",
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.cjs"
     },
     "./style.css": "./dist/resource-scheduler.css",
     "./dist/resource-scheduler.css": "./dist/resource-scheduler.css"
@@ -36,6 +36,7 @@
     "registry:build": "node scripts/build-registry.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
     "check:size": "node scripts/check-size.mjs",
+    "check:entries": "node scripts/check-entries.mjs",
     "lint": "eslint src",
     "type-check": "tsc --noEmit -p tsconfig.app.json",
     "start": "vite preview"
