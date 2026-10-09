@@ -1,0 +1,60 @@
+---
+title: Resource groups
+description: List resources under collapsible group headers, such as rooms by floor or staff by team, and control which groups are folded.
+---
+
+import GroupsDemo from "../../../components/demos/GroupsDemo";
+
+Give resources a `group` and they are listed together under a header you can fold. It is for the tens or hundreds of rows that need some structure: rooms by floor, staff by team, vehicles by depot.
+
+<GroupsDemo client:only="react" />
+
+## Grouping
+
+```tsx
+const rooms: Resource[] = [
+  { id: "atlas", name: "Atlas", group: "Floor 1", events: [] },
+  { id: "borealis", name: "Borealis", group: "Floor 1", events: [] },
+  { id: "cirrus", name: "Cirrus", group: "Floor 2", events: [] },
+  { id: "lobby", name: "Lobby screen", events: [] },   // no group: stays a plain row
+];
+
+<ResourceScheduler resources={rooms} />
+```
+
+- A group's header sits where its **first member** is, and all its members follow it in their original order, even if they were spread out in your list. Resources without a `group` keep their place.
+- The group name is its identity: resources with the same string are in the same group, and it is the text on the header.
+- Headers are not resources. They have no events, and `renderResourceHeader`, `onEventClick` and the other handlers never receive one.
+- Without any `group`, nothing changes.
+
+## Folding
+
+Click a header, or Tab to it and press Enter or Space. A folded group keeps its header, with the number of resources in it, and its rows are not drawn. Header buttons say whether they are open (`aria-expanded`) and read as "Floor 1, 2 resources".
+
+```tsx
+// Some groups start folded; the scheduler remembers the rest.
+<ResourceScheduler resources={rooms} defaultCollapsedGroups={["Annex"]} />
+
+// Or keep the list yourself, for "collapse all" buttons or to save it per user.
+const [collapsed, setCollapsed] = useState<string[]>([]);
+<ResourceScheduler
+  resources={rooms}
+  collapsedGroups={collapsed}
+  onCollapsedGroupsChange={setCollapsed}
+/>
+```
+
+With `collapsedGroups` set, the list is yours: the scheduler calls `onCollapsedGroupsChange` with the new list and shows what you pass back.
+
+## What it does around the headers
+
+- **Keyboard.** The arrow keys in the grid move between resources and step over the headers; the headers are reached with Tab, since they are buttons.
+- **Drag and drop.** Events can be dragged between groups like between any rows. The rules (`eventOverlap`, `isValidDrop`, `blockUnavailable`) see the visible resources only: a folded group is not a place to drop.
+- **Utilization.** Resources show their bars, headers do not.
+- **Large lists.** Headers are rows like the others, so [row virtualization](/guides/performance/) works across them.
+- **Languages.** The header's spoken text is `labels.group(name, count)`.
+
+## Not included
+
+- Nested groups. `group` is one level; for a tree, join the levels in the name ("Hospital / Ward A") and the headers stay flat.
+- Totals on the header, such as the utilization of the whole group. `getUtilization` gives you the numbers per resource to sum yourself.

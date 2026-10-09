@@ -100,7 +100,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). `Resource.capacity` (simultaneous bookings) feeds utilization only; it does not enforce anything
 - [x] **Flat data model**: `events` prop with `resourceId` or `resourceIds`, alongside the nested `resource.events`; `resource.events` is optional on input (done on branch `feat/flat-events`)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
-- [ ] **Resource grouping / hierarchy** with collapse (L)
+- [~] **Resource grouping** with collapse (done on branch `feat/resource-groups`): `Resource.group`, `collapsedGroups` / `defaultCollapsedGroups` / `onCollapsedGroupsChange`, header buttons, keyboard, virtualization. One level only. Still open: nested hierarchy and group totals (utilization of a whole group)
 - [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
 - [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
 - [ ] **Touch** drag/resize/create (M, comes with Pointer Events)

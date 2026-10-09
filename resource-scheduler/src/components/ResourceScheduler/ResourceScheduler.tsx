@@ -26,6 +26,7 @@ import {
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
+import { isGroupRow, withGroups } from "./utils/groups";
 import {
   isPlacementAllowed,
   type Placement,
@@ -73,6 +74,9 @@ export const ResourceScheduler = forwardRef<
   blockUnavailable,
   nowIndicator,
   showUtilization,
+  collapsedGroups,
+  defaultCollapsedGroups,
+  onCollapsedGroupsChange,
   virtualize,
   renderEventPopover,
   allowViewChange = true,
@@ -100,10 +104,25 @@ export const ResourceScheduler = forwardRef<
     () => ({ weekStartsOn: firstDay, hideWeekends }),
     [firstDay, hideWeekends]
   );
+  // Which groups are collapsed: yours when `collapsedGroups` is passed, else ours.
+  const [ownCollapsed, setOwnCollapsed] = useState(defaultCollapsedGroups ?? []);
+  const collapsed = collapsedGroups ?? ownCollapsed;
+  const toggleGroup = useCallback(
+    (group: string) => {
+      const next = collapsed.includes(group)
+        ? collapsed.filter((g) => g !== group)
+        : [...collapsed, group];
+      if (!collapsedGroups) setOwnCollapsed(next);
+      onCollapsedGroupsChange?.(next);
+    },
+    [collapsed, collapsedGroups, onCollapsedGroupsChange]
+  );
   // Flat `events` join the resources first, so every rule below sees them.
+  // Group headers are rows too, so heights, virtualization and the grid layout
+  // treat them like the resources around them.
   const initialResources = useMemo(
-    () => withEvents(resourcesProp, events),
-    [resourcesProp, events]
+    () => withGroups(withEvents(resourcesProp, events), collapsed),
+    [resourcesProp, events, collapsed]
   );
   const helpId = `rs-help${useId()}`;
   // Spoken by screen readers through the live region below.
@@ -182,7 +201,11 @@ export const ResourceScheduler = forwardRef<
   const utilization = useMemo(
     () =>
       showUtilization
-        ? new Map(resources.map((r) => [r.id, getUtilization(r, range, { businessHours })]))
+        ? new Map(
+            resources
+              .filter((r) => !isGroupRow(r))
+              .map((r) => [r.id, getUtilization(r, range, { businessHours })])
+          )
         : undefined,
     [showUtilization, resources, range, businessHours]
   );
@@ -390,6 +413,7 @@ export const ResourceScheduler = forwardRef<
             getResourceRowHeight={getResourceRowHeight}
             renderResourceHeader={renderResourceHeader}
             utilization={utilization}
+            onToggleGroup={toggleGroup}
             rowRange={rowRange}
           />
 

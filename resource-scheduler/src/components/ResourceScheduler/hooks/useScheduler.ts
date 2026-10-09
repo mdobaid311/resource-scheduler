@@ -13,6 +13,7 @@ import {
   isToday,
 } from "../utils/dateUtils";
 import { type SchedulerEvent, type Resource, ViewType } from "../types";
+import { GROUP_ROW_HEIGHT, isGroupRow } from "../utils/groups";
 import { expandEvents } from "../utils/recurrence";
 
 export const useScheduler = (
@@ -94,6 +95,7 @@ export const useScheduler = (
 
   const getResourceRowHeight = useCallback(
     (resource: Resource) => {
+      if (isGroupRow(resource)) return GROUP_ROW_HEIGHT;
       const datesInView =
         viewType === ViewType.Day
           ? getTimeSlotsMemoized()

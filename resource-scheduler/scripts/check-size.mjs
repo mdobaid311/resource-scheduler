@@ -5,12 +5,13 @@
 //
 // Budgets are gzip bytes with about 20% headroom over the size at the time
 // they were set (JS 16.6 KB, CSS 5.7 KB). Raise them on purpose, in a PR that
-// says why, not by accident.
+// says why, not by accident. JS went from 20 KB to 22 KB for resource groups
+// (20.1 KB used, about 10% headroom).
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 20_000,
+  "dist/index.esm.js": 22_000,
   "dist/resource-scheduler.css": 7_000,
 };
 const EXPECTED_FILES = new Set([
