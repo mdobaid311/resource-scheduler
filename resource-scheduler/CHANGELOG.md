@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-10
+
+The first release since 1.1.1. Version 1.2.0 was prepared but never published to npm, so everything listed under it below ships here too, including the fix for the crash under React 18 and the styles that no longer leak into your app. Upgrading from 1.1.1 needs no code changes.
+
 ### Added
 - **Recipes** (docs): shift roster (recurring shifts, contracted hours, leave), equipment rental (stock counts with `capacity` and `isValidDrop`, service days, `findAvailableSlots`) and field service dispatch (shifts and breaks, booking the earliest technician), each with a live demo and the complete data model.
 - **Utilization.** `showUtilization` puts a bar and a percentage under each resource name: how much of its available time is booked in the visible range. Available time is the working time (`Resource.businessHours`, else `businessHours`, else every hour) minus `Resource.unavailable`, times the new `Resource.capacity` (simultaneous bookings, default 1). Booked time is the part of the events (recurring ones expanded) inside that available time, so nights and time off count on neither side, and overlapping events add up: above 100% the bar turns red. Opt-in; output is unchanged without it. `getUtilization(resource, range, { businessHours })` returns `{ bookedMinutes, availableMinutes, ratio }` for reports and servers, and `labels.utilization` carries the hover and screen reader text (`role="meter"`).
@@ -38,6 +42,7 @@
 - `src/styles/tokens.css` split out of `global.css`; the compiled npm stylesheet is byte-identical.
 
 ### Fixed
+- `require("resource-scheduler")` crashed with "exports is not defined in ES module scope": `package.json` has `"type": "module"`, so Node read the CommonJS build `dist/index.js` as ESM. The CommonJS build is now `dist/index.cjs` (`main` and `exports.require` point at it). CI loads both entry points through the package's own `exports` map after every build.
 - The npm package no longer ships a demo screenshot and an icon copied from `public/` (package size 135 KB down to 50 KB). CI now fails on stray files in `dist/` and on a gzip size budget.
 - Events can be dropped on a slot that is covered by another event (the slot lookup now uses `elementsFromPoint`).
 

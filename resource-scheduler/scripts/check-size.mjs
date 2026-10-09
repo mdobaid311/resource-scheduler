@@ -14,7 +14,7 @@ const BUDGET = {
   "dist/resource-scheduler.css": 7_000,
 };
 const EXPECTED_FILES = new Set([
-  "index.js",
+  "index.cjs",
   "index.esm.js",
   "index.d.ts",
   "resource-scheduler.css",
