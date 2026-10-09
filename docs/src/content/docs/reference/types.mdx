@@ -38,7 +38,7 @@ interface Resource {
   id: string;
   name: string;
   role?: string;
-  events: SchedulerEvent[];
+  events?: SchedulerEvent[];             // optional when you pass the flat `events` prop
   businessHours?: BusinessHours | false; // overrides the prop; false = always available
   unavailable?: UnavailableRange[];      // time off, shaded in the grid
 }
@@ -61,10 +61,12 @@ interface SchedulerEvent {
   endDate: Date;      // exclusive
   color?: string;
   description?: string;
+  resourceId?: string;    // only in the flat `events` prop: the resource it belongs to
+  resourceIds?: string[]; // ...or several
 }
 ```
 
-`Event` is a deprecated alias of `SchedulerEvent`.
+`Event` is a deprecated alias of `SchedulerEvent`. Handlers receive a `Resource` whose `events` is always an array; the optional `events` above is the input type, exported as `ResourceInput`.
 
 ## `SlotSelection`
 

@@ -25,6 +25,13 @@ export interface SchedulerEvent {
   endDate: Date;
   color?: string;
   description?: string;
+  /**
+   * Only for events passed in the flat `events` prop: the resource it belongs
+   * to. Ignored on events inside `resource.events`.
+   */
+  resourceId?: string;
+  /** Like `resourceId`, for an event that belongs to several resources. */
+  resourceIds?: string[];
 }
 
 /** @deprecated Use `SchedulerEvent`. The name `Event` shadows the DOM global. */
@@ -85,8 +92,20 @@ export interface ResourceSchedulerHandle {
   scrollToTime(date: Date): void;
 }
 
+/** What you pass in: `events` may be left out when you use the flat `events` prop. */
+export type ResourceInput = Omit<Resource, "events"> & {
+  events?: SchedulerEvent[];
+};
+
 export interface ResourceSchedulerProps {
-  resources: Resource[];
+  resources: ResourceInput[];
+  /**
+   * Events as one flat list. Each names its resource with `resourceId` (or
+   * `resourceIds` for several) and is drawn there, in addition to whatever a
+   * resource holds in its own `events`. Handlers are unchanged: you still
+   * receive `fromResourceId` and `toResourceId` to update your own list.
+   */
+  events?: SchedulerEvent[];
   initialDate?: Date;
   initialView?: ViewType;
   availableViews?: ViewType[];

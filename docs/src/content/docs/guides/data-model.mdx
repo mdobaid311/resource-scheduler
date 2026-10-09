@@ -23,7 +23,26 @@ interface SchedulerEvent {
 }
 ```
 
-Every event belongs to exactly one resource: it lives in the `events` array of that resource. Moving an event to another row means taking it out of one array and putting it in another, which `onEventDrop` tells you to do.
+By default an event lives in the `events` array of its resource. Moving an event to another row means taking it out of one array and putting it in another, which `onEventDrop` tells you to do.
+
+### Or as one flat list
+
+If your data is a table of bookings, pass it as `events` and name the resource on each event instead. Then `resources` only needs `id` and `name`:
+
+```tsx
+const people = [
+  { id: "ann", name: "Ann" },
+  { id: "bob", name: "Bob" },
+];
+const events = [
+  { id: "1", title: "Standup", resourceId: "ann", startDate, endDate },
+  { id: "2", title: "Kickoff", resourceIds: ["ann", "bob"], startDate, endDate }, // drawn in both rows
+];
+
+<ResourceScheduler resources={people} events={events} />
+```
+
+Both styles work together: flat events are added to whatever a resource holds in its own `events`. Events that name an unknown resource are not drawn. The handlers are unchanged and still give you `fromResourceId` and `toResourceId`, so a move is a `setEvents(...)` that changes the `resourceId`. For an event in `resourceIds`, swap `fromResourceId` for `toResourceId` in the list. Conflict rules see flat events too.
 
 `Event` is still exported as a deprecated alias of `SchedulerEvent`. Prefer the new name: `Event` shadows the DOM global.
 

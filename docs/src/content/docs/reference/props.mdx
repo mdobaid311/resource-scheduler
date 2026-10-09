@@ -11,7 +11,8 @@ Only `resources` is required.
 
 ## Data
 
-- **`resources`**: `Resource[]`, required. Each resource holds its own `events`. Read as is; the component keeps no copy.
+- **`resources`**: `Resource[]`, required. Each resource may hold its own `events`. Read as is; the component keeps no copy.
+- **`events`**: `SchedulerEvent[]`. The same events as one flat list: each names its resource with `resourceId` (or `resourceIds`). Added to what the resources hold. See [Data model](/guides/data-model/).
 
 ## Starting state and views
 

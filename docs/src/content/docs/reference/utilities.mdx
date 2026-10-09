@@ -10,6 +10,10 @@ All of these are exported from `resource-scheduler`.
 - **`isPlacementAllowed(event, placement, resources, rules)`** returns `boolean`. The same check the component runs. Works anywhere, so use it before saving on the server.
 - **`rangesOverlap(aStart, aEnd, bStart, bEnd)`** returns `boolean`. End times are exclusive; a zero-length range is one instant.
 
+## Events
+
+- **`withEvents(resources, events?)`** returns `Resource[]`. Adds a flat event list to the resources it names, as the `events` prop does. Resources without an `events` array get an empty one.
+
 ## Availability
 
 - **`isCellUnavailable(resource, cell, { businessHours, viewType, slotMinutes? })`** returns `boolean`. Whether the slot (day view) or day (other views) starting at `cell` is shaded for that resource.

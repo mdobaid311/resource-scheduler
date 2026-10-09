@@ -125,6 +125,11 @@
           "target": "@components/resource-scheduler/utils/dateUtils.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/events.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/events.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/keyboard.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/keyboard.ts"

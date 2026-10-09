@@ -29,7 +29,7 @@ Any static host works. On Vercel, import the repository and set the **Root Direc
 
 The install step must also install the package, because the demos import its source: set the Install Command to `npm --prefix ../resource-scheduler ci && npm ci`.
 
-`public/robots.txt` names the sitemap with the default origin; update it if you deploy elsewhere.
+`public/robots.txt` names the sitemap with the default origin; update it if you deploy elsewhere. `public/llms.txt` (a summary of the API for AI coding assistants) is hand-written and uses the default origin too, so update it when props change or the site moves.
 
 ## The README animation and social image
 
