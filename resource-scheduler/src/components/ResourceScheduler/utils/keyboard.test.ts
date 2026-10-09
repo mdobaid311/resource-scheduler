@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ViewType } from "../types";
-import { moveCursor, stepPlacement, StepContext } from "./keyboard";
+import { moveCursor, stepPlacement, type StepContext } from "./keyboard";
 
 const d = (day: number, hour = 0, minute = 0) => new Date(2026, 2, day, hour, minute);
 

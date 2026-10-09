@@ -1,8 +1,8 @@
 // src/components/ResourceScheduler/hooks/useEventCreation.ts
 import { useState, useCallback, useEffect } from "react";
-import { SchedulerEvent, ViewType } from "../types";
+import { type SchedulerEvent, ViewType } from "../types";
 import { getSelectionBounds } from "../utils/dateUtils";
-import { Placement } from "../utils/placement";
+import type { Placement } from "../utils/placement";
 
 export const useEventCreation = (
   onEventCreate?: (event: Omit<SchedulerEvent, "id">, resourceId: string) => void,

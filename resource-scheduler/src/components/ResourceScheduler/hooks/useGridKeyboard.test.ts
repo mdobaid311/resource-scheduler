@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, Mock, vi } from "vitest";
-import { GridKeyboardOptions, useGridKeyboard } from "./useGridKeyboard";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { type GridKeyboardOptions, useGridKeyboard } from "./useGridKeyboard";
 
 const slot = (row: number, col: number) => ({
   resourceId: `r${row + 1}`,

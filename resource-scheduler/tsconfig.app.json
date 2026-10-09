@@ -15,6 +15,10 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
+    // The shadcn registry ships this source into apps whose templates enable
+    // these (create-vite does), so the source has to compile under them.
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",

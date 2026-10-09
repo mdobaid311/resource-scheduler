@@ -1,16 +1,16 @@
 // src/components/ResourceScheduler/SchedulerControls.tsx
-import { Button } from "../../components/ui/button";
+import { Button } from "./ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "./ui/select";
 import { endOfWeek, format, startOfWeek } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
-import { SchedulerControlsProps, ViewType } from "./types";
+import { type SchedulerControlsProps, ViewType } from "./types";
 
 export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   currentDate,

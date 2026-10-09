@@ -5,7 +5,7 @@ import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
 import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
 import { useGridKeyboard } from "./hooks/useGridKeyboard";
-import { TimelineGridProps } from "./types";
+import type { TimelineGridProps } from "./types";
 import { formatSlotLabel, isToday } from "./utils/dateUtils";
 
 export const TimelineGrid: React.FC<TimelineGridProps> = ({

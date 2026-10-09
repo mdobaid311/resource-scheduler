@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/hooks/useGridKeyboard.ts
 import { useState } from "react";
-import { Cursor, moveCursor } from "../utils/keyboard";
+import { type Cursor, moveCursor } from "../utils/keyboard";
 
 export interface GridKeyboardOptions {
   rowCount: number;

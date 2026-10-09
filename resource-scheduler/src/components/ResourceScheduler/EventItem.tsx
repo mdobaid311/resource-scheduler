@@ -6,9 +6,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../components/ui/popover";
+} from "./ui/popover";
 import { Calendar, User } from "lucide-react";
-import { EventItemProps, ViewType } from "./types";
+import { type EventItemProps, ViewType } from "./types";
 import { formatEventTime, formatRangeLabel } from "./utils/dateUtils";
 
 const MOVE_STEPS: Record<string, { cols?: number; rows?: number }> = {

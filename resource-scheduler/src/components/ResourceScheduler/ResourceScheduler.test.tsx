@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResourceScheduler } from "./ResourceScheduler";
-import { Resource, ViewType } from "./types";
+import { type Resource, ViewType } from "./types";
 
 const scrollTo = vi.fn();
 

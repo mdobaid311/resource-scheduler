@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Resource, SchedulerEvent } from "../types";
+import type { Resource, SchedulerEvent } from "../types";
 import { isPlacementAllowed, rangesOverlap } from "./placement";
 
 const d = (day: number, hour = 0) => new Date(2026, 2, day, hour);

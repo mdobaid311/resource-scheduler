@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SchedulerEvent, ViewType } from "../types";
+import { type SchedulerEvent, ViewType } from "../types";
 import {
   formatEventTime,
   formatRangeLabel,

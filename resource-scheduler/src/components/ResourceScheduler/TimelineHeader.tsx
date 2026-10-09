@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/TimelineHeader.tsx
 import React from "react";
 import { format } from "date-fns";
-import { TimelineHeaderProps } from "./types";
+import type { TimelineHeaderProps } from "./types";
 import { isToday } from "./utils/dateUtils";
 
 export const TimelineHeader: React.FC<TimelineHeaderProps> = ({

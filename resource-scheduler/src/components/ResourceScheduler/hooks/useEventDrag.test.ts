@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Resource, SchedulerEvent, ViewType } from "../types";
+import { type Resource, type SchedulerEvent, ViewType } from "../types";
 import { useEventDrag } from "./useEventDrag";
 
 const d = (month: number, day: number, hour = 0, minute = 0) =>

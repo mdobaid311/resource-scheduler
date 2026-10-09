@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
 import React from "react";
-import { ResourceColumnProps } from "./types";
+import type { ResourceColumnProps } from "./types";
 
 export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   resources,

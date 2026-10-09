@@ -1,9 +1,9 @@
 // src/components/ResourceScheduler/hooks/useEventDrag.ts
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { Resource, ResourceSchedulerProps, SchedulerEvent, ViewType } from "../types";
+import { type Resource, type ResourceSchedulerProps, type SchedulerEvent, ViewType } from "../types";
 import { formatRangeLabel, getDropRange, getResizeRange } from "../utils/dateUtils";
-import { Step, stepPlacement } from "../utils/keyboard";
-import { Placement } from "../utils/placement";
+import { type Step, stepPlacement } from "../utils/keyboard";
+import type { Placement } from "../utils/placement";
 
 // Pixels the pointer must travel before a press becomes a drag, so plain
 // clicks still open the event popover.
