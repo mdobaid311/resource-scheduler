@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // src/components/ResourceScheduler/types.ts
+import type { Placement, PlacementRules } from "./utils/placement";
+
 export enum ViewType {
   Day = "day",
   Week = "week",
@@ -52,6 +54,23 @@ export interface ResourceSchedulerProps {
     newStartDate: Date,
     newEndDate: Date
   ) => void;
+  /**
+   * Called when an event edge is dragged to a new start or end. Providing it
+   * turns the resize handles on. End times are exclusive.
+   */
+  onEventResize?: (
+    event: SchedulerEvent,
+    resourceId: string,
+    newStartDate: Date,
+    newEndDate: Date
+  ) => void;
+  /**
+   * `false` forbids overlapping events on the same resource; a function
+   * decides per overlapping pair. Applies to move, resize and drag-create.
+   */
+  eventOverlap?: PlacementRules["eventOverlap"];
+  /** Final veto for any move, resize or drag-create. Return `false` to reject. */
+  isValidDrop?: PlacementRules["isValidDrop"];
   resourceColumnWidth?: string;
   timeColumnWidth?: string;
   dateColumnWidth?: string;
@@ -114,6 +133,9 @@ export interface TimelineGridProps {
     newStartDate: Date,
     newEndDate: Date
   ) => void;
+  onEventResize?: ResourceSchedulerProps["onEventResize"];
+  /** Whether an event may be placed there; rejected placements show in red and are not applied. */
+  checkPlacement?: (event: SchedulerEvent, placement: Placement) => boolean;
   calculateEventPositions: (events: SchedulerEvent[], datesInView: Date[]) => any[];
   getGridTemplateRows: () => string;
   renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;

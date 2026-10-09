@@ -1,13 +1,14 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "../../hooks/use-media-query";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
 import { useScheduler } from "./hooks/useScheduler";
 import { ResourceColumn } from "./ResourceColumn";
 import { SchedulerControls } from "./SchedulerControls";
 import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
-import { ResourceSchedulerProps, ViewType } from "./types";
+import { ResourceSchedulerProps, SchedulerEvent, ViewType } from "./types";
+import { isPlacementAllowed, Placement } from "./utils/placement";
 import { scrollToDate } from "./utils/scrollUtils";
 
 export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
@@ -19,6 +20,9 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
   onViewChange,
   onEventDrop,
   onEventCreate,
+  onEventResize,
+  eventOverlap,
+  isValidDrop,
   renderEventPopover,
   allowViewChange = true,
   resourceColumnWidth: propResourceColumnWidth,
@@ -47,8 +51,21 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
     getGridTemplateRows,
   } = useScheduler(initialResources, initialDate, initialView);
 
+  // Checked against the full `resources` prop, not just the visible range.
+  const checkPlacement = useMemo<
+    ((event: SchedulerEvent, placement: Placement) => boolean) | undefined
+  >(() => {
+    if ((eventOverlap === undefined || eventOverlap === true) && !isValidDrop)
+      return undefined; // nothing to enforce
+    return (event, placement) =>
+      isPlacementAllowed(event, placement, initialResources, {
+        eventOverlap,
+        isValidDrop,
+      });
+  }, [initialResources, eventOverlap, isValidDrop]);
+
   const { isDragging, dragStart, dragEnd, handleMouseDown, handleMouseEnter } =
-    useEventCreation(onEventCreate, viewType);
+    useEventCreation(onEventCreate, viewType, checkPlacement);
 
   const resourceColumnWidth =
     propResourceColumnWidth || (isMobile ? "140px" : "220px");
@@ -142,6 +159,8 @@ export const ResourceScheduler: React.FC<ResourceSchedulerProps> = ({
               onEventClick={onEventClick}
               renderEventPopover={renderEventPopover}
               onEventDrop={onEventDrop}
+              onEventResize={onEventResize}
+              checkPlacement={checkPlacement}
               calculateEventPositions={calculateEventPositions}
               getGridTemplateRows={getGridTemplateRows}
               renderTimeSlot={renderTimeSlot}

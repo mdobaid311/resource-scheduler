@@ -26,6 +26,14 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 // Utility exports
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
+export {
+  isPlacementAllowed,
+  rangesOverlap,
+} from "./components/ResourceScheduler/utils/placement";
+export type {
+  Placement,
+  PlacementRules,
+} from "./components/ResourceScheduler/utils/placement";
 
 // Shared hooks exports
 export { useMediaQuery } from "./hooks/use-media-query";

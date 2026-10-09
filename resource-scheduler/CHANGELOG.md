@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Event resize.** Pass `onEventResize(event, resourceId, newStart, newEnd)` to show edge handles. Edges snap to whole slots (hours in Day view, days elsewhere, keeping the time of day), end times are exclusive, and the new footprint is highlighted while dragging.
+- **Conflict control.** `eventOverlap` (`false`, or `(moving, other) => boolean`) and `isValidDrop(event, placement)` apply to drag-move, resize and drag-create. Rejected placements show a red footprint and never call your handlers. `isPlacementAllowed` and `rangesOverlap` are exported.
+- Drag and resize now highlight every slot the event would cover, not only the one under the pointer.
+
+### Fixed
+- Events can be dropped on a slot that is covered by another event (the slot lookup now uses `elementsFromPoint`).
+
 ## [1.2.0] - 2026-10-09
 
 ### Fixed

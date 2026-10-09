@@ -189,6 +189,59 @@ export const getSelectionBounds = (
     : { start: first, end: addDays(startOfDay(last), 1) };
 };
 
+// New range when `edge` of `event` is dragged onto `slot`; the slot under the
+// pointer is always included. Day view snaps to hours; date views move whole
+// days and keep the time of day (an all-day event stays midnight-aligned).
+// Returns null when the edge would cross the opposite edge.
+export const getResizeRange = (
+  event: SchedulerEvent,
+  edge: "start" | "end",
+  slot: Date,
+  viewType: ViewType
+): { start: Date; end: Date } | null => {
+  const { startDate, endDate } = event;
+  const onSlotDay = (time: Date) =>
+    new Date(
+      slot.getFullYear(),
+      slot.getMonth(),
+      slot.getDate(),
+      time.getHours(),
+      time.getMinutes(),
+      time.getSeconds(),
+      time.getMilliseconds()
+    );
+  const endsAtMidnight = startOfDay(endDate).getTime() === endDate.getTime();
+
+  const start =
+    edge === "start"
+      ? viewType === ViewType.Day
+        ? slot
+        : onSlotDay(startDate)
+      : startDate;
+  const end =
+    edge === "end"
+      ? viewType === ViewType.Day
+        ? addHours(slot, 1)
+        : endsAtMidnight
+        ? addDays(startOfDay(slot), 1)
+        : onSlotDay(endDate)
+      : endDate;
+
+  return start < end ? { start, end } : null;
+};
+
+// Whether the hour (day view) or day (other views) starting at `slot` is
+// touched by `range`. Used to draw the footprint of a drag or resize.
+export const isSlotInRange = (
+  slot: Date,
+  range: { start: Date; end: Date },
+  viewType: ViewType
+): boolean => {
+  const slotEnd =
+    viewType === ViewType.Day ? addHours(slot, 1) : addDays(slot, 1);
+  return slot < range.end && slotEnd > range.start;
+};
+
 // "9:30 AM - 11:00 AM", or "All day" for events that start and end at midnight.
 export const formatEventTime = (event: SchedulerEvent): string => {
   const atMidnight = (d: Date) => startOfDay(d).getTime() === d.getTime();

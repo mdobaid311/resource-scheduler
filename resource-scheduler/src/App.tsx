@@ -23,6 +23,7 @@ const App = () => {
   const [eventsCreated, setEventsCreated] = useState(0);
   const [eventsDropped, setEventsDropped] = useState(0);
   const [lastAction, setLastAction] = useState<string>("");
+  const [noOverlap, setNoOverlap] = useState(false);
 
   const [resources, setResources] = useState<Resource[]>(sampleResources);
 
@@ -89,6 +90,29 @@ const App = () => {
     });
     setEventsDropped((prev) => prev + 1);
     setLastAction(`Event moved from ${fromResourceId} to ${toResourceId}`);
+  };
+
+  const handleEventResize = (
+    event: Event,
+    resourceId: string,
+    newStartDate: Date,
+    newEndDate: Date
+  ) => {
+    setResources((prev) =>
+      prev.map((resource) =>
+        resource.id === resourceId
+          ? {
+              ...resource,
+              events: resource.events.map((e) =>
+                e.id === event.id
+                  ? { ...e, startDate: newStartDate, endDate: newEndDate }
+                  : e
+              ),
+            }
+          : resource
+      )
+    );
+    setLastAction(`Event resized: ${event.title}`);
   };
 
   const handleViewChange = (view: ViewType) => {
@@ -383,6 +407,15 @@ function App() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <label className="mb-3 flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={noOverlap}
+                    onChange={(e) => setNoOverlap(e.target.checked)}
+                  />
+                  Prevent overlapping events (drag, resize and create are
+                  rejected, shown in red)
+                </label>
                 <div className="h-[600px] border rounded-lg bg-white">
                   <ResourceScheduler
                     resources={resources}
@@ -394,6 +427,8 @@ function App() {
                     onEventClick={handleEventClick}
                     onEventCreate={handleEventCreate}
                     onEventDrop={handleEventDrop}
+                    onEventResize={handleEventResize}
+                    eventOverlap={noOverlap ? false : true}
                     onViewChange={handleViewChange}
                     renderEventPopover={renderEventPopover}
                     resourceColumnWidth="200px"

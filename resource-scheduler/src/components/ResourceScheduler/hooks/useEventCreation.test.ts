@@ -51,6 +51,37 @@ describe("useEventCreation", () => {
     expect(result.current.dragStart).toBeNull();
   });
 
+  it("skips creation when the placement is rejected", () => {
+    const onCreate = vi.fn();
+    const checkPlacement = vi.fn(() => false);
+    const { result } = renderHook(() =>
+      useEventCreation(onCreate, ViewType.Day, checkPlacement)
+    );
+
+    act(() => result.current.handleMouseDown(slot(9), "r1"));
+    act(() => result.current.handleMouseEnter(slot(10), "r1"));
+    act(releaseMouse);
+
+    expect(checkPlacement).toHaveBeenCalledWith(
+      expect.objectContaining({ startDate: slot(9), endDate: slot(11) }),
+      { resourceId: "r1", start: slot(9), end: slot(11) }
+    );
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(result.current.isDragging).toBe(false);
+  });
+
+  it("creates the event when the placement is accepted", () => {
+    const onCreate = vi.fn();
+    const { result } = renderHook(() =>
+      useEventCreation(onCreate, ViewType.Day, () => true)
+    );
+
+    act(() => result.current.handleMouseDown(slot(9), "r1"));
+    act(releaseMouse);
+
+    expect(onCreate).toHaveBeenCalledTimes(1);
+  });
+
   it("does not create an event when the drag leaves the resource row", () => {
     const onCreate = vi.fn();
     const { result } = renderHook(() =>
