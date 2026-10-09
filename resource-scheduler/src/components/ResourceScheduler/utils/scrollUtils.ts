@@ -3,12 +3,19 @@ import { isSameDay, isSameHour } from "date-fns";
 import { getTimeSlots, getDatesInView } from "./dateUtils";
 import { ViewType } from "../types";
 
+/**
+ * Smooth-scrolls `scroller` so `date` sits in the middle of the visible
+ * timeline. `stickyOffset` is the width of the sticky resource column, which
+ * covers the left edge of the scroller and is not part of the timeline area.
+ * Column widths must be px values.
+ */
 export const scrollToDate = (
   date: Date,
   viewType: ViewType,
-  timelineElement: HTMLDivElement,
+  scroller: HTMLDivElement,
   timeColumnWidth: string,
-  dateColumnWidth: string
+  dateColumnWidth: string,
+  stickyOffset = 0
 ) => {
   const datesInView = getDatesInView(date, viewType);
   const timeSlots = getTimeSlots(date, viewType);
@@ -30,10 +37,11 @@ export const scrollToDate = (
       ? parseInt(timeColumnWidth.replace("px", ""))
       : parseInt(dateColumnWidth.replace("px", ""));
 
-  const scrollPosition = targetIndex * slotWidth;
-
-  timelineElement.scrollTo({
-    left: scrollPosition - timelineElement.clientWidth / 2 + slotWidth / 2,
+  scroller.scrollTo({
+    left:
+      targetIndex * slotWidth +
+      slotWidth / 2 -
+      (scroller.clientWidth - stickyOffset) / 2,
     behavior: "smooth",
   });
 };

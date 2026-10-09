@@ -1,164 +1,129 @@
-@import "tailwindcss";
+/*
+ * Resource Scheduler styles.
+ *
+ * Ships Tailwind's theme + utilities only (no preflight) and scopes every base
+ * rule to `.rs-root`, so importing this file never restyles the host app.
+ * Theme tokens are namespaced `--rs-*` so they cannot clobber a host's own
+ * shadcn/Tailwind variables. Override them on `:root` or any ancestor.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 :root {
-  --background: #ffffff;
-  --foreground: #333333;
-  --card: #ffffff;
-  --card-foreground: #333333;
-  --popover: #ffffff;
-  --popover-foreground: #333333;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #4b5563;
-  --muted: #f9fafb;
-  --muted-foreground: #6b7280;
-  --accent: #e0f2fe;
-  --accent-foreground: #1e3a8a;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #3b82f6;
-  --chart-1: #3b82f6;
-  --chart-2: #2563eb;
-  --chart-3: #1d4ed8;
-  --chart-4: #1e40af;
-  --chart-5: #1e3a8a;
-  --sidebar: #f9fafb;
-  --sidebar-foreground: #333333;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e0f2fe;
-  --sidebar-accent-foreground: #1e3a8a;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #3b82f6;
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.375rem;
-  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
+  --rs-background: #ffffff;
+  --rs-foreground: #333333;
+  --rs-card: #ffffff;
+  --rs-card-foreground: #333333;
+  --rs-popover: #ffffff;
+  --rs-popover-foreground: #333333;
+  --rs-primary: #3b82f6;
+  --rs-primary-foreground: #ffffff;
+  --rs-secondary: #f3f4f6;
+  --rs-secondary-foreground: #4b5563;
+  --rs-muted: #f9fafb;
+  --rs-muted-foreground: #6b7280;
+  --rs-accent: #e0f2fe;
+  --rs-accent-foreground: #1e3a8a;
+  --rs-destructive: #ef4444;
+  --rs-destructive-foreground: #ffffff;
+  --rs-border: #e5e7eb;
+  --rs-input: #e5e7eb;
+  --rs-ring: #3b82f6;
+  --rs-surface: #ffffff;
+  --rs-surface-muted: #f9fafb;
+  --rs-surface-hover: #f3f4f6;
+  --rs-today: #eff6ff;
+  --rs-tooltip: #1f2937;
+  --rs-shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --rs-shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --rs-shadow: var(--rs-shadow-sm);
+  --rs-shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 2px 4px -1px hsl(0 0% 0% / 0.1);
 }
 
 .dark {
-  --background: #171717;
-  --foreground: #e5e5e5;
-  --card: #262626;
-  --card-foreground: #e5e5e5;
-  --popover: #262626;
-  --popover-foreground: #e5e5e5;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #262626;
-  --secondary-foreground: #e5e5e5;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #1e3a8a;
-  --accent-foreground: #bfdbfe;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #404040;
-  --input: #404040;
-  --ring: #3b82f6;
-  --chart-1: #60a5fa;
-  --chart-2: #3b82f6;
-  --chart-3: #2563eb;
-  --chart-4: #1d4ed8;
-  --chart-5: #1e40af;
-  --sidebar: #171717;
-  --sidebar-foreground: #e5e5e5;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e3a8a;
-  --sidebar-accent-foreground: #bfdbfe;
-  --sidebar-border: #404040;
-  --sidebar-ring: #3b82f6;
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.375rem;
-  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --rs-background: #171717;
+  --rs-foreground: #e5e5e5;
+  --rs-card: #262626;
+  --rs-card-foreground: #e5e5e5;
+  --rs-popover: #262626;
+  --rs-popover-foreground: #e5e5e5;
+  --rs-secondary: #262626;
+  --rs-secondary-foreground: #e5e5e5;
+  --rs-muted: #262626;
+  --rs-muted-foreground: #a3a3a3;
+  --rs-accent: #1e3a8a;
+  --rs-accent-foreground: #bfdbfe;
+  --rs-border: #404040;
+  --rs-input: #404040;
+  --rs-surface: #171717;
+  --rs-surface-muted: #262626;
+  --rs-surface-hover: #333333;
+  --rs-today: #172554;
+  --rs-tooltip: #e5e5e5;
 }
 
 @theme inline {
-  --color-ocrs-background: var(--background);
-  --color-ocrs-foreground: var(--foreground);
-  --color-ocrs-card: var(--card);
-  --color-ocrs-card-foreground: var(--card-foreground);
-  --color-ocrs-popover: var(--popover);
-  --color-ocrs-popover-foreground: var(--popover-foreground);
-  --color-ocrs-primary: var(--primary);
-  --color-ocrs-primary-foreground: var(--primary-foreground);
-  --color-ocrs-secondary: var(--secondary);
-  --color-ocrs-secondary-foreground: var(--secondary-foreground);
-  --color-ocrs-muted: var(--muted);
-  --color-ocrs-muted-foreground: var(--muted-foreground);
-  --color-ocrs-accent: var(--accent);
-  --color-ocrs-accent-foreground: var(--accent-foreground);
-  --color-ocrs-destructive: var(--destructive);
-  --color-ocrs-destructive-foreground: var(--destructive-foreground);
-  --color-ocrs-border: var(--border);
-  --color-ocrs-input: var(--input);
-  --color-ocrs-ring: var(--ring);
-  --color-ocrs-chart-1: var(--chart-1);
-  --color-ocrs-chart-2: var(--chart-2);
-  --color-ocrs-chart-3: var(--chart-3);
-  --color-ocrs-chart-4: var(--chart-4);
-  --color-ocrs-chart-5: var(--chart-5);
-  --color-ocrs-sidebar: var(--sidebar);
-  --color-ocrs-sidebar-foreground: var(--sidebar-foreground);
-  --color-ocrs-sidebar-primary: var(--sidebar-primary);
-  --color-ocrs-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-ocrs-sidebar-accent: var(--sidebar-accent);
-  --color-ocrs-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-ocrs-sidebar-border: var(--sidebar-border);
-  --color-ocrs-sidebar-ring: var(--sidebar-ring);
+  --color-ocrs-background: var(--rs-background);
+  --color-ocrs-foreground: var(--rs-foreground);
+  --color-ocrs-card: var(--rs-card);
+  --color-ocrs-card-foreground: var(--rs-card-foreground);
+  --color-ocrs-popover: var(--rs-popover);
+  --color-ocrs-popover-foreground: var(--rs-popover-foreground);
+  --color-ocrs-primary: var(--rs-primary);
+  --color-ocrs-primary-foreground: var(--rs-primary-foreground);
+  --color-ocrs-secondary: var(--rs-secondary);
+  --color-ocrs-secondary-foreground: var(--rs-secondary-foreground);
+  --color-ocrs-muted: var(--rs-muted);
+  --color-ocrs-muted-foreground: var(--rs-muted-foreground);
+  --color-ocrs-accent: var(--rs-accent);
+  --color-ocrs-accent-foreground: var(--rs-accent-foreground);
+  --color-ocrs-destructive: var(--rs-destructive);
+  --color-ocrs-destructive-foreground: var(--rs-destructive-foreground);
+  --color-ocrs-border: var(--rs-border);
+  --color-ocrs-input: var(--rs-input);
+  --color-ocrs-ring: var(--rs-ring);
 
-  --ocrs-font-sans: var(--font-sans);
-  --ocrs-font-mono: var(--font-mono);
-  --ocrs-font-serif: var(--font-serif);
-
-  --ocrs-radius-sm: calc(var(--radius) - 4px);
-  --ocrs-radius-md: calc(var(--radius) - 2px);
-  --ocrs-radius-lg: var(--radius);
-  --ocrs-radius-xl: calc(var(--radius) + 4px);
-
-  --ocrs-shadow-2xs: var(--shadow-2xs);
-  --ocrs-shadow-xs: var(--shadow-xs);
-  --ocrs-shadow-sm: var(--shadow-sm);
-  --ocrs-shadow: var(--shadow);
-  --ocrs-shadow-md: var(--shadow-md);
-  --ocrs-shadow-lg: var(--shadow-lg);
-  --ocrs-shadow-xl: var(--shadow-xl);
-  --ocrs-shadow-2xl: var(--shadow-2xl);
-}
-/* Base styles */
-* {
-  border-color: var(--color-ocrs-border);
+  /* Surfaces used directly by the scheduler grid. */
+  --color-ocrs-white: var(--rs-surface);
+  --color-ocrs-gray-50: var(--rs-surface-muted);
+  --color-ocrs-gray-100: var(--rs-surface-hover);
+  --color-ocrs-gray-800: var(--rs-tooltip);
+  --color-ocrs-blue-50: var(--rs-today);
+  --color-ocrs-transparent: transparent;
 }
 
-body {
-  background-color: var(--color-ocrs-background);
-  color: var(--color-ocrs-foreground);
-  font-family: var(--ocrs-font-sans);
+@utility ocrs-shadow-xs {
+  box-shadow: var(--rs-shadow-xs);
+}
+@utility ocrs-shadow-sm {
+  box-shadow: var(--rs-shadow-sm);
+}
+@utility ocrs-shadow {
+  box-shadow: var(--rs-shadow);
+}
+@utility ocrs-shadow-md {
+  box-shadow: var(--rs-shadow-md);
 }
 
-.test{
-  border: 1px solid red;
+/* Minimal preflight, scoped. Portalled content (popover, select) opts in by
+   also carrying the `rs-root` class. */
+@layer base {
+  .rs-root,
+  .rs-root *,
+  .rs-root *::before,
+  .rs-root *::after {
+    box-sizing: border-box;
+    border-color: var(--rs-border);
+  }
+  .rs-root button {
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+  }
+  .rs-root svg {
+    display: block;
+  }
 }

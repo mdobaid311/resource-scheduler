@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/EventItem.tsx
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { format } from "date-fns";
-import { useDrag } from "react-dnd";
+import { SchedulerDragContext } from "./hooks/useEventDrag";
 import {
   Popover,
   PopoverContent,
@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/popover";
 import { Calendar, User } from "lucide-react";
 import { EventItemProps } from "./types";
+import { formatEventTime } from "./utils/dateUtils";
 
 export const EventItem: React.FC<EventItemProps> = ({
   event,
@@ -17,19 +18,21 @@ export const EventItem: React.FC<EventItemProps> = ({
   renderTimeSlot,
 }) => {
   const [open, setOpen] = useState(false);
-  const [{ opacity }, dragRef] = useDrag(
-    () => ({
-      type: "BOX",
-      item: {
-        event: event,
-        resource: resource,
-      },
-      collect: (monitor) => ({
-        opacity: monitor.isDragging() ? 0.5 : 1,
-      }),
-    }),
-    [event, resource]
-  );
+  const drag = useContext(SchedulerDragContext);
+  const opacity = drag?.activeDrag?.eventId === event.id ? 0.5 : 1;
+
+  const dragProps = {
+    onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+      if (resource) drag?.startEventDrag(e, event, resource);
+    },
+    // Swallow the click that ends a drag. Keyboard clicks (detail 0) pass.
+    onClickCapture: (e: React.MouseEvent) => {
+      if (e.detail > 0 && drag?.wasDragged()) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+  };
 
   const onClose = () => {
     setOpen(false);
@@ -39,7 +42,11 @@ export const EventItem: React.FC<EventItemProps> = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {renderTimeSlot ? (
-          <div className="w-full h-full overflow-hidden">
+          <div
+            className="w-full h-full overflow-hidden"
+            style={{ touchAction: "none", opacity }}
+            {...dragProps}
+          >
             {renderTimeSlot(event, resource ? [resource] : [])}
           </div>
         ) : (
@@ -52,20 +59,19 @@ export const EventItem: React.FC<EventItemProps> = ({
               position: "relative",
               zIndex: 5,
               opacity,
+              touchAction: "none",
             }}
             onClick={(e) => {
               e.stopPropagation();
               setOpen(true);
             }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ref={dragRef as any}
+            {...dragProps}
           >
             <div className="font-medium truncate text-gray-800">
               {event.title}
             </div>
             <div className="text-xs truncate text-gray-500">
-              {format(event.startDate, "h:mm a")} -{" "}
-              {format(event.endDate, "h:mm a")}
+              {formatEventTime(event)}
             </div>
           </div>
         )}

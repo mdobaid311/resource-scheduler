@@ -7,7 +7,6 @@ const FeaturesPanel = () => {
     "Drag to create events on empty slots",
     "Drag to move events between resources and times",
     "Customizable event popovers with render props",
-    "Timezone support for resources",
     "Responsive grid layout",
     "Customizable column widths",
     "Event click handlers",

@@ -14,7 +14,7 @@ Try the Resource Scheduler in action: [resource-scheduler-demo.vercel.app](https
 - 🎯 **Drag & Drop**: Create events by dragging and move events between resources
 - 🎨 **Customizable**: Fully customizable styling and event rendering
 - 📱 **Responsive**: Works seamlessly across desktop and mobile devices
-- ♿ **Accessible**: Built with accessibility best practices
+- 👆 **Pointer-events drag & drop**: mouse, pen and touch, no extra DnD library, no clash with your own react-dnd setup
 - 🎪 **Event Popovers**: Customizable event detail popovers
 - 📊 **Resource Management**: Manage multiple resources with individual events
 - 🎯 **TypeScript**: Fully typed for better developer experience
@@ -29,13 +29,11 @@ yarn add resource-scheduler
 pnpm add resource-scheduler
 ```
 
-## Peer Dependencies
+## Requirements
 
-This package requires the following peer dependencies:
-
-```bash
-npm install react react-dom tailwindcss date-fns
-```
+- React 18 or 19 (`react` and `react-dom` are peer dependencies).
+- No Tailwind setup needed in your app. The component ships a precompiled stylesheet.
+- Next.js App Router: the bundle starts with `"use client"`, so you can import it from a server file.
 
 ## Quick Start
 
@@ -116,6 +114,15 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeColumnWidth` | `string` | `"90px"` | Width of time columns (day view) |
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
+| `availableViews` | `ViewType[]` | all five | Views offered in the selector |
+| `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
+| `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
+| `renderTimeSlot` | `(event: SchedulerEvent, resources: Resource[]) => ReactNode` | `undefined` | Replace the event card. `resources` holds the single owning resource |
+| `renderEmptyCell` | `(date: Date, resource: Resource) => ReactNode` | `undefined` | Content rendered inside empty cells |
+
+Column widths must be `px` values. Event end times are exclusive: an event ending at midnight does not occupy the next day. Dropped events keep their time of day in Week/Month/Quarter/Year views, and snap to the hour in Day view.
+
+`resources` is read as-is: the component keeps no copy of your data, so update your own state in `onEventCreate` / `onEventDrop`.
 
 ### Type Definitions
 
@@ -135,15 +142,17 @@ interface Resource {
   events: Event[];
 }
 
-interface Event {
+interface SchedulerEvent {
   id: string;
   title: string;
   startDate: Date;
   endDate: Date;
-  color: string;
+  color?: string;
   description?: string;
 }
 ```
+
+`Event` is still exported as a deprecated alias of `SchedulerEvent`; prefer the new name, `Event` shadows the DOM global.
 
 ## Usage Examples
 
@@ -254,28 +263,24 @@ function CustomPopoverExample() {
 
 ## Styling
 
-### Tailwind CSS
+### Isolated by design
 
-The component uses Tailwind CSS for styling. Make sure to include Tailwind in your project:
+`resource-scheduler/dist/resource-scheduler.css` contains Tailwind utilities only. It has no global reset and no `body`/`*` rules; base styles are scoped to the `.rs-root` class. Importing it will not restyle the rest of your app.
 
-```css
-/* In your main CSS file */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
+### Theming
 
-### Custom Styling
-
-You can customize the appearance using the provided CSS variables or by overriding Tailwind classes:
+Colors are CSS variables namespaced `--rs-*`, so they never collide with your own shadcn/Tailwind variables. Override them on `:root` or any ancestor, and use a `.dark` ancestor for dark mode:
 
 ```css
 :root {
-  --resource-scheduler-border: #d1d5db;
-  --resource-scheduler-bg: #ffffff;
-  /* Add more custom variables as needed */
+  --rs-primary: #7c3aed;
+  --rs-border: #d1d5db;
+  --rs-today: #f5f3ff;     /* highlight for today's column and selections */
+  --rs-surface: #ffffff;   /* grid background */
 }
 ```
+
+Available tokens: `--rs-background`, `--rs-foreground`, `--rs-popover`, `--rs-primary`, `--rs-secondary`, `--rs-muted`, `--rs-accent`, `--rs-border`, `--rs-ring`, `--rs-surface`, `--rs-surface-muted`, `--rs-surface-hover`, `--rs-today`, `--rs-tooltip` and the `-foreground` variants. Some text colors inside the grid are still fixed grays; fully themeable dark mode is on the [roadmap](https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md).
 
 ## Responsive Design
 
@@ -294,7 +299,7 @@ The scheduler is fully responsive and adapts to different screen sizes:
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](https://github.com/mdobaid311/resource-scheduler/blob/main/CONTRIBUTING.md) for details.
 
 ### Development Setup
 
@@ -321,7 +326,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation](https://github.com/mdobaid311/resource-scheduler/docs)
+- 📚 [Documentation & live demo](https://resource-scheduler-demo.vercel.app/)
 - 🐛 [Bug Reports](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💡 [Feature Requests](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💬 [Discussions](https://github.com/mdobaid311/resource-scheduler/discussions)
@@ -332,7 +337,6 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Date utilities from [date-fns](https://date-fns.org/)
-- Drag & drop with [React DnD](https://react-dnd.github.io/react-dnd/)
 
 ---
 

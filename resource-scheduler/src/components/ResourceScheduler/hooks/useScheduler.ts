@@ -1,14 +1,15 @@
 // src/components/ResourceScheduler/hooks/useScheduler.ts
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   getTimeSlots,
   getDatesInView,
+  getVisibleEvents,
   navigateDate,
   getEventSpan,
   getEventStartPosition,
   isToday,
 } from "../utils/dateUtils";
-import { Event, Resource, ViewType } from "../types";
+import { SchedulerEvent, Resource, ViewType } from "../types";
 
 export const useScheduler = (
   initialResources: Resource[],
@@ -17,7 +18,15 @@ export const useScheduler = (
 ) => {
   const [currentDate, setCurrentDate] = useState<Date>(initialDate);
   const [viewType, setViewType] = useState<ViewType>(initialView);
-  const [resources, setResources] = useState<Resource[]>(initialResources);
+
+  const resources = useMemo<Resource[]>(
+    () =>
+      initialResources.map((resource) => ({
+        ...resource,
+        events: getVisibleEvents(resource.events, currentDate, viewType),
+      })),
+    [initialResources, currentDate, viewType]
+  );
 
   const getTimeSlotsMemoized = useCallback(() => {
     return getTimeSlots(currentDate, viewType);
@@ -26,30 +35,6 @@ export const useScheduler = (
   const getDatesInViewMemoized = useCallback(() => {
     return getDatesInView(currentDate, viewType);
   }, [currentDate, viewType]);
-
-  const filterResourcesByDate = useCallback(
-    (newDate: Date) => {
-      const datesInView = getDatesInView(newDate, viewType);
-      if (datesInView.length === 0) return;
-
-      const rangeStart = datesInView[0];
-      const rangeEnd = datesInView[datesInView.length - 1];
-
-      const updatedResourceEvents = initialResources.map((resource) => ({
-        ...resource,
-        events: resource.events.filter((event) => {
-          return event.startDate <= rangeEnd && event.endDate >= rangeStart;
-        }),
-      }));
-
-      setResources(updatedResourceEvents);
-    },
-    [initialResources, viewType]
-  );
-
-  useEffect(() => {
-    filterResourcesByDate(currentDate);
-  }, [currentDate, viewType, initialResources, filterResourcesByDate]);
 
   const navigate = useCallback(
     (direction: "prev" | "next") => {
@@ -61,63 +46,24 @@ export const useScheduler = (
   );
 
   const calculateEventPositions = useCallback(
-    (events: Event[], datesInView: Date[]) => {
-      if (events.length === 0) return [];
-
-      const sortedEvents = [...events].sort(
-        (a, b) => a.startDate.getTime() - b.startDate.getTime()
-      );
-
-      const lanes: Event[][] = [];
-
-      sortedEvents.forEach((event) => {
-        const span = getEventSpan(event, datesInView, viewType);
-        const startPosition = getEventStartPosition(
+    (events: SchedulerEvent[], datesInView: Date[]) => {
+      const sorted = [...events]
+        .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+        .map((event) => ({
           event,
-          datesInView,
-          viewType
-        );
-
-        let placed = false;
-        for (let i = 0; i < lanes.length; i++) {
-          const lane = lanes[i];
-          const overlaps = lane.some((existingEvent) => {
-            const existingSpan = getEventSpan(
-              existingEvent,
-              datesInView,
-              viewType
-            );
-            const existingStart = getEventStartPosition(
-              existingEvent,
-              datesInView,
-              viewType
-            );
-            return !(
-              startPosition + span <= existingStart ||
-              startPosition >= existingStart + existingSpan
-            );
-          });
-
-          if (!overlaps) {
-            lane.push(event);
-            placed = true;
-            break;
-          }
-        }
-
-        if (!placed) {
-          lanes.push([event]);
-        }
-      });
-
-      return lanes.flatMap((lane, laneIndex) =>
-        lane.map((event) => ({
-          event,
-          lane: laneIndex,
           span: getEventSpan(event, datesInView, viewType),
           startPosition: getEventStartPosition(event, datesInView, viewType),
-        }))
-      );
+        }));
+
+      // First-fit lane packing. Events are sorted by start, so a lane only
+      // needs to remember where its last event ends.
+      const laneEnds: number[] = [];
+      return sorted.map((item) => {
+        let lane = laneEnds.findIndex((end) => item.startPosition >= end);
+        if (lane === -1) lane = laneEnds.length;
+        laneEnds[lane] = item.startPosition + item.span;
+        return { ...item, lane };
+      });
     },
     [viewType]
   );

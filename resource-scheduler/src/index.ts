@@ -4,7 +4,11 @@ export { ResourceScheduler } from "./components/ResourceScheduler/ResourceSchedu
 
 // Type exports
 export type { ResourceSchedulerProps } from "./components/ResourceScheduler/types";
-export type { Event, Resource } from "./components/ResourceScheduler/types";
+export type {
+  Event,
+  Resource,
+  SchedulerEvent,
+} from "./components/ResourceScheduler/types";
 export { ViewType } from "./components/ResourceScheduler/types";
 
 // Component exports

@@ -1,0 +1,31 @@
+# Contributing
+
+Thanks for helping. The library lives in [`resource-scheduler/`](resource-scheduler) and a demo app in [`resource-scheduler-example/`](resource-scheduler-example).
+
+## Setup
+
+```bash
+git clone https://github.com/mdobaid311/resource-scheduler.git
+cd resource-scheduler/resource-scheduler
+npm install
+npm run dev     # local playground
+```
+
+## Before you open a PR
+
+```bash
+npm run type-check
+npm run lint
+npm test
+npm run build
+```
+
+CI runs the same commands on Node 20 and 22.
+
+## Guidelines
+
+- **Tests first for logic.** Date math, layout and interaction hooks live in `src/components/ResourceScheduler/utils` and `hooks`, each with a `*.test.ts(x)` next to it. Bug fixes should come with a test that fails without the fix.
+- **Don't leak styles.** The shipped CSS must not contain global resets, `body`/`html` rules or unprefixed variables. Use `--rs-*` tokens and the `rs-root` class; CI checks the built CSS.
+- **No new runtime dependencies** without discussion. Keep `react`/`react-dom` as peers.
+- Keep PRs small and focused; describe the user-visible change.
+- See [ROADMAP.md](ROADMAP.md) for planned work. Issues labelled `good first issue` are a good start.
