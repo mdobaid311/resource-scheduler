@@ -37,10 +37,12 @@ export * from "./components/ResourceScheduler/utils/dateUtils";
 export { withEvents } from "./components/ResourceScheduler/utils/events";
 export { getRowWindow } from "./components/ResourceScheduler/utils/rowWindow";
 export {
+  findAvailableSlots,
   isCellUnavailable,
   resolveBusinessHours,
   touchesUnavailable,
 } from "./components/ResourceScheduler/utils/availability";
+export type { FindSlotsOptions } from "./components/ResourceScheduler/utils/availability";
 export {
   isPlacementAllowed,
   rangesOverlap,

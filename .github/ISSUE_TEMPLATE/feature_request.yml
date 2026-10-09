@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest something the scheduler should do
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [roadmap](https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md) first: it may already be planned, and its non-goals explain what is out of scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to build, and what stops you today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+      description: How it could work. A rough prop or API sketch helps.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today
+      description: A workaround, or another library that does this.
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to build it
+      options:
+        - "No, I am only asking"
+        - "Yes, with some guidance"
+        - "Yes, I can open a PR"

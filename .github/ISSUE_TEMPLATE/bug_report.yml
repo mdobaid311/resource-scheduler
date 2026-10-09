@@ -1,0 +1,55 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A small reproduction gets a bug fixed fastest: a StackBlitz or CodeSandbox link, or a few lines of code with the data you pass in.
+  - type: checkboxes
+    attributes:
+      label: Before you post
+      options:
+        - label: I searched the existing issues and the [docs](https://resource-scheduler-demo.vercel.app/)
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: A link, or the smallest code that shows it. Include the `resources` / `events` you pass and the props you set.
+      render: tsx
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: resource-scheduler version
+      placeholder: "1.3.0, or the commit if you installed with shadcn"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it
+      options:
+        - npm
+        - shadcn CLI (source copied into my repo)
+    validations:
+      required: true
+  - type: input
+    id: react
+    attributes:
+      label: React and framework
+      placeholder: "React 19.2, Next.js 16 App Router"
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: "Chrome 131 on macOS, or Safari on iOS 18 for a touch problem"

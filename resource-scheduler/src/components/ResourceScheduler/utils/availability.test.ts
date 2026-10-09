@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type BusinessHours, type Resource, ViewType } from "../types";
 import {
+  findAvailableSlots,
   isCellUnavailable,
   resolveBusinessHours,
   touchesUnavailable,
@@ -129,5 +130,121 @@ describe("touchesUnavailable", () => {
   it("treats a zero-length range as the one cell it is in", () => {
     expect(touches(d(7, 8), d(7, 8))).toBe(true);
     expect(touches(d(7, 9), d(7, 9))).toBe(false);
+  });
+});
+
+describe("findAvailableSlots", () => {
+  const busy = (startHour: number, endHour: number, day = 7) => ({
+    id: `b${startHour}`,
+    title: "Busy",
+    startDate: d(day, startHour),
+    endDate: d(day, endHour),
+  });
+  const hours = (slots: { start: Date }[]) => slots.map((s) => s.start.getHours());
+  // Wednesday 7 October, 8:00 to 12:00, one hour at a time, office hours.
+  const morning = {
+    from: d(7, 8),
+    to: d(7, 12),
+    duration: 60,
+    step: 60,
+    businessHours: office,
+  };
+
+  it("lists the free slots inside business hours", () => {
+    expect(hours(findAvailableSlots(res(), morning))).toEqual([9, 10, 11]);
+  });
+
+  it("skips what the resource is already doing", () => {
+    expect(hours(findAvailableSlots(res({ events: [busy(10, 11)] }), morning))).toEqual([9, 11]);
+  });
+
+  it("skips unavailable ranges", () => {
+    const lunch = res({ unavailable: [{ start: d(7, 12), end: d(7, 13) }] });
+    expect(
+      hours(findAvailableSlots(lunch, { ...morning, from: d(7, 9), to: d(7, 15) }))
+    ).toEqual([9, 10, 11, 13, 14]);
+  });
+
+  it("offers a start every step, so options can overlap", () => {
+    const slots = findAvailableSlots(res(), { ...morning, step: 30, to: d(7, 11) });
+    expect(slots.map((s) => [s.start.getHours(), s.start.getMinutes()])).toEqual([
+      [9, 0],
+      [9, 30],
+      [10, 0],
+    ]);
+    expect(slots[0].end).toEqual(d(7, 10));
+  });
+
+  it("starts on the step grid and keeps every slot inside the window", () => {
+    const slots = findAvailableSlots(res(), {
+      from: d(7, 9, 10),
+      to: d(7, 10, 30),
+      duration: 60,
+      step: 30,
+      businessHours: office,
+    });
+    expect(slots.map((s) => [s.start.getHours(), s.start.getMinutes()])).toEqual([[9, 30]]);
+  });
+
+  it("does not run past closing time", () => {
+    const slots = findAvailableSlots(res(), {
+      from: d(7, 15),
+      to: d(7, 19),
+      duration: 90,
+      step: 30,
+      businessHours: office,
+    });
+    expect(slots.map((s) => [s.start.getHours(), s.start.getMinutes()])).toEqual([
+      [15, 0],
+      [15, 30],
+    ]);
+  });
+
+  it("skips non-working days", () => {
+    // Friday 9th at 16:00 to Monday 12th at 10:00
+    const slots = findAvailableSlots(res(), {
+      from: d(9, 16),
+      to: d(12, 10),
+      duration: 60,
+      step: 60,
+      businessHours: office,
+    });
+    expect(slots.map((s) => [s.start.getDate(), s.start.getHours()])).toEqual([
+      [9, 16],
+      [12, 9],
+    ]);
+  });
+
+  it("lets a resource override the hours", () => {
+    const night = res({ businessHours: false });
+    expect(
+      hours(findAvailableSlots(night, { ...morning, from: d(7, 2), to: d(7, 5) }))
+    ).toEqual([2, 3, 4]);
+  });
+
+  it("without business hours only events and unavailable time count", () => {
+    const slots = findAvailableSlots(res({ events: [busy(9, 10)] }), {
+      from: d(7, 8),
+      to: d(7, 11),
+      duration: 60,
+      step: 60,
+    });
+    expect(hours(slots)).toEqual([8, 10]);
+  });
+
+  it("finds a time when everyone is free", () => {
+    const ann = res({ id: "a", events: [busy(9, 10)] });
+    const bob = res({ id: "b", events: [busy(11, 12)] });
+    expect(hours(findAvailableSlots([ann, bob], morning))).toEqual([10]);
+  });
+
+  it("stops at the limit", () => {
+    expect(hours(findAvailableSlots(res(), { ...morning, limit: 2 }))).toEqual([9, 10]);
+  });
+
+  it("returns nothing for an impossible request", () => {
+    expect(findAvailableSlots(res(), { ...morning, duration: 0 })).toEqual([]);
+    expect(findAvailableSlots(res(), { ...morning, step: 0 })).toEqual([]);
+    expect(findAvailableSlots(res(), { ...morning, from: d(7, 12), to: d(7, 8) })).toEqual([]);
   });
 });

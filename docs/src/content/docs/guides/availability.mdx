@@ -62,6 +62,32 @@ It runs together with [`eventOverlap` and `isValidDrop`](/guides/conflict-contro
 
 Keyboard users and screen readers get the same information: a shaded cell is announced as "unavailable", and rejected placements read "Not allowed".
 
+## Find a free slot
+
+`findAvailableSlots` answers "when is this person free for an hour?" using the same rules the grid shows: the resource's events, its unavailable time, and business hours.
+
+```ts
+import { findAvailableSlots } from "resource-scheduler";
+
+const slots = findAvailableSlots(ann, {
+  from: new Date(2026, 9, 7, 8),
+  to: new Date(2026, 9, 9, 18), // exclusive: a slot must end by then
+  duration: 60,                 // minutes
+  step: 30,                     // candidate starts every 30 minutes (default)
+  businessHours: {},            // Monday to Friday, 9 to 17
+  limit: 5,                     // optional
+});
+// [{ start, end }, ...] earliest first
+```
+
+Pass an array of resources to find a time when **all** of them are free, which is the meeting-scheduling case:
+
+```ts
+const common = findAvailableSlots([ann, bob, room], { from, to, duration: 30 });
+```
+
+Results start on the `step` grid and can overlap each other (9:00 and 9:30 are both offered for a one hour slot). If your events live in a flat list, merge them first with `withEvents(resources, events)`.
+
 ## The helpers
 
 The same checks are exported, so you can run them on a server:

@@ -59,6 +59,9 @@ export default defineConfig({
       },
     },
     outDir: "dist",
+    // public/ belongs to the playground; copying it put a demo screenshot and
+    // an icon into the published package.
+    copyPublicDir: false,
     // Ensure CSS is extracted
     cssCodeSplit: true,
   },

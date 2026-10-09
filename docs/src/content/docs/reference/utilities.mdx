@@ -23,6 +23,7 @@ All of these are exported from `resource-scheduler`.
 - **`isCellUnavailable(resource, cell, { businessHours, viewType, slotMinutes? })`** returns `boolean`. Whether the slot (day view) or day (other views) starting at `cell` is shaded for that resource.
 - **`touchesUnavailable(resource, { start, end }, context)`** returns `boolean`. Whether a placement would touch a shaded cell. This is what `blockUnavailable` runs.
 - **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
+- **`findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })`** returns `{ start, end }[]`, the free slots earliest first. With several resources, only times when all are free. See [Business hours and availability](/guides/availability/).
 
 ## Dates and slots
 
