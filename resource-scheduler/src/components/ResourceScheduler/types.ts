@@ -32,6 +32,29 @@ export interface SchedulerEvent {
   resourceId?: string;
   /** Like `resourceId`, for an event that belongs to several resources. */
   resourceIds?: string[];
+  /**
+   * Makes this event repeat. The scheduler draws one event per occurrence in
+   * the visible range; handlers receive the occurrence (id
+   * `<id>::<yyyy-MM-dd>`, with `seriesId`), and your data keeps the one series.
+   */
+  recurrence?: Recurrence;
+  /** Set on an occurrence: the `id` of the recurring event it comes from. */
+  seriesId?: string;
+}
+
+/** How an event repeats. The first occurrence is the event's own start. */
+export interface Recurrence {
+  freq: "daily" | "weekly" | "monthly" | "yearly";
+  /** Repeat every n days, weeks, months or years. Default 1. */
+  interval?: number;
+  /** Weekly only: the weekdays it falls on, 0 (Sunday) to 6. Default: the first occurrence's weekday. */
+  byWeekday?: number[];
+  /** The last day it may start on, inclusive (the time is ignored). */
+  until?: Date;
+  /** How many occurrences in total, counting the first. Exceptions still count. */
+  count?: number;
+  /** Days to skip. Compared by calendar day. */
+  exceptions?: Date[];
 }
 
 /** @deprecated Use `SchedulerEvent`. The name `Event` shadows the DOM global. */

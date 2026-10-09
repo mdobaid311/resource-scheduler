@@ -17,7 +17,7 @@ export const ROSE = "#f43f5e";
 export const TEAL = "#14b8a6";
 
 /** A time on a day of the current week (0 = Sunday, 1 = Monday, ...). */
-const week = (dayOfWeek: number, hour: number, minute = 0) => {
+export const week = (dayOfWeek: number, hour: number, minute = 0) => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - d.getDay() + dayOfWeek);

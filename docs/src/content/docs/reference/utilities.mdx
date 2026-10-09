@@ -10,6 +10,11 @@ All of these are exported from `resource-scheduler`.
 - **`isPlacementAllowed(event, placement, resources, rules)`** returns `boolean`. The same check the component runs. Works anywhere, so use it before saving on the server.
 - **`rangesOverlap(aStart, aEnd, bStart, bEnd)`** returns `boolean`. End times are exclusive; a zero-length range is one instant.
 
+## Recurring events
+
+- **`expandRecurrence(event, from, to)`** returns the occurrences of one event that touch `from` to `to` (end exclusive). A plain event comes back as is, or not at all when it is outside the window.
+- **`expandEvents(events, from, to)`** expands the recurring events in a list and passes the others through. See [Recurring events](/guides/recurring-events/).
+
 ## Rows
 
 - **`getRowWindow(heights, top, height, overscan?, offset?)`** returns `{ start, end }`, the rows worth rendering for a scroll position (`end` exclusive). What row virtualization uses.

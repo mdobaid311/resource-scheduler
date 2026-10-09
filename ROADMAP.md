@@ -115,7 +115,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [ ] **Headless layer**: split pure logic (layout, conflicts, recurrence, date math) from UI; export `useSchedulerState` etc. (L)
 - [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Merged to `main` and confirmed to resolve with `shadcn view`. Still open: tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR).
 - [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)
-- [ ] **Recurring events** (RRULE, exceptions, DST-safe) in an optional module (L-XL). Premium in MUI X, so strong differentiator
+- [x] **Recurring events** (done on branch `feat/recurring-events`): daily, weekly (byWeekday), monthly, yearly with interval, until, count and exceptions; wall-clock stable across DST; occurrences carry `seriesId`; `expandRecurrence` / `expandEvents` exported. Premium in MUI X, so a strong differentiator. Still open: RRULE strings and the rarer rules (bySetPos, byMonthDay, hourly), time zones, an "edit this and following" helper
 - [ ] **Utilization row**: per-resource booked vs capacity %, histogram summary (M-L)
 - [ ] **ICS import/export, CSV, print stylesheet** (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open

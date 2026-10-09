@@ -63,6 +63,17 @@ interface SchedulerEvent {
   description?: string;
   resourceId?: string;    // only in the flat `events` prop: the resource it belongs to
   resourceIds?: string[]; // ...or several
+  recurrence?: Recurrence; // makes it repeat
+  seriesId?: string;       // set on an occurrence: the id of the event it comes from
+}
+
+interface Recurrence {
+  freq: "daily" | "weekly" | "monthly" | "yearly";
+  interval?: number;     // every n periods. Default 1
+  byWeekday?: number[];  // weekly only, 0 = Sunday
+  until?: Date;          // last day it may start on, inclusive
+  count?: number;        // total occurrences, counting the first
+  exceptions?: Date[];   // days to skip
 }
 ```
 

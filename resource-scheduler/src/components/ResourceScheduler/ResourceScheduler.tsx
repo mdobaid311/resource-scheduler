@@ -206,18 +206,19 @@ export const ResourceScheduler = forwardRef<
     slotMinutes,
   ]);
 
-  // Checked against the full `resources` prop, not just the visible range.
+  // Checked against what is on screen, with recurring events expanded: a
+  // placement is always inside the visible range, so nothing else can overlap it.
   const checkPlacement = useMemo<
     ((event: SchedulerEvent, placement: Placement) => boolean) | undefined
   >(() => {
     if ((eventOverlap === undefined || eventOverlap === true) && !validDrop)
       return undefined; // nothing to enforce
     return (event, placement) =>
-      isPlacementAllowed(event, placement, initialResources, {
+      isPlacementAllowed(event, placement, resources, {
         eventOverlap,
         isValidDrop: validDrop,
       });
-  }, [initialResources, eventOverlap, validDrop]);
+  }, [resources, eventOverlap, validDrop]);
 
   // `onSlotSelect` replaces event creation so apps can open their own dialog.
   const handleCreate = useMemo(

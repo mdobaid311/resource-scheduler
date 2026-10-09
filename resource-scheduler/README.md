@@ -223,8 +223,21 @@ interface SchedulerEvent {
   endDate: Date;
   color?: string;
   description?: string;
+  resourceId?: string;     // flat `events` prop only: the resource it belongs to
+  resourceIds?: string[];  // ...or several
+  recurrence?: {           // makes it repeat; the scheduler draws each occurrence
+    freq: "daily" | "weekly" | "monthly" | "yearly";
+    interval?: number;
+    byWeekday?: number[];  // weekly only, 0 = Sunday
+    until?: Date;          // inclusive
+    count?: number;
+    exceptions?: Date[];   // days to skip
+  };
+  seriesId?: string;       // on an occurrence handed to your handlers: the series it comes from
 }
 ```
+
+Handlers receive an occurrence of a recurring event (`id` is `"<id>::<yyyy-MM-dd>"`); update your one series, for example by adding an exception for "this event only". See the [recurring events guide](https://resource-scheduler-demo.vercel.app/guides/recurring-events/).
 
 `Event` is still exported as a deprecated alias of `SchedulerEvent`; prefer the new name, `Event` shadows the DOM global.
 
