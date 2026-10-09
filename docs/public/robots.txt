@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /hero/
 Disallow: /og/
+Disallow: /bench/
 
 # Replace with your deployed origin if it differs from SITE_URL.
 Sitemap: https://resource-scheduler-demo.vercel.app/sitemap-index.xml

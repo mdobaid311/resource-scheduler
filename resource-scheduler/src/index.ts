@@ -35,6 +35,7 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
 export { withEvents } from "./components/ResourceScheduler/utils/events";
+export { getRowWindow } from "./components/ResourceScheduler/utils/rowWindow";
 export {
   isCellUnavailable,
   resolveBusinessHours,

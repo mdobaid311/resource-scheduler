@@ -8,10 +8,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "record": "node scripts/record-hero.mjs",
+    "bench": "node scripts/bench.mjs",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",
+    "@astrojs/sitemap": "^3.7.4",
     "@astrojs/starlight": "^0.42.6",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.10",

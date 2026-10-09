@@ -30,7 +30,17 @@ import {
   type Placement,
   type PlacementRules,
 } from "./utils/placement";
+import { getRowWindow } from "./utils/rowWindow";
 import { scrollToDate } from "./utils/scrollUtils";
+
+// Row virtualization: on above this many resources unless `virtualize` says otherwise.
+const VIRTUALIZE_ABOVE = 100;
+// The window is recomputed every QUANTUM px of scrolling and renders OVERSCAN px
+// beyond the viewport, so scrolling does not re-render on every pixel.
+const QUANTUM = 160;
+const OVERSCAN = 320;
+// The sticky date header above the first row (h-14).
+const HEADER_HEIGHT = 56;
 
 export const ResourceScheduler = forwardRef<
   ResourceSchedulerHandle,
@@ -56,6 +66,7 @@ export const ResourceScheduler = forwardRef<
   businessHours,
   blockUnavailable,
   nowIndicator,
+  virtualize,
   renderEventPopover,
   allowViewChange = true,
   resourceColumnWidth: propResourceColumnWidth,
@@ -96,6 +107,7 @@ export const ResourceScheduler = forwardRef<
     getDatesInView,
     calculateEventPositions,
     getResourceRowHeight,
+    getRowHeights,
     getGridTemplateRows,
   } = useScheduler(
     initialResources,
@@ -105,6 +117,42 @@ export const ResourceScheduler = forwardRef<
     viewOptions
   );
   const { slotMinutes } = resolveSlotOptions({ slotDuration });
+
+  // Only the rows near the viewport are rendered when there are many. The
+  // scroll position is rounded, so the state only changes every QUANTUM px.
+  const virtualized = virtualize ?? initialResources.length > VIRTUALIZE_ABOVE;
+  const [viewport, setViewport] = useState({ top: 0, height: 800 });
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!virtualized || !scroller) return;
+    const read = () => {
+      const top = Math.floor(scroller.scrollTop / QUANTUM) * QUANTUM;
+      const height = scroller.clientHeight;
+      setViewport((v) => (v.top === top && v.height === height ? v : { top, height }));
+    };
+    read();
+    scroller.addEventListener("scroll", read, { passive: true });
+    const observer =
+      typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(read);
+    observer?.observe(scroller);
+    return () => {
+      scroller.removeEventListener("scroll", read);
+      observer?.disconnect();
+    };
+  }, [virtualized]);
+  const rowRange = useMemo(
+    () =>
+      virtualized
+        ? getRowWindow(
+            getRowHeights(),
+            viewport.top,
+            viewport.height + QUANTUM,
+            OVERSCAN,
+            HEADER_HEIGHT
+          )
+        : undefined,
+    [virtualized, getRowHeights, viewport]
+  );
 
   const range = useMemo(
     () =>
@@ -319,6 +367,7 @@ export const ResourceScheduler = forwardRef<
             resourceColumnWidth={resourceColumnWidth}
             getResourceRowHeight={getResourceRowHeight}
             renderResourceHeader={renderResourceHeader}
+            rowRange={rowRange}
           />
 
           <div className="flex-1">
@@ -351,6 +400,7 @@ export const ResourceScheduler = forwardRef<
               slotMinutes={slotMinutes}
               businessHours={businessHours}
               nowIndicator={nowIndicator}
+              rowRange={rowRange}
               ariaLabel={ariaLabel}
               describedBy={helpId}
               announce={setAnnouncement}

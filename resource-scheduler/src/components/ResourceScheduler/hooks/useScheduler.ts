@@ -137,6 +137,7 @@ export const useScheduler = (
     getDatesInView: getDatesInViewMemoized,
     calculateEventPositions,
     getResourceRowHeight,
+    getRowHeights,
     getGridTemplateRows,
     isToday,
   };

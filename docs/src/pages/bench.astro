@@ -1,0 +1,19 @@
+---
+// Temporary benchmark page, not part of the docs.
+import "../styles/scheduler.css";
+import BenchDemo from "../components/demos/BenchDemo";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Bench</title>
+    <style is:global>
+      body { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <BenchDemo client:only="react" />
+  </body>
+</html>
