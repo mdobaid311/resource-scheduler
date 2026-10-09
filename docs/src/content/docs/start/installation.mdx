@@ -1,0 +1,65 @@
+---
+title: Installation
+description: Install Resource Scheduler from npm, or copy the source into your project with the shadcn CLI.
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Pick one. Both give you the same component.
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install resource-scheduler
+    ```
+
+    Then import the stylesheet once, anywhere in your app:
+
+    ```tsx
+    import "resource-scheduler/dist/resource-scheduler.css";
+    ```
+
+    - React 18 or 19 (`react` and `react-dom` are peer dependencies).
+    - **No Tailwind setup needed.** The stylesheet is precompiled.
+    - Use npm if you want updates with `npm update`.
+  </TabItem>
+  <TabItem label="shadcn CLI">
+    ```bash
+    npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+    ```
+
+    ```tsx
+    import { ResourceScheduler } from "@/components/resource-scheduler";
+    ```
+
+    - Needs Tailwind v4, which is what shadcn sets up by default.
+    - Copies the source to `components/resource-scheduler/` and installs its dependencies.
+    - Adds the `--rs-*` tokens and a few utilities to your CSS. Your own theme variables and `components/ui` are not touched.
+    - Skip the stylesheet import: the styles are already in your CSS.
+    - Use the registry if you want to edit the source. Preview with `--dry-run` or `npx shadcn@latest view mdobaid311/resource-scheduler/resource-scheduler`, and pin a release with `...#<tag>`.
+  </TabItem>
+</Tabs>
+
+<Aside type="note">
+  The shadcn route resolves from the repository's default branch, so it works once the registry has been merged to `main`. Until then use npm.
+</Aside>
+
+## Check it works
+
+```tsx
+import { ResourceScheduler } from "resource-scheduler";
+
+export function Board() {
+  return (
+    <div style={{ height: 480 }}>
+      <ResourceScheduler resources={[{ id: "1", name: "Ann", events: [] }]} />
+    </div>
+  );
+}
+```
+
+The component fills its parent, so give the parent a height.
+
+## Next.js
+
+The bundle starts with `"use client"`, so you can import it from a server file. See [Next.js and SSR](/guides/nextjs-and-ssr/).

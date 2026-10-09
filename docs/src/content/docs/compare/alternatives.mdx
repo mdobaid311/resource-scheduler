@@ -1,0 +1,56 @@
+---
+title: Alternatives
+description: How Resource Scheduler compares with FullCalendar, MUI X, DayPilot Lite and Bryntum for resource timelines in React, including prices and what is missing here.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Checked October 2026">
+  Vendors change their tiers and prices. Everything below comes from the vendors' own pages, linked at the end. Verify before you decide.
+</Aside>
+
+A **resource timeline** has resources (people, rooms, machines) down the side and time across the top. Most calendar libraries have it, but often as a paid tier. Here is where each option stands.
+
+| | Resource timeline | Cost | Notes |
+|---|---|---|---|
+| **Resource Scheduler** (this) | Included | Free, MIT | No recurring events, virtualization, hierarchy or time zones yet |
+| **FullCalendar** | Premium add-on | Premium starts at $480 per developer | Mature, broad feature set, official React connector |
+| **MUI X Scheduler** | Event Timeline is Premium | Community is free (MIT, beta); Premium is per developer | Recurring events are also Premium |
+| **DayPilot Lite** | Included (horizontal) | Free, Apache 2.0 | Resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
+| **Bryntum Scheduler** | Core feature | Commercial subscription | Built for heavy planning: large datasets, dependencies, utilization |
+
+## When to choose this one
+
+- You want a resource timeline without paying per developer seat, and with the source in your hands (npm, or copied in with the shadcn CLI).
+- You need drag, resize, **conflict rules**, a **custom create dialog** and **keyboard support**, and you would rather not buy a Pro tier for them.
+- Your boards have tens of resources, not thousands.
+
+## When to choose something else
+
+Be honest about the gaps. If any of these are must-haves, use a more mature library:
+
+- **Recurring events** with exceptions and time-zone rules.
+- **Thousands of resources or tens of thousands of events.** There is no virtualization here.
+- **Resource hierarchy** (departments, teams) with collapsing rows.
+- **Gantt dependencies**, critical path, utilization charts and resource levelling. Bryntum is the specialist.
+- **Calendar sync** (Google, Outlook, iCal) and server-side scheduling engines.
+
+## Migrating from FullCalendar
+
+The model differs: here every event lives inside its resource (`resource.events`), where FullCalendar keeps a flat event list with a `resourceId`. Group your events by resource when you build `resources`, and map the callbacks:
+
+| FullCalendar | Resource Scheduler |
+|---|---|
+| `eventDrop` | `onEventDrop` |
+| `eventResize` | `onEventResize` |
+| `select` | `onSlotSelect` |
+| `eventClick` | `onEventClick` |
+| `eventOverlap` | `eventOverlap` (also accepts a function) |
+| `eventAllow` / `selectAllow` | `isValidDrop` |
+
+## Sources
+
+- [FullCalendar Premium pricing](https://fullcalendar.io/premium)
+- [MUI X Scheduler](https://mui.com/x/react-scheduler/)
+- [DayPilot for React](https://www.daypilot.org/react/) and [DayPilot Lite](https://javascript.daypilot.org/open-source/)
+- [Bryntum Scheduler performance benchmark](https://github.com/bryntum/scheduler-performance) (by the vendor)

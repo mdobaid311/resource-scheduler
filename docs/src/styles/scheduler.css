@@ -1,0 +1,9 @@
+/*
+ * The scheduler's stylesheet, pulled in from the package source, plus the
+ * Tailwind source paths it needs. No preflight is imported, so Starlight's own
+ * styles are untouched (that is the point of the scoped `.rs-root` base).
+ */
+@import "../../../resource-scheduler/src/styles/global.css";
+
+/* Tailwind only scans the docs folder by default; the component classes live in the package. */
+@source "../../../resource-scheduler/src/components";

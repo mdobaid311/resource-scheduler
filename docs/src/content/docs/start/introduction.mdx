@@ -1,0 +1,32 @@
+---
+title: Introduction
+description: What Resource Scheduler is, who it is for, and when to pick something else.
+---
+
+Resource Scheduler is a React component that puts **resources on rows and time on columns**: people, rooms, machines, vehicles. Think booking boards, shift rosters, field-service dispatch and project allocation.
+
+It is MIT licensed, and everything in these docs is in the free package. There is no paid tier to upgrade to.
+
+## What it does
+
+- Day, week, month, quarter and year views, with day-view slots of any length and configurable visible hours.
+- Create, move and resize events with the mouse, a pen, a finger or the keyboard.
+- Conflict rules: forbid overlaps or write your own check. Rejected places show in red before you drop.
+- `onSlotSelect`, so you open your own create dialog instead of getting a hard-coded one.
+- An ARIA grid, named cells and live announcements for screen readers.
+- Design tokens as CSS variables, and styles scoped so they never restyle your app.
+
+## What it does not do (yet)
+
+Be honest with yourself before you pick it:
+
+- **No recurring events.** You store and expand recurrences yourself.
+- **No virtualization.** Very large timelines (thousands of resources, or a year view for many resources) will be slow. It suits boards of tens of resources.
+- **No resource hierarchy or grouping**, no time zones, no calendar sync, no Gantt dependencies.
+- **Not yet tried with a real screen reader** (it passes axe and keyboard tests). See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).
+
+The [roadmap](https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md) lists what is planned. If you need Gantt dependencies or tens of thousands of events today, look at the [alternatives](/compare/alternatives/).
+
+## How it works
+
+You give it `resources`, each with its `events`. It never keeps its own copy: when the user creates, moves or resizes something it calls your handler, and you update your state. That makes it easy to put in front of any data source. See the [data model](/guides/data-model/).

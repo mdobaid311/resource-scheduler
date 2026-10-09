@@ -1,0 +1,61 @@
+---
+title: Room booking
+description: A meeting room booking board with no double booking and your own booking form, in about forty lines.
+---
+
+import RoomBookingDemo from "../../../components/demos/RoomBookingDemo";
+
+Rooms are the rows, half hours are the columns. Selecting free time opens your own form, and booked time cannot be selected, moved onto or resized into.
+
+<RoomBookingDemo client:only="react" />
+
+## The code
+
+```tsx
+export function Rooms() {
+  const [rooms, setRooms] = useState<Resource[]>(initialRooms);
+  const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+  return (
+    <>
+      {draft && (
+        <BookingForm
+          slot={draft}
+          onCancel={() => setDraft(null)}
+          onBook={(title) => {
+            setRooms((prev) =>
+              prev.map((r) =>
+                r.id === draft.resourceId
+                  ? { ...r, events: [...r.events, { id: crypto.randomUUID(), title, startDate: draft.start, endDate: draft.end }] }
+                  : r
+              )
+            );
+            setDraft(null);
+          }}
+        />
+      )}
+
+      <ResourceScheduler
+        resources={rooms}
+        initialView={ViewType.Day}
+        allowViewChange={false}
+        slotDuration={30}
+        dayStartHour={8}
+        dayEndHour={18}
+        ariaLabel="Meeting room bookings"
+        eventOverlap={false}        // no double booking, anywhere
+        onSlotSelect={setDraft}     // your form, not ours
+        onEventDrop={moveBooking}
+        onEventResize={resizeBooking}
+      />
+    </>
+  );
+}
+```
+
+## Make it real
+
+- **Enforce on the server too.** The browser check is a courtesy. Run `isPlacementAllowed` (or your own query) before saving, and return an error if someone else booked first.
+- **Business hours.** `dayStartHour` and `dayEndHour` hide the night, and `isValidDrop` can reject anything outside opening hours or on holidays.
+- **Capacity or equipment.** Put the rule in `isValidDrop`: it receives the event and the target `resourceId`.
+- **Recurring bookings** are not built in. Store the rule and expand it into events for the visible range.

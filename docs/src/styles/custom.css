@@ -1,0 +1,107 @@
+/* Starlight theme tweaks: a blue accent that matches the scheduler's own palette. */
+:root {
+  --sl-color-accent-low: #dbeafe;
+  --sl-color-accent: #2563eb;
+  --sl-color-accent-high: #1e3a8a;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #dbeafe;
+  --sl-color-accent: #2563eb;
+  --sl-color-accent-high: #1e3a8a;
+}
+
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #172554;
+  --sl-color-accent: #3b82f6;
+  --sl-color-accent-high: #bfdbfe;
+}
+
+/* Starlight marks dark mode with data-theme, the scheduler with a .dark ancestor. */
+:root[data-theme="dark"] .rs-root,
+:root[data-theme="dark"] .rs-portal {
+  --rs-background: #171717;
+  --rs-foreground: #e5e5e5;
+  --rs-popover: #262626;
+  --rs-popover-foreground: #e5e5e5;
+  --rs-secondary: #262626;
+  --rs-secondary-foreground: #e5e5e5;
+  --rs-muted: #262626;
+  --rs-muted-foreground: #a3a3a3;
+  --rs-accent: #1e3a8a;
+  --rs-accent-foreground: #bfdbfe;
+  --rs-border: #404040;
+  --rs-input: #404040;
+  --rs-surface: #171717;
+  --rs-surface-muted: #262626;
+  --rs-surface-hover: #333333;
+  --rs-today: #172554;
+  --rs-tooltip: #e5e5e5;
+}
+
+/* Framed demos inside the docs content. */
+.demo-frame {
+  margin: 1.5rem 0;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--sl-color-bg);
+}
+.demo-frame figcaption {
+  padding: 0.5rem 1rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+  border-top: 1px solid var(--sl-color-gray-5);
+}
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  font-size: var(--sl-text-sm);
+}
+.demo-controls label {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.demo-controls select,
+.demo-controls input[type="text"] {
+  background: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.375rem;
+  padding: 0.2rem 0.5rem;
+}
+.demo-log {
+  padding: 0.5rem 1rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-2);
+  border-top: 1px solid var(--sl-color-gray-5);
+  min-height: 2.25rem;
+}
+.demo-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-accent-low);
+  font-size: var(--sl-text-sm);
+}
+.demo-form button {
+  background: var(--sl-color-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+.demo-form button.secondary {
+  background: transparent;
+  color: var(--sl-color-text);
+  border: 1px solid var(--sl-color-gray-4);
+}

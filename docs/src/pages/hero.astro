@@ -1,0 +1,28 @@
+---
+// Not part of the docs: a bare page the recorder (scripts/record-hero.mjs) films.
+import "../styles/scheduler.css";
+import HeroDemo from "../components/demos/HeroDemo";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Hero recording page</title>
+    <style is:global>
+      body {
+        margin: 0;
+        background: #fff;
+        color: #333;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .demo-frame {
+        margin: 0;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <HeroDemo client:only="react" height={440} compact />
+  </body>
+</html>

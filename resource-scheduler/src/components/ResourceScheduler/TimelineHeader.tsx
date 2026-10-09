@@ -36,14 +36,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             <>
               <span
                 className={`text-xs font-medium ${
-                  isToday(slot) ? "text-blue-600" : "text-gray-500"
+                  isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 }`}
               >
                 {format(slot, slot.getMinutes() ? "h:mma" : "ha")}
               </span>
               <span
                 className={`text-xs ${
-                  isToday(slot) ? "text-blue-500" : "text-gray-400"
+                  isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
                 }`}
               >
                 {format(slot, "EEE")}
@@ -53,14 +53,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             <div className="group flex flex-col items-center">
               <span
                 className={`text-xs font-medium ${
-                  isToday(slot) ? "text-blue-600" : "text-gray-500"
+                  isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 } uppercase`}
               >
                 {format(slot, "EEE")}
               </span>
               <span
                 className={`text-sm font-medium ${
-                  isToday(slot) ? "text-blue-700" : "text-gray-700"
+                  isToday(slot) ? "text-blue-700" : "text-ocrs-foreground"
                 }`}
               >
                 {format(slot, "d")}
@@ -68,7 +68,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
               {(i === 0 || slot.getDate() === 1) && (
                 <span
                   className={`text-xs ${
-                    isToday(slot) ? "text-blue-500" : "text-gray-400"
+                    isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
                   }`}
                 >
                   {format(slot, "MMM")}
