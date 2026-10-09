@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/hooks/useGridKeyboard.ts
 import { useState } from "react";
+import { useI18n } from "../i18n";
 import { type Cursor, moveCursor } from "../utils/keyboard";
 
 export interface GridKeyboardOptions {
@@ -35,7 +36,7 @@ export const useGridKeyboard = ({
 
   const cellId = (row: number, col: number) => `${idPrefix}-r${row}-c${col}`;
   const count = (a: number, b: number) => Math.abs(a - b) + 1;
-  const plural = (n: number) => `${n} slot${n === 1 ? "" : "s"}`;
+  const { labels } = useI18n();
 
   const selection =
     anchor !== null && pos
@@ -71,7 +72,7 @@ export const useGridKeyboard = ({
       const first = slotAt(pos.row, from);
       onSelect(first.resourceId, first.date, slotAt(pos.row, to).date);
       setAnchor(null);
-      announce?.(`Selected ${plural(count(from, to))}.`);
+      announce?.(labels.announce.selected(count(from, to)));
       return;
     }
 
@@ -79,7 +80,7 @@ export const useGridKeyboard = ({
       if (anchor === null) return;
       e.preventDefault();
       setAnchor(null);
-      announce?.("Selection cancelled.");
+      announce?.(labels.announce.selectionCancelled);
       return;
     }
 
@@ -90,7 +91,7 @@ export const useGridKeyboard = ({
     if (e.shiftKey && next.row === pos.row && e.key !== "ArrowUp" && e.key !== "ArrowDown") {
       const from = anchor ?? pos.col;
       setAnchor(from);
-      announce?.(`Selecting ${plural(count(from, next.col))}. Enter to confirm, Escape to cancel.`);
+      announce?.(labels.announce.selecting(count(from, next.col)));
     } else {
       setAnchor(null);
     }

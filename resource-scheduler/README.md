@@ -175,6 +175,9 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `businessHours` | `{ daysOfWeek?, startHour?, endHour? }` | `undefined` | Shade time outside working hours and non-working days (`{}` is Monday to Friday, 9 to 17). A resource's own `businessHours` overrides it; `false` means always available. Hours apply to the day view only |
 | `blockUnavailable` | `boolean` | `false` | Reject every move, resize and create that touches a shaded slot (outside business hours or inside a resource's `unavailable` ranges) |
 | `nowIndicator` | `boolean` | `false` | Day view: a line at the current time, moved every minute |
+| `locale` | date-fns `Locale` | English | e.g. `import { de } from "date-fns/locale"`. Names, date formats, 12/24-hour clock and the first day of the week follow it |
+| `hour12` | `boolean` | the locale's | `true` for a 12-hour clock, `false` for 24-hour |
+| `labels` | `PartialLabels` | English | Text of the toolbar, headers, view names and screen reader messages. Any subset; see `defaultLabels` for the full set |
 | `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |

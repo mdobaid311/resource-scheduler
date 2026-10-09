@@ -1,7 +1,7 @@
 // src/components/ResourceScheduler/EventItem.tsx
 import React, { useContext, useState } from "react";
-import { format } from "date-fns";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
+import { useI18n } from "./i18n";
 import {
   Popover,
   PopoverContent,
@@ -30,6 +30,7 @@ export const EventItem: React.FC<EventItemProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const drag = useContext(SchedulerDragContext);
+  const i18n = useI18n();
   const movingThis =
     drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
   const opacity = movingThis ? 0.5 : 1;
@@ -58,7 +59,8 @@ export const EventItem: React.FC<EventItemProps> = ({
   const label = `${event.title}, ${resource ? `${resource.name}, ` : ""}${formatRangeLabel(
     event.startDate,
     event.endDate,
-    drag?.viewType ?? ViewType.Week
+    drag?.viewType ?? ViewType.Week,
+    i18n
   )}`;
 
   // Keyboard: Enter opens details, Space picks the event up; then arrows move
@@ -157,7 +159,7 @@ export const EventItem: React.FC<EventItemProps> = ({
               {event.title}
             </div>
             <div className="text-xs truncate text-ocrs-muted-foreground">
-              {formatEventTime(event)}
+              {formatEventTime(event, i18n)}
             </div>
             {resizeHandles}
           </div>
@@ -172,8 +174,8 @@ export const EventItem: React.FC<EventItemProps> = ({
             <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
               <Calendar className="h-4 w-4 text-ocrs-muted-foreground" />
               <span>
-                {format(event.startDate, "MMM d, yyyy h:mm a")} -{" "}
-                {format(event.endDate, "h:mm a")}
+                {i18n.fmt.dateTime(event.startDate)} -{" "}
+                {i18n.fmt.time(event.endDate)}
               </span>
             </div>
             {resource && (

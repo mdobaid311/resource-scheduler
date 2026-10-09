@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/TimelineHeader.tsx
 import React from "react";
-import { format } from "date-fns";
+import { useI18n } from "./i18n";
 import type { TimelineHeaderProps } from "./types";
 import { isToday } from "./utils/dateUtils";
 
@@ -12,6 +12,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
   getDatesInView,
   renderDateHeader,
 }) => {
+  const { fmt } = useI18n();
   const slots = viewType === "day" ? getTimeSlots() : getDatesInView();
 
   return (
@@ -39,14 +40,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                   isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 }`}
               >
-                {format(slot, slot.getMinutes() ? "h:mma" : "ha")}
+                {fmt.hourHeader(slot)}
               </span>
               <span
                 className={`text-xs ${
                   isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
                 }`}
               >
-                {format(slot, "EEE")}
+                {fmt.weekday(slot)}
               </span>
             </>
           ) : (
@@ -56,14 +57,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                   isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 } uppercase`}
               >
-                {format(slot, "EEE")}
+                {fmt.weekday(slot)}
               </span>
               <span
                 className={`text-sm font-medium ${
                   isToday(slot) ? "text-blue-700" : "text-ocrs-foreground"
                 }`}
               >
-                {format(slot, "d")}
+                {fmt.dayOfMonth(slot)}
               </span>
               {(i === 0 || slot.getDate() === 1) && (
                 <span
@@ -71,11 +72,11 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                     isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
                   }`}
                 >
-                  {format(slot, "MMM")}
+                  {fmt.monthShort(slot)}
                 </span>
               )}
               <span className="absolute mt-8 px-2 py-1 rounded bg-ocrs-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                {format(slot, "MMMM yyyy")}
+                {fmt.monthYear(slot)}
               </span>
             </div>
           )}

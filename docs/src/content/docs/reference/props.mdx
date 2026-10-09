@@ -51,6 +51,12 @@ Only `resources` is required.
 - **`blockUnavailable`**: `boolean`, default `false`. Rejects every move, resize and create that touches a shaded slot.
 - **`nowIndicator`**: `boolean`, default `false`. A line at the current time in today's day view.
 
+## Language and clock
+
+- **`locale`**: a date-fns `Locale`, for example `import { de } from "date-fns/locale"`. Names, date formats, the 12 or 24-hour clock and the first day of the week follow it. Default: English, Sunday first, 12-hour.
+- **`hour12`**: `boolean`. `true` for a 12-hour clock, `false` for 24-hour. Default: what the locale uses.
+- **`labels`**: `PartialLabels`. The text of the toolbar, headers, view names and screen reader messages. Any subset; the rest stays English. See [Languages and clocks](/guides/internationalization/).
+
 ## Performance
 
 - **`virtualize`**: `boolean`, default on above 100 resources. Renders only the rows near the viewport. Needs a fixed-height box. See [Large data and performance](/guides/performance/).

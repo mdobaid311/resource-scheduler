@@ -6,6 +6,7 @@ import { EventItem } from "./EventItem";
 import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
 import { useGridKeyboard } from "./hooks/useGridKeyboard";
 import { useNow } from "./hooks/useNow";
+import { useI18n } from "./i18n";
 import type { TimelineGridProps } from "./types";
 import { isCellUnavailable } from "./utils/availability";
 import { formatSlotLabel, isToday } from "./utils/dateUtils";
@@ -31,7 +32,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   businessHours,
   nowIndicator,
   rowRange,
-  ariaLabel = "Resource schedule",
+  ariaLabel,
   describedBy,
   announce,
   onSelectRange,
@@ -45,6 +46,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   const slots = viewType === "day" ? timeSlots : datesInView;
   const gridRef = useRef<HTMLDivElement>(null);
   const idPrefix = `rs${useId()}`;
+  const i18n = useI18n();
 
   // Events may be moved anywhere inside the visible range by keyboard.
   const visibleRange = slots.length
@@ -181,7 +183,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
 
   const selectionRange = getSelectionRange();
   // One label per column; cells add the resource name.
-  const slotLabels = slots.map((slot) => formatSlotLabel(slot, viewType));
+  const slotLabels = slots.map((slot) => formatSlotLabel(slot, viewType, i18n));
 
   const handleCellClick = (date: Date, resourceId: string) => {
     const resource = resources.find((r) => r.id === resourceId);
@@ -199,7 +201,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
       <div
         ref={gridRef}
         role="grid"
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ?? i18n.labels.gridName}
         aria-describedby={describedBy}
         aria-rowcount={resources.length}
         aria-colcount={slots.length}
@@ -279,7 +281,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     key={`${resource.id}-${colIndex}`}
                     id={keyboard.cellId(rowIndex, colIndex)}
                     label={`${resource.name}, ${slotLabels[colIndex]}${
-                      unavailable ? ", unavailable" : ""
+                      unavailable ? `, ${i18n.labels.unavailable}` : ""
                     }`}
                     isUnavailable={unavailable}
                     isActive={

@@ -35,6 +35,12 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 // Utility exports
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
+export { defaultLabels } from "./components/ResourceScheduler/i18n";
+export type {
+  I18nInput,
+  PartialLabels,
+  SchedulerLabels,
+} from "./components/ResourceScheduler/i18n";
 export { withEvents } from "./components/ResourceScheduler/utils/events";
 export {
   expandEvents,

@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
+import { useI18n } from "./i18n";
 import { type SchedulerControlsProps, ViewType } from "./types";
 import { getDatesInView } from "./utils/dateUtils";
 
@@ -24,31 +25,29 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   weekStartsOn,
   hideWeekends,
 }) => {
+  const { labels, fmt, locale } = useI18n();
+
   const getDateTitle = () => {
     switch (viewType) {
       case ViewType.Day:
-        return format(currentDate, "MMMM d, yyyy");
+        return fmt.titleDay(currentDate);
       case ViewType.Week: {
         const days = getDatesInView(currentDate, viewType, {
           weekStartsOn,
           hideWeekends,
         });
-        return `${format(days[0], "MMM d")} – ${format(
-          days[days.length - 1],
-          "MMM d, yyyy"
+        return `${fmt.titleDateStart(days[0])} – ${fmt.titleDateEnd(
+          days[days.length - 1]
         )}`;
       }
       case ViewType.Month:
-        return format(currentDate, "MMMM yyyy");
+        return fmt.monthYear(currentDate);
       case ViewType.Quarter:
-        return `Q${Math.floor(currentDate.getMonth() / 3) + 1} ${format(
-          currentDate,
-          "yyyy"
-        )}`;
+        return fmt.quarterYear(currentDate);
       case ViewType.Year:
-        return format(currentDate, "yyyy");
+        return format(currentDate, "yyyy", { locale });
       default:
-        return format(currentDate, "MMMM d, yyyy");
+        return fmt.titleDay(currentDate);
     }
   };
 
@@ -60,7 +59,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             variant="outline"
             size="sm"
             className="hover:bg-ocrs-gray-100 rounded-lg"
-            aria-label="Previous period"
+            aria-label={labels.previousPeriod}
             onClick={() => onNavigate("prev")}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -75,7 +74,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
               {getDateTitle()}
             </span>
             <span className="text-xs text-ocrs-muted-foreground font-medium mt-1 text-center">
-              {viewType.charAt(0).toUpperCase() + viewType.slice(1)} View
+              {labels.viewTitle(labels.views[viewType])}
             </span>
           </div>
 
@@ -83,7 +82,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             variant="outline"
             size="sm"
             className="hover:bg-ocrs-gray-100 rounded-lg"
-            aria-label="Next period"
+            aria-label={labels.nextPeriod}
             onClick={() => onNavigate("next")}
           >
             <ChevronRight className="h-4 w-4" />
@@ -94,11 +93,11 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           variant="outline"
           size="sm"
           className="flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
-          aria-label="Today"
+          aria-label={labels.today}
           onClick={onGoToToday}
         >
           <Calendar className="h-4 w-4" />
-          <span className="hidden sm:inline">Today</span>
+          <span className="hidden sm:inline">{labels.today}</span>
         </Button>
       </div>
 
@@ -106,9 +105,9 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
         <Select value={viewType} onValueChange={onViewChange}>
           <SelectTrigger
             className="lg:w-[140px] w-full bg-ocrs-white"
-            aria-label="View"
+            aria-label={labels.view}
           >
-            <SelectValue placeholder="View" />
+            <SelectValue placeholder={labels.view} />
           </SelectTrigger>
           <SelectContent style={{ zIndex: 99 }}>
             {(
@@ -121,7 +120,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
               ]
             ).map((view) => (
               <SelectItem key={view} value={view}>
-                {view.charAt(0).toUpperCase() + view.slice(1)}
+                {labels.views[view]}
               </SelectItem>
             ))}
           </SelectContent>

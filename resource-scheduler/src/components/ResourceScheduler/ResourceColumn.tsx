@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
 import React from "react";
+import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
 
 export const ResourceColumn: React.FC<ResourceColumnProps> = ({
@@ -9,6 +10,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   renderResourceHeader,
   rowRange,
 }) => {
+  const { labels } = useI18n();
   // Rows outside the range are not rendered; spacers keep the column tall.
   const heights = resources.map(getResourceRowHeight);
   const start = rowRange?.start ?? 0;
@@ -24,7 +26,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       style={{ width: resourceColumnWidth }}
     >
       <div className="border-r bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
-        <span className="text-sm font-medium text-ocrs-muted-foreground">Resources</span>
+        <span className="text-sm font-medium text-ocrs-muted-foreground">{labels.resources}</span>
       </div>
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}
       {resources.slice(start, end).map((resource, i) => {

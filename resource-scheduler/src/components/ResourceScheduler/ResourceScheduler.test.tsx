@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import axe from "axe-core";
+import { de } from "date-fns/locale";
 import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResourceScheduler } from "./ResourceScheduler";
@@ -726,6 +727,132 @@ describe("ResourceScheduler", () => {
 
       click(bobCells[4]); // Thursday, free
       expect(onSlotSelect).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("i18n", () => {
+    // The clock reads Wednesday 7 October 2026.
+    const rows: Resource[] = [{ id: "r1", name: "Ann", events: [] }];
+    const german = {
+      resources: "Ressourcen",
+      today: "Heute",
+      previousPeriod: "Vorheriger Zeitraum",
+      nextPeriod: "Nächster Zeitraum",
+      gridName: "Ressourcenplan",
+      allDay: "Ganztägig",
+      unavailable: "nicht verfügbar",
+      views: { month: "Monat", week: "Woche" },
+      viewTitle: (name: string) => `Ansicht ${name}`,
+      help: () => "Pfeiltasten bewegen den Cursor.",
+      announce: {
+        pickedUp: (title: string) => `${title} aufgenommen.`,
+      },
+    };
+    const slotDays = () =>
+      [...document.querySelectorAll<HTMLElement>("[data-rs-slot]")].map((el) =>
+        new Date(Number(el.dataset.rsSlot)).getDate()
+      );
+
+    it("translates the toolbar, the resource header and the view names", () => {
+      render(
+        <ResourceScheduler
+          resources={rows}
+          initialView={ViewType.Month}
+          locale={de}
+          labels={german}
+        />
+      );
+      // The period title is the first line of the toolbar's live region.
+      expect(document.querySelector('[aria-live="polite"] span')?.textContent).toBe(
+        "Oktober 2026"
+      );
+      expect(screen.getByText("Ressourcen")).toBeTruthy();
+      expect(screen.getByLabelText("Heute")).toBeTruthy();
+      expect(screen.getByLabelText("Nächster Zeitraum")).toBeTruthy();
+      expect(screen.getByText("Ansicht Monat")).toBeTruthy();
+    });
+
+    it("starts the week where the locale does, unless weekStartsOn says otherwise", () => {
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Week} locale={de} />);
+      expect(slotDays()).toEqual([5, 6, 7, 8, 9, 10, 11]); // German weeks start on Monday
+      cleanup();
+      render(
+        <ResourceScheduler
+          resources={rows}
+          initialView={ViewType.Week}
+          locale={de}
+          weekStartsOn={0}
+        />
+      );
+      expect(slotDays()).toEqual([4, 5, 6, 7, 8, 9, 10]);
+    });
+
+    it("writes slot names for screen readers in the locale", () => {
+      render(
+        <ResourceScheduler
+          resources={rows}
+          initialView={ViewType.Week}
+          locale={de}
+          labels={german}
+          businessHours={{}}
+        />
+      );
+      const cells = [...document.querySelectorAll<HTMLElement>("[data-rs-slot]")];
+      expect(cells[2].getAttribute("aria-label")).toBe("Ann, Mittwoch, 7. Oktober 2026");
+      expect(cells[5].getAttribute("aria-label")).toBe("Ann, Samstag, 10. Oktober 2026, nicht verfügbar");
+    });
+
+    it("shows 24-hour column headers with hour12={false}, 12-hour by default", () => {
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Day} hour12={false} />);
+      expect(screen.getByText("09:00")).toBeTruthy();
+      cleanup();
+      render(<ResourceScheduler resources={rows} initialView={ViewType.Day} />);
+      expect(screen.getByText("9AM")).toBeTruthy();
+    });
+
+    it("names the grid from the labels, and ariaLabel still wins", () => {
+      render(<ResourceScheduler resources={rows} labels={german} />);
+      expect(screen.getByRole("grid").getAttribute("aria-label")).toBe("Ressourcenplan");
+      cleanup();
+      render(<ResourceScheduler resources={rows} labels={german} ariaLabel="Mein Plan" />);
+      expect(screen.getByRole("grid").getAttribute("aria-label")).toBe("Mein Plan");
+    });
+
+    it("translates the keyboard help and the announcements", () => {
+      const event = {
+        id: "e",
+        title: "Termin",
+        startDate: new Date(2026, 9, 7, 9),
+        endDate: new Date(2026, 9, 7, 10),
+      };
+      render(
+        <ResourceScheduler
+          resources={[{ ...rows[0], events: [event] }]}
+          initialView={ViewType.Week}
+          labels={german}
+        />
+      );
+      expect(document.body.textContent).toContain("Pfeiltasten bewegen den Cursor.");
+
+      fireEvent.keyDown(document.querySelector('[data-rs-event="e"]')!, { key: " " });
+      expect(screen.getByRole("status").textContent).toBe("Termin aufgenommen.");
+    });
+
+    it("translates the all-day label on event cards", () => {
+      const holiday = {
+        id: "h",
+        title: "Feiertag",
+        startDate: new Date(2026, 9, 7),
+        endDate: new Date(2026, 9, 8),
+      };
+      render(
+        <ResourceScheduler
+          resources={[{ ...rows[0], events: [holiday] }]}
+          initialView={ViewType.Week}
+          labels={german}
+        />
+      );
+      expect(screen.getByText("Ganztägig")).toBeTruthy();
     });
   });
 
