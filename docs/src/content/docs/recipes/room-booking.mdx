@@ -57,5 +57,5 @@ export function Rooms() {
 
 - **Enforce on the server too.** The browser check is a courtesy. Run `isPlacementAllowed` (or your own query) before saving, and return an error if someone else booked first.
 - **Business hours.** `dayStartHour` and `dayEndHour` hide the night, and `isValidDrop` can reject anything outside opening hours or on holidays.
-- **Capacity or equipment.** Put the rule in `isValidDrop`: it receives the event and the target `resourceId`.
-- **Recurring bookings** are not built in. Store the rule and expand it into events for the visible range.
+- **Capacity or equipment.** Put the rule in `isValidDrop`: it receives the event and the target `resourceId`. [Equipment rental](/recipes/equipment-rental/) shows a stock count enforced this way.
+- **Recurring bookings** are built in: give an event a [`recurrence`](/guides/recurring-events/) and the scheduler draws each occurrence. [Shift roster](/recipes/shift-roster/) uses it for a weekly rota.

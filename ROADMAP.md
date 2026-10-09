@@ -119,7 +119,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [~] **Utilization row** (done on branch `feat/utilization`): `showUtilization` draws a booked-vs-available bar per resource for the visible range, from business hours, `unavailable` and the new `Resource.capacity`; `getUtilization` is exported. Still open: a per-column histogram or total row across resources
 - [ ] **ICS import/export, CSV, print stylesheet** (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
-- [ ] **Recipes** with complete data models: room booking, shift roster, equipment, field service dispatch, project allocation (M each)
+- [~] **Recipes** with complete data models: room booking, shift roster, equipment rental and field service dispatch are done (branch `docs/recipes`, each with a live demo). Still open: project allocation (M)
 - [ ] Docs with `llms.txt` so AI coding assistants generate correct usage (S)
 
 ### P3: Later, decide by evidence

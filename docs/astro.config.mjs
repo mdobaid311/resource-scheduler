@@ -96,7 +96,12 @@ export default defineConfig({
         },
         {
           label: "Recipes",
-          items: [{ label: "Room booking", slug: "recipes/room-booking" }],
+          items: [
+            { label: "Room booking", slug: "recipes/room-booking" },
+            { label: "Shift roster", slug: "recipes/shift-roster" },
+            { label: "Equipment rental", slug: "recipes/equipment-rental" },
+            { label: "Field service dispatch", slug: "recipes/field-service-dispatch" },
+          ],
         },
         {
           label: "Compare",

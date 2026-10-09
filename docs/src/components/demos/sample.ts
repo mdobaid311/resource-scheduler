@@ -25,6 +25,15 @@ export const week = (dayOfWeek: number, hour: number, minute = 0) => {
   return d;
 };
 
+/** A time on a day of the current Monday-first week (0 = Monday, ..., 6 = Sunday). */
+export const weekDay = (offset: number, hour = 0, minute = 0) => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset);
+  d.setHours(hour, minute);
+  return d;
+};
+
 /** A week of work for a small team. Used by the hero and the quick start. */
 export const teamWeek = (): Resource[] => [
   {

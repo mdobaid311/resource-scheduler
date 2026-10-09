@@ -1,0 +1,88 @@
+---
+title: Field service dispatch
+description: A dispatch board where jobs wait in a queue and a button books each one with the first technician who can take it, inside shifts and around breaks.
+---
+
+import FieldServiceDemo from "../../../components/demos/FieldServiceDemo";
+
+Technicians are the rows and the day view is the board. Jobs wait in a queue, and each button books the earliest slot any technician has, inside their shift and around lunch, training and the jobs they already have. Booked jobs can be dragged to another technician or resized.
+
+<FieldServiceDemo client:only="react" />
+
+## The data model
+
+Three kinds of data, only two of which the scheduler sees:
+
+```ts
+import type { ResourceInput, SchedulerEvent } from "resource-scheduler";
+
+// Technicians: a shift and the breaks inside it.
+const technicians: ResourceInput[] = [
+  {
+    id: "ann",
+    name: "Ann Lee",
+    businessHours: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6], startHour: 7, endHour: 15 },
+    unavailable: [{ start: new Date(2026, 9, 7, 12), end: new Date(2026, 9, 7, 12, 30) }], // lunch
+  },
+  // ...
+];
+
+// Booked jobs: a flat list, one row per job.
+const jobs: SchedulerEvent[] = [
+  { id: "j1", title: "Boiler service", resourceId: "ann", startDate: new Date(2026, 9, 7, 8), endDate: new Date(2026, 9, 7, 9, 30) },
+];
+
+// Jobs waiting for a technician: your own list, not in the scheduler.
+const queue = [{ id: "q1", title: "No heat, 4 Oak Ave", minutes: 90 }];
+```
+
+A job leaves the queue and becomes an event when somebody is chosen. In a database that is a `jobs` table with a nullable `technician_id`, `starts_at` and `ends_at`: rows without a technician are the queue.
+
+## How each rule is expressed
+
+| You want | Use |
+|---|---|
+| A technician's shift | `businessHours`, per technician, so shifts can differ |
+| Lunch, training, a van in the garage | `unavailable` ranges, shaded in the day view |
+| Jobs that cannot overlap or touch the grey | `eventOverlap={false}` and `blockUnavailable` |
+| The earliest technician who can take a job | `findAvailableSlots` over each technician |
+| How full each technician's shift is | `showUtilization` (7.5 of 8 hours, minus lunch) |
+| Where "now" is on the board | `nowIndicator` |
+| Jump to the booked slot | the `goTo` method of the ref |
+
+## Assigning a job
+
+`findAvailableSlots` applies the same rules the grid shows: the technician's jobs, their `unavailable` time and their shift. Ask it per technician and take the earliest:
+
+```tsx
+import { addDays } from "date-fns";
+import { findAvailableSlots, withEvents } from "resource-scheduler";
+
+const assign = (job: { id: string; title: string; minutes: number }) => {
+  const best = withEvents(technicians, jobs)
+    .flatMap((tech) =>
+      findAvailableSlots(tech, {
+        from: new Date(),                       // never in the past
+        to: addDays(new Date(), 3),             // a slot must end by then
+        duration: job.minutes,
+        step: 30,                               // starts on the half hour
+        limit: 1,
+      }).map((slot) => ({ tech, slot }))
+    )
+    .sort((a, b) => a.slot.start.getTime() - b.slot.start.getTime())[0];
+
+  if (!best) return alert("Nobody can take it in the next three days");
+  setJobs((all) => [...all, { id: crypto.randomUUID(), title: job.title, resourceId: best.tech.id, startDate: best.slot.start, endDate: best.slot.end }]);
+  ref.current?.goTo(best.slot.start);           // show the day it landed on
+};
+```
+
+Results are free slots only: the candidate's whole length has to fit inside one shift and miss every other job and break.
+
+## Make it real
+
+- **Travel time.** Book `job.minutes + travel` in the search, and draw the event for the on-site part only, or keep the travel as its own event so it shows on the board.
+- **Skills and territories.** Keep them in your own data and filter the technicians before searching: `technicians.filter((t) => skills[t.id].includes(job.skill))`.
+- **Fairness.** To spread work out, break ties between similar start times with `getUtilization` and prefer the technician with the lower ratio.
+- **Check on the server.** Two dispatchers can book the same technician at once. Run `findAvailableSlots`, or `isPlacementAllowed`, in your API against the saved jobs before committing, and tell the second dispatcher to pick again.
+- **Load only the day on screen.** Use `onRangeChange` to fetch the jobs and breaks for the visible range, and `withEvents` to merge them when you search.

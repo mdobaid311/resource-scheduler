@@ -1,0 +1,85 @@
+---
+title: Shift roster
+description: A weekly staff rota with repeating shifts, contracted hours, leave, and a bar showing how much of each person's contract is rostered.
+---
+
+import ShiftRosterDemo from "../../../components/demos/ShiftRosterDemo";
+
+People are the rows, days are the columns. Shifts repeat every week, a form adds one-off shifts, and each person's bar shows rostered hours against the hours they are contracted for.
+
+<ShiftRosterDemo client:only="react" />
+
+## The data model
+
+Everything a rota needs fits in two shapes. The people carry their contract and their leave; the shifts are one flat list.
+
+```ts
+import type { ResourceInput, SchedulerEvent } from "resource-scheduler";
+
+const staff: ResourceInput[] = [
+  {
+    id: "cy",
+    name: "Cy Ortiz",
+    // The days and hours Cy may be rostered: the contract.
+    businessHours: { daysOfWeek: [1, 2, 3, 4, 5], startHour: 7, endHour: 15 },
+    // Leave. Shaded, refused by blockUnavailable, and not counted as available.
+    unavailable: [{ start: new Date(2026, 9, 7), end: new Date(2026, 9, 9) }],
+  },
+  // ...
+];
+
+const shifts: SchedulerEvent[] = [
+  {
+    id: "cy-early",
+    title: "Early",
+    resourceId: "cy",                       // flat events: the row it belongs to
+    startDate: new Date(2026, 8, 21, 7),    // the first occurrence, a Monday
+    endDate: new Date(2026, 8, 21, 15),
+    recurrence: { freq: "weekly", byWeekday: [1, 2, 5] },   // Monday, Tuesday, Friday
+  },
+];
+```
+
+In a database this is a `people` table with `contract` and `leave` columns and a `shifts` table with a `person_id`. The standing rota is one row with a `recurrence`; you never store a row per week.
+
+## How each rule is expressed
+
+| You want | Use |
+|---|---|
+| The same shift every week | `recurrence` with `freq: "weekly"` and `byWeekday` ([recurring events](/guides/recurring-events/)) |
+| Contracted days and hours | The person's `businessHours` ([availability](/guides/availability/)) |
+| Leave and sickness | The person's `unavailable` ranges |
+| Nobody works two shifts at once | `eventOverlap={false}` |
+| No shifts on days off or leave | `blockUnavailable` |
+| Hours rostered against hours contracted | `showUtilization` ([utilization](/guides/utilization/)) |
+| Add a shift in your own form | `onSlotSelect`, then add an event |
+| Cover someone for a day | `onEventDrop`, "this event only" |
+
+## The parts worth copying
+
+**Covering one shift.** Dragging a shift in the rota hands your handler an occurrence of the series. Swapping it for one day means skipping that day in the series and adding a one-off shift for the new person:
+
+```tsx
+onEventDrop={(shift, _from, toId, start, end) =>
+  setEvents((all) => {
+    if (!shift.seriesId) {
+      return all.map((e) => (e.id === shift.id ? { ...e, resourceId: toId, startDate: start, endDate: end } : e));
+    }
+    const skipped = all.map((e) =>
+      e.id === shift.seriesId
+        ? { ...e, recurrence: { ...e.recurrence!, exceptions: [...(e.recurrence!.exceptions ?? []), shift.startDate] } }
+        : e
+    );
+    return [...skipped, { ...shift, id: crypto.randomUUID(), seriesId: undefined, resourceId: toId, startDate: start, endDate: end }];
+  })
+}
+```
+
+**Reading the bar.** The bar is booked time over available time for the week on screen. Contracted hours are the available time, leave is cut out of it, and only the part of a shift inside it counts. A person at 100% is fully rostered, at 0% has nothing yet, and a bar above 100% means two shifts overlap (the grid will not let you create that with `eventOverlap={false}`, but imported data may contain it).
+
+## Make it real
+
+- **The shift templates are yours.** In the week view the grid only knows days: "Early is 7 to 15" lives in your form, and `blockUnavailable` refuses closed days there. In the day view it also refuses hours outside the contract.
+- **Night shifts** that cross midnight are events whose `endDate` is on the next day. Utilization counts only the part inside the contract, and one `startHour` and `endHour` cannot describe a night, so give night staff `businessHours: false` (always available).
+- **Enforce rest rules on the server.** "At least 11 hours between shifts" or "no more than 48 hours a week" belong in `isValidDrop` for fast feedback and in your API for the truth. `getUtilization` gives you the weekly hours per person on the server too.
+- **Time zones are not handled.** Dates are the viewer's local dates, so a rota for a site in another time zone needs conversion on your side.

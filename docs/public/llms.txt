@@ -63,6 +63,15 @@ export function Board() {
 - [Theming](https://resource-scheduler-demo.vercel.app/guides/theming/): the --rs-* tokens, dark mode
 - [Next.js and SSR](https://resource-scheduler-demo.vercel.app/guides/nextjs-and-ssr/)
 
+## Recipes
+
+Each has a live demo and the complete data model.
+
+- [Room booking](https://resource-scheduler-demo.vercel.app/recipes/room-booking/): no double booking, your own form
+- [Shift roster](https://resource-scheduler-demo.vercel.app/recipes/shift-roster/): recurring shifts, contracted hours, leave, utilization
+- [Equipment rental](https://resource-scheduler-demo.vercel.app/recipes/equipment-rental/): stock counts with `capacity` and `isValidDrop`, service days, finding free days
+- [Field service dispatch](https://resource-scheduler-demo.vercel.app/recipes/field-service-dispatch/): shifts, breaks, and booking the earliest technician with `findAvailableSlots`
+
 ## Reference
 
 - [Props](https://resource-scheduler-demo.vercel.app/reference/props/)
