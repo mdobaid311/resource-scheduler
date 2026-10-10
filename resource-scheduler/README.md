@@ -161,6 +161,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
 | `classNames` | `{ root?, toolbar?, dateHeader?, resourceCell?, groupHeader?, slot?, event? }` | `undefined` | Extra classes for those parts, merged over the defaults with tailwind-merge so a conflicting utility wins (the utility has to exist in your CSS) |
+| `density` | `"comfortable" \| "compact"` | `"comfortable"` | `"compact"` shrinks event lanes (38 px against 52) and cards (34 px against 48) and puts an event's title and time on one line. A row with a utilization bar stays at least 60 px |
 | `ariaLabel` | `string` | `"Resource schedule"` | Accessible name of the schedule grid |
 | `onSlotSelect` | `({ resourceId, start, end }) => void` | `undefined` | Called when the user clicks or drag-selects empty slots. Providing it replaces the built-in creation (`onEventCreate` is not called) so you can open your own dialog. The overlap rules apply. `end` is exclusive |
 | `slotDuration` | `number` | `60` | Day view only: minutes per slot (15, 30, 60, ...) |

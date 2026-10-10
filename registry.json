@@ -60,6 +60,11 @@
           "target": "@components/resource-scheduler/classNames.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/density.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/density.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/use-media-query.tsx",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/use-media-query.tsx"

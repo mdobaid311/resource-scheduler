@@ -1135,6 +1135,56 @@ describe("ResourceScheduler", () => {
     });
   });
 
+  describe("density", () => {
+    const day = new Date(2026, 2, 10);
+    const at = (h: number) => new Date(2026, 2, 10, h);
+    // Two overlapping events make two lanes.
+    const resources: Resource[] = [
+      {
+        id: "a",
+        name: "Ann",
+        events: [
+          { id: "e1", title: "One", startDate: at(9), endDate: at(11) },
+          { id: "e2", title: "Two", startDate: at(10), endDate: at(12) },
+        ],
+      },
+    ];
+    const show = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}, list = resources) =>
+      render(
+        <ResourceScheduler resources={list} initialDate={day} initialView={ViewType.Day} {...props} />
+      );
+    const rowHeight = () => screen.getByText("Ann").parentElement!.style.height;
+    const card = (id: string) => document.querySelector<HTMLElement>(`[data-rs-event="${id}"]`)!;
+    // The event's wrapper sets its lane offset and height.
+    const wrapper = (id: string) => card(id).parentElement!;
+
+    it("is comfortable by default: 52 px a lane, 48 px cards, title and time on two lines", () => {
+      show();
+      expect(rowHeight()).toBe("112px");
+      expect(wrapper("e1").style.height).toBe("48px");
+      expect(wrapper("e2").style.marginTop).toBe("52px");
+      expect(card("e1").children).toHaveLength(2);
+    });
+
+    it("compact makes lanes and cards smaller, with the title and time on one line", () => {
+      show({ density: "compact" });
+      expect(rowHeight()).toBe("84px");
+      expect(wrapper("e1").style.height).toBe("34px");
+      expect(wrapper("e2").style.marginTop).toBe("38px");
+      expect(card("e1").children).toHaveLength(1);
+      expect(card("e1").textContent).toContain("One");
+    });
+
+    it("keeps a row tall enough for its utilization bar", () => {
+      const one: Resource[] = [{ id: "a", name: "Ann", events: [resources[0].events[0]] }];
+      show({ density: "compact" }, one);
+      expect(rowHeight()).toBe("46px");
+      cleanup();
+      show({ density: "compact", showUtilization: true }, one);
+      expect(rowHeight()).toBe("60px");
+    });
+  });
+
   describe("classNames", () => {
     const day = new Date(2026, 2, 10);
     const resources: Resource[] = [

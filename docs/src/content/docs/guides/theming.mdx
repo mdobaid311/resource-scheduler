@@ -76,6 +76,18 @@ Your classes are merged after the defaults with `tailwind-merge`, so a utility t
 
 The utilities have to exist in your CSS. The npm package ships a precompiled stylesheet with only the utilities it uses, so a class like `bg-slate-100` works only if your own Tailwind build generates it. If it does not, the conflicting default is still removed and the part loses that style. With the shadcn install the source is in your project, so Tailwind sees the class. Plain CSS class names work in both: add the class, then write the rule yourself (and avoid a conflicting Tailwind utility if you want the default to stay).
 
+## Density
+
+`density="compact"` makes rows shorter so more resources fit on screen:
+
+```tsx
+<ResourceScheduler resources={resources} density="compact" />
+```
+
+A lane of events is 38 px instead of 52, the event card is 34 px instead of 48, and the card shows its title and time on one line (the time is cut first when the card is narrow). Resource names get less padding. A row with a [utilization bar](/guides/utilization/) is never shorter than 60 px, because the name and the bar need that much, so compact saves the most on rows with several lanes of events.
+
+The default is `"comfortable"`, which is exactly what the scheduler looked like before the option existed.
+
 ## Custom rendering
 
 For the content itself, use the render props: `renderEventPopover`, `renderTimeSlot` (replace the event card), `renderResourceHeader`, `renderDateHeader` and `renderEmptyCell`. See the [props reference](/reference/props/).

@@ -17,6 +17,7 @@ export default function ThemeDemo() {
   const { resources, move, resize } = useSchedule(teamWeek);
   const [preset, setPreset] = useState<keyof typeof PRESETS>("Violet");
   const [square, setSquare] = useState(false);
+  const [compact, setCompact] = useState(false);
 
   // Popovers render in a portal, so the tokens go on :root rather than a wrapper.
   useEffect(() => {
@@ -43,6 +44,10 @@ export default function ThemeDemo() {
             <input type="checkbox" checked={square} onChange={(e) => setSquare(e.target.checked)} />
             Square cards, dashed cells, upper-case days (classNames)
           </label>
+          <label>
+            <input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} />
+            Compact (density)
+          </label>
         </>
       }
       caption="Switch the site's light/dark toggle too: the scheduler follows it."
@@ -51,7 +56,8 @@ export default function ThemeDemo() {
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week]}
-        classNames={square ? { event: "rounded-none", slot: "border-dashed", dateHeader: "uppercase" } : undefined}
+        density={compact ? "compact" : undefined}
+        classNames={square ?{ event: "rounded-none", slot: "border-dashed", dateHeader: "uppercase" } : undefined}
         resourceColumnWidth="150px"
         dateColumnWidth="110px"
         onEventDrop={move}

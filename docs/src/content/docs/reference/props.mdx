@@ -81,6 +81,8 @@ Only `resources` is required.
 
 - **`classNames`**: `SchedulerClassNames`, `{ root, toolbar, dateHeader, resourceCell, groupHeader, slot, event }`. Extra classes for those parts, merged over the defaults with tailwind-merge. See [Theming](/guides/theming/).
 
+- **`density`**: `"comfortable" | "compact"`, default `"comfortable"`. `"compact"` shrinks event lanes (38 px against 52) and cards (34 px against 48), puts an event's title and time on one line and trims the resource cell padding. A row with a utilization bar stays at least 60 px. See [Theming](/guides/theming/).
+
 ## Layout and accessibility
 
 - **`resourceColumnWidth`**: `string`, default `"220px"` (`"140px"` on small screens). Pixel values only.

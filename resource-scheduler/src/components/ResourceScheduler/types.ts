@@ -3,6 +3,7 @@
 // src/components/ResourceScheduler/types.ts
 import type { Locale } from "date-fns";
 import type { SchedulerClassNames } from "./classNames";
+import type { Density } from "./density";
 import type { PartialLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
@@ -254,6 +255,13 @@ export interface ResourceSchedulerProps {
    * `SchedulerClassNames`.
    */
   classNames?: SchedulerClassNames;
+  /**
+   * `"compact"` shrinks event lanes and cards (38 px a lane against 52) and
+   * shows an event's title and time on one line, so more resources fit on
+   * screen. A row that has a utilization bar is never shorter than 60 px.
+   * Default `"comfortable"`.
+   */
+  density?: Density;
   /** Day view: draw a line at the current time, moved every minute. */
   nowIndicator?: boolean;
   /**
