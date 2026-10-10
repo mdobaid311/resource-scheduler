@@ -7,19 +7,24 @@
 // they were set (JS 16.6 KB, CSS 5.7 KB). Raise them on purpose, in a PR that
 // says why, not by accident. JS went from 20 KB to 22 KB for resource groups
 // (20.1 KB used, about 10% headroom), then to 24 KB for ICS and CSV export
-// (21.3 KB used, plus touch selection waiting to merge). If it keeps growing,
-// move the exports to their own entry point instead of raising this again.
+// (21.3 KB used, plus touch selection waiting to merge). The file format
+// helpers then moved to their own entry point (resource-scheduler/exchange,
+// budget below), which took the main bundle back to 21.7 KB.
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 24_000,
+  "dist/index.esm.js": 23_000,
+  "dist/exchange.esm.js": 2_500,
   "dist/resource-scheduler.css": 7_000,
 };
 const EXPECTED_FILES = new Set([
   "index.cjs",
   "index.esm.js",
   "index.d.ts",
+  "exchange.cjs",
+  "exchange.esm.js",
+  "exchange.d.ts",
   "resource-scheduler.css",
 ]);
 

@@ -32,6 +32,8 @@ All of these are exported from `resource-scheduler`.
 
 ## Export
 
+Imported from `resource-scheduler/exchange`, not from the main entry point.
+
 - **`eventsToICS(events, { resources?, name?, now? })`** returns an iCalendar file as a string. Timed events in UTC, whole local days as all-day events, `recurrence` as `RRULE` and `exceptions` as `EXDATE`; `resources` writes the resource name as `LOCATION`.
 - **`eventsToCSV(events, { resources? })`** returns `id,title,resource,start,end,description` as a CSV string, one row per resource of an event, with cells that start with `=`, `+`, `-` or `@` defused against spreadsheet formulas. See [Export](/guides/export/).
 

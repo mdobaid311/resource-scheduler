@@ -44,8 +44,6 @@ export type {
   SchedulerLabels,
 } from "./components/ResourceScheduler/i18n";
 export { withEvents } from "./components/ResourceScheduler/utils/events";
-export { eventsToCSV, eventsToICS } from "./components/ResourceScheduler/utils/exportEvents";
-export type { ExportOptions } from "./components/ResourceScheduler/utils/exportEvents";
 export {
   expandEvents,
   expandRecurrence,

@@ -24,12 +24,16 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index.ts"),
-      name: "ResourceScheduler",
+      // `exchange` is a second entry point (resource-scheduler/exchange): file
+      // format helpers that need no React, kept out of the main bundle.
+      entry: {
+        index: path.resolve(__dirname, "src/index.ts"),
+        exchange: path.resolve(__dirname, "src/exchange.ts"),
+      },
       formats: ["es", "cjs"],
       // package.json has "type": "module", so Node reads every .js file as ESM
       // and the CommonJS build has to end in .cjs.
-      fileName: (format) => (format === "es" ? "index.esm.js" : "index.cjs"),
+      fileName: (format, entryName) => `${entryName}.${format === "es" ? "esm.js" : "cjs"}`,
     },
     rollupOptions: {
       // Regexes also catch subpaths such as react/jsx-runtime. Bundling that
@@ -46,7 +50,9 @@ export default defineConfig({
       ],
       output: {
         // Next.js App Router: lets the package be imported from a server file.
-        banner: '"use client";',
+        // Not on `exchange`: a "use client" module's functions cannot be called
+        // from a server component, and those are plain functions.
+        banner: (chunk) => (chunk.name === "exchange" ? "" : '"use client";'),
         // Fix CSS file naming
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {

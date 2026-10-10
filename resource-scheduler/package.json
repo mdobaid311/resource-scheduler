@@ -6,6 +6,13 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "exchange": [
+        "./dist/exchange.d.ts"
+      ]
+    }
+  },
   "style": "./dist/resource-scheduler.css",
   "sideEffects": [
     "**/*.css"
@@ -16,6 +23,11 @@
       "style": "./dist/resource-scheduler.css",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs"
+    },
+    "./exchange": {
+      "types": "./dist/exchange.d.ts",
+      "import": "./dist/exchange.esm.js",
+      "require": "./dist/exchange.cjs"
     },
     "./style.css": "./dist/resource-scheduler.css",
     "./dist/resource-scheduler.css": "./dist/resource-scheduler.css"
