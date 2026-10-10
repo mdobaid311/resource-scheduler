@@ -36,6 +36,7 @@ export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventC
 export { scrollToDate } from "./components/ResourceScheduler/utils/scrollUtils";
 export * from "./components/ResourceScheduler/utils/dateUtils";
 export type { SchedulerClassNames } from "./components/ResourceScheduler/classNames";
+export type { Density } from "./components/ResourceScheduler/density";
 export { defaultLabels } from "./components/ResourceScheduler/i18n";
 export type {
   I18nInput,

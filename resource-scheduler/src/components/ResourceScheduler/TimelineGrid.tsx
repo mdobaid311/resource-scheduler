@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/TimelineGrid.tsx
 import { addDays, addMinutes, isSameDay, startOfDay } from "date-fns";
 import React, { useEffect, useId, useRef } from "react";
+import { LANES, useDensity } from "./density";
 import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
 import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
@@ -51,6 +52,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   const gridRef = useRef<HTMLDivElement>(null);
   const idPrefix = `rs${useId()}`;
   const i18n = useI18n();
+  const { lane: laneHeight, card: cardHeight } = LANES[useDensity()];
 
   // Events may be moved anywhere inside the visible range by keyboard.
   const visibleRange = slots.length
@@ -283,8 +285,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                 >
                   <div
                     style={{
-                      marginTop: `${lane * 52}px`,
-                      height: "48px",
+                      marginTop: `${lane * laneHeight}px`,
+                      height: `${cardHeight}px`,
                       padding: "2px",
                     }}
                   >

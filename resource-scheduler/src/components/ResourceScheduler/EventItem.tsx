@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/EventItem.tsx
 import React, { useContext, useState } from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useDensity } from "./density";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import { useI18n } from "./i18n";
 import {
@@ -34,6 +35,7 @@ export const EventItem: React.FC<EventItemProps> = ({
   const drag = useContext(SchedulerDragContext);
   const i18n = useI18n();
   const classNames = useClassNames();
+  const compact = useDensity() === "compact";
   const movingThis =
     drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
   const opacity = movingThis ? 0.5 : 1;
@@ -144,7 +146,7 @@ export const EventItem: React.FC<EventItemProps> = ({
         ) : (
           <div
             className={withClass(
-              `event-item text-ocrs-foreground p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`,
+              `event-item text-ocrs-foreground ${compact ? "px-1.5 py-0.5" : "p-2"} text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`,
               classNames.event
             )}
             style={{
@@ -162,12 +164,21 @@ export const EventItem: React.FC<EventItemProps> = ({
             }}
             {...dragProps}
           >
-            <div className="font-medium truncate text-ocrs-foreground">
-              {event.title}
-            </div>
-            <div className="text-xs truncate text-ocrs-muted-foreground">
-              {formatEventTime(event, i18n)}
-            </div>
+            {compact ? (
+              <div className="truncate">
+                <span className="font-medium text-ocrs-foreground">{event.title}</span>{" "}
+                <span className="text-ocrs-muted-foreground">{formatEventTime(event, i18n)}</span>
+              </div>
+            ) : (
+              <>
+                <div className="font-medium truncate text-ocrs-foreground">
+                  {event.title}
+                </div>
+                <div className="text-xs truncate text-ocrs-muted-foreground">
+                  {formatEventTime(event, i18n)}
+                </div>
+              </>
+            )}
             {resizeHandles}
           </div>
         )}

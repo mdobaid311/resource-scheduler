@@ -13,6 +13,7 @@ import {
   isToday,
 } from "../utils/dateUtils";
 import { type SchedulerEvent, type Resource, ViewType } from "../types";
+import { LANES, ROW_PADDING } from "../density";
 import { GROUP_ROW_HEIGHT, isGroupRow } from "../utils/groups";
 import { expandEvents } from "../utils/recurrence";
 
@@ -21,7 +22,9 @@ export const useScheduler = (
   initialDate: Date = new Date(),
   initialView: ViewType = ViewType.Day,
   slotOptions?: SlotOptions,
-  viewOptions?: ViewOptions
+  viewOptions?: ViewOptions,
+  /** Height of one lane of events and the least a row may be, in px. */
+  { lane = LANES.comfortable.lane, minRowHeight = 0 }: { lane?: number; minRowHeight?: number } = {}
 ) => {
   const [currentDate, setCurrentDate] = useState<Date>(initialDate);
   const [viewType, setViewType] = useState<ViewType>(initialView);
@@ -109,10 +112,12 @@ export const useScheduler = (
           ? Math.max(...eventPositions.map((pos) => pos.lane)) + 1
           : 1;
 
-      return lanes * 52 + 8;
+      return Math.max(lanes * lane + ROW_PADDING, minRowHeight);
     },
     [
       viewType,
+      lane,
+      minRowHeight,
       calculateEventPositions,
       getTimeSlotsMemoized,
       getDatesInViewMemoized,

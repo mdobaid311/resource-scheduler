@@ -2,6 +2,7 @@
 import { ChevronDown } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useDensity } from "./density";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
 import { isGroupRow } from "./utils/groups";
@@ -51,6 +52,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
 }) => {
   const { labels } = useI18n();
   const classNames = useClassNames();
+  const density = useDensity();
   // Rows outside the range are not rendered; spacers keep the column tall.
   const heights = resources.map(getResourceRowHeight);
   const start = rowRange?.start ?? 0;
@@ -138,7 +140,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             key={resource.id}
             className={withClass(
               `${
-                value ? "p-2 flex-col gap-1" : "p-3"
+                value ? "p-2 flex-col gap-1" : density === "compact" ? "px-3 py-1" : "p-3"
               } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm`,
               classNames.resourceCell
             )}

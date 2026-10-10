@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "./hooks/use-media-query";
 import { ClassNamesContext, type SchedulerClassNames, withClass } from "./classNames";
+import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
 
 const NO_CLASS_NAMES: SchedulerClassNames = {};
@@ -81,6 +82,7 @@ export const ResourceScheduler = forwardRef<
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
   classNames,
+  density,
   virtualize,
   renderEventPopover,
   allowViewChange = true,
@@ -154,7 +156,11 @@ export const ResourceScheduler = forwardRef<
     initialDate,
     initialView,
     { slotDuration, dayStartHour, dayEndHour },
-    viewOptions
+    viewOptions,
+    {
+      lane: LANES[density ?? "comfortable"].lane,
+      minRowHeight: showUtilization ? UTILIZATION_ROW_HEIGHT : 0,
+    }
   );
   const { slotMinutes } = resolveSlotOptions({ slotDuration });
 
@@ -387,6 +393,7 @@ export const ResourceScheduler = forwardRef<
   return (
     <I18nContext.Provider value={i18n}>
       <ClassNamesContext.Provider value={classNames ?? NO_CLASS_NAMES}>
+      <DensityContext.Provider value={density ?? "comfortable"}>
       <div
         dir={i18n.dir}
         className={withClass(
@@ -478,6 +485,7 @@ export const ResourceScheduler = forwardRef<
           </div>
         </div>
       </div>
+      </DensityContext.Provider>
       </ClassNamesContext.Provider>
     </I18nContext.Provider>
   );
