@@ -85,6 +85,13 @@ export const useEventCreation = (
     setDragEnd(null);
   }, [isDragging, dragStart, dragEnd, commitRange]);
 
+  // Drop the selection without creating anything (a touch the browser took over).
+  const cancelSelection = useCallback(() => {
+    setIsDragging(false);
+    setDragStart(null);
+    setDragEnd(null);
+  }, []);
+
   // Listen on window so releasing the mouse outside the grid still ends the drag.
   useEffect(() => {
     if (!isDragging) return;
@@ -99,6 +106,7 @@ export const useEventCreation = (
     handleMouseDown,
     handleMouseEnter,
     handleMouseUp,
+    cancelSelection,
     commitRange,
   };
 };

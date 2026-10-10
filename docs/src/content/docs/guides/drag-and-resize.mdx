@@ -30,6 +30,8 @@ Edges snap to whole slots (or whole days). The slot under the pointer is always 
 
 Dragging uses Pointer Events, so it works with touch and pen as well as the mouse, and it never touches a drag-and-drop setup your app already has. Events set `touch-action: none` so the page does not scroll under a dragging finger. That means swiping on an event does not scroll the board; swipe on empty space instead.
 
+To create with touch, **tap** an empty slot to select it, or **press and hold** one for about a third of a second, then drag across more slots and lift: the selected slots light up and go to `onSlotSelect` (or `onEventCreate`) exactly as a mouse drag does. A quick swipe on empty space still scrolls the board. Tested with Chrome's touch emulation; not yet on physical devices.
+
 ## Rejecting a change
 
 Everything above is subject to the [conflict rules](/guides/conflict-control/). A rejected place shows in red and your handler is never called.
