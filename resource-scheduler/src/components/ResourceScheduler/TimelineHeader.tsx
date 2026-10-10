@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/TimelineHeader.tsx
 import React from "react";
+import { useClassNames, withClass } from "./classNames";
 import { useI18n } from "./i18n";
 import type { TimelineHeaderProps } from "./types";
 import { isToday } from "./utils/dateUtils";
@@ -13,6 +14,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
   renderDateHeader,
 }) => {
   const { fmt } = useI18n();
+  const classNames = useClassNames();
   const slots = viewType === "day" ? getTimeSlots() : getDatesInView();
 
   return (
@@ -27,9 +29,12 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
       {slots.map((slot, i) => (
         <div
           key={i}
-          className={`p-2 text-center border-b h-14 flex flex-col items-center justify-center border-e ${
-            isToday(slot) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
-          }`}
+          className={withClass(
+            `p-2 text-center border-b h-14 flex flex-col items-center justify-center border-e ${
+              isToday(slot) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
+            }`,
+            classNames.dateHeader
+          )}
         >
           {renderDateHeader ? (
             renderDateHeader(slot, viewType)

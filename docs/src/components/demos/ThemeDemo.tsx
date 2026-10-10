@@ -16,6 +16,7 @@ const PRESETS = {
 export default function ThemeDemo() {
   const { resources, move, resize } = useSchedule(teamWeek);
   const [preset, setPreset] = useState<keyof typeof PRESETS>("Violet");
+  const [square, setSquare] = useState(false);
 
   // Popovers render in a portal, so the tokens go on :root rather than a wrapper.
   useEffect(() => {
@@ -29,14 +30,20 @@ export default function ThemeDemo() {
     <Frame
       height={440}
       controls={
-        <label>
-          Preset
-          <select value={preset} onChange={(e) => setPreset(e.target.value as keyof typeof PRESETS)}>
-            {Object.keys(PRESETS).map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </label>
+        <>
+          <label>
+            Preset
+            <select value={preset} onChange={(e) => setPreset(e.target.value as keyof typeof PRESETS)}>
+              {Object.keys(PRESETS).map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <input type="checkbox" checked={square} onChange={(e) => setSquare(e.target.checked)} />
+            Square cards, dashed cells, upper-case days (classNames)
+          </label>
+        </>
       }
       caption="Switch the site's light/dark toggle too: the scheduler follows it."
     >
@@ -44,6 +51,7 @@ export default function ThemeDemo() {
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week]}
+        classNames={square ? { event: "rounded-none", slot: "border-dashed", dateHeader: "uppercase" } : undefined}
         resourceColumnWidth="150px"
         dateColumnWidth="110px"
         onEventDrop={move}

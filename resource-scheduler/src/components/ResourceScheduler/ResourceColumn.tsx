@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
 import { ChevronDown } from "lucide-react";
 import React from "react";
+import { useClassNames, withClass } from "./classNames";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
 import { isGroupRow } from "./utils/groups";
@@ -49,6 +50,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   rowRange,
 }) => {
   const { labels } = useI18n();
+  const classNames = useClassNames();
   // Rows outside the range are not rendered; spacers keep the column tall.
   const heights = resources.map(getResourceRowHeight);
   const start = rowRange?.start ?? 0;
@@ -92,13 +94,21 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               aria-expanded={!collapsed}
               aria-label={label}
               onClick={() => onToggleGroup(name)}
-              className={`${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`}
+              className={withClass(
+                `${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`,
+                classNames.groupHeader
+              )}
               style={{ height: rowHeight + "px" }}
             >
               {body}
             </button>
           ) : (
-            <div key={resource.id} aria-label={label} className={`${cell} px-3`} style={{ height: rowHeight + "px" }}>
+            <div
+              key={resource.id}
+              aria-label={label}
+              className={withClass(`${cell} px-3`, classNames.groupHeader)}
+              style={{ height: rowHeight + "px" }}
+            >
               {body}
             </div>
           );
@@ -107,9 +117,12 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         return (
           <div
             key={resource.id}
-            className={`${
-              value ? "p-2 flex-col gap-1" : "p-3"
-            } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm`}
+            className={withClass(
+              `${
+                value ? "p-2 flex-col gap-1" : "p-3"
+              } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm`,
+              classNames.resourceCell
+            )}
             style={{ height: rowHeight + "px" }}
           >
             {renderResourceHeader ? (

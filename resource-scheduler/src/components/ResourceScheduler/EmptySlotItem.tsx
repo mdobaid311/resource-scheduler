@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/EmptySlotItem.tsx
 import React, { useContext } from "react";
+import { useClassNames, withClass } from "./classNames";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import type { EmptySlotItemProps } from "./types";
 import { isSlotInRange } from "./utils/dateUtils";
@@ -20,6 +21,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   onCellClick,
   renderEmptyCell,
 }) => {
+  const classNames = useClassNames();
   // While an event is moved or resized, tint every slot it would cover.
   const drag = useContext(SchedulerDragContext);
   const footprint = drag?.activeDrag?.placement;
@@ -43,7 +45,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       data-rs-resource={resource.id}
       data-rs-unavailable={isUnavailable ? "" : undefined}
       data-rs-footprint={inFootprint ? "" : undefined}
-      className={`border-b border-e cursor-pointer overflow-hidden ${
+      className={withClass(`border-b border-e cursor-pointer overflow-hidden ${
         isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
       }${
         rejected
@@ -57,7 +59,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
           : isToday
           ? "bg-ocrs-blue-50"
           : "hover:bg-ocrs-gray-50"
-      }`}
+      }`, classNames.slot)}
       style={{
         gridRow: rowIndex + 2,
         gridColumn: colIndex + 1,

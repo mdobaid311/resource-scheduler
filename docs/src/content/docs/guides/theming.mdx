@@ -44,6 +44,38 @@ Every surface and text colour in the grid reads from these tokens, so a dark the
 
 The stylesheet has no global reset and no `body` or `html` rules. Base styles are scoped to the class `rs-root`, and the variables are prefixed so they cannot clash with your own `--background` or `--primary`. This holds for the shadcn install too.
 
+## Classes for the main parts
+
+Tokens change colours everywhere. To restyle one part, pass `classNames`:
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  classNames={{
+    toolbar: "border-b-2",
+    dateHeader: "uppercase tracking-wide",
+    resourceCell: "text-start font-semibold",
+    groupHeader: "bg-slate-100",
+    slot: "border-dashed",
+    event: "rounded-none shadow-md",
+  }}
+/>
+```
+
+| Part | What it styles |
+|---|---|
+| `root` | The outer element (`.rs-root`) |
+| `toolbar` | The bar with the date, arrows, Today and the view select |
+| `dateHeader` | Each column header: an hour in the day view, a day in the others |
+| `resourceCell` | The cell in the left column with a resource's name |
+| `groupHeader` | A [group header](/guides/resource-groups/) in the left column |
+| `slot` | Each empty slot of the grid |
+| `event` | The default event card (not one you draw with `renderTimeSlot`) |
+
+Your classes are merged after the defaults with `tailwind-merge`, so a utility that conflicts with a default replaces it: `rounded-none` removes the card's `rounded`. Without `classNames` the output is exactly what it was.
+
+The utilities have to exist in your CSS. The npm package ships a precompiled stylesheet with only the utilities it uses, so a class like `bg-slate-100` works only if your own Tailwind build generates it. If it does not, the conflicting default is still removed and the part loses that style. With the shadcn install the source is in your project, so Tailwind sees the class. Plain CSS class names work in both: add the class, then write the rule yourself (and avoid a conflicting Tailwind utility if you want the default to stay).
+
 ## Custom rendering
 
 For the content itself, use the render props: `renderEventPopover`, `renderTimeSlot` (replace the event card), `renderResourceHeader`, `renderDateHeader` and `renderEmptyCell`. See the [props reference](/reference/props/).

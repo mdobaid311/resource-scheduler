@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
+import { useClassNames, withClass } from "./classNames";
 import { useI18n } from "./i18n";
 import { type SchedulerControlsProps, ViewType } from "./types";
 import { getDatesInView } from "./utils/dateUtils";
@@ -26,6 +27,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   hideWeekends,
 }) => {
   const { labels, fmt, locale, dir } = useI18n();
+  const classNames = useClassNames();
   // Previous and next point the other way when time runs right to left.
   const arrow = `h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`;
 
@@ -54,7 +56,12 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   };
 
   return (
-    <div className="flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30">
+    <div
+      className={withClass(
+        "flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
+        classNames.toolbar
+      )}
+    >
       <div className="flex items-center justify-between lg:justify-start w-full gap-2">
         <div className="flex items-center gap-1">
           <Button

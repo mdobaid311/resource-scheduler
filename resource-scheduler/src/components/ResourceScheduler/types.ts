@@ -2,6 +2,7 @@
 
 // src/components/ResourceScheduler/types.ts
 import type { Locale } from "date-fns";
+import type { SchedulerClassNames } from "./classNames";
 import type { PartialLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
@@ -245,6 +246,12 @@ export interface ResourceSchedulerProps {
   defaultCollapsedGroups?: string[];
   /** Called with the new list of collapsed groups when the user toggles one. */
   onCollapsedGroupsChange?: (groups: string[]) => void;
+  /**
+   * Extra classes for the toolbar, headers, resource cells, slots and event
+   * cards, merged over the defaults so a conflicting utility wins. See
+   * `SchedulerClassNames`.
+   */
+  classNames?: SchedulerClassNames;
   /** Day view: draw a line at the current time, moved every minute. */
   nowIndicator?: boolean;
   /**
