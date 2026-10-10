@@ -67,11 +67,10 @@ With `collapsedGroups` set, the list is yours: the scheduler calls `onCollapsedG
 
 - **Keyboard.** The arrow keys in the grid move between resources and step over the headers; the headers are reached with Tab, since they are buttons.
 - **Drag and drop.** Events can be dragged between groups like between any rows. The rules (`eventOverlap`, `isValidDrop`, `blockUnavailable`) see the visible resources only: a folded group is not a place to drop.
-- **Utilization.** Resources show their bars, headers do not.
+- **Utilization.** With `showUtilization` each resource has its bar, and each header shows the total of everything below it as a small bar and a percentage: nested groups are included, and so are folded ones, so a collapsed team still shows how busy it is. Screen readers hear it in the header's label, such as "Floor 1, 2 resources, 6 of 16 hours booked". The same sums are available as `groupUtilization`.
 - **Large lists.** Headers are rows like the others, so [row virtualization](/guides/performance/) works across them.
 - **Languages.** The header's spoken text is `labels.group(name, count)`.
 
 ## Not included
 
 - Moving a resource between groups by dragging its name. The group comes from your data.
-- Totals on the header, such as the utilization of the whole group. `getUtilization` gives you the numbers per resource to sum yourself.

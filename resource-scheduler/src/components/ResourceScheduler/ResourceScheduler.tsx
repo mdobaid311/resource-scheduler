@@ -29,7 +29,8 @@ import {
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
-import { isGroupRow, withGroups } from "./utils/groups";
+import { groupUtilization, isGroupRow, withGroups } from "./utils/groups";
+import { getUtilization, type Utilization } from "./utils/utilization";
 import {
   isPlacementAllowed,
   type Placement,
@@ -37,7 +38,6 @@ import {
 } from "./utils/placement";
 import { getRowWindow } from "./utils/rowWindow";
 import { scrollToDate } from "./utils/scrollUtils";
-import { getUtilization } from "./utils/utilization";
 
 // Row virtualization: on above this many resources unless `virtualize` says otherwise.
 const VIRTUALIZE_ABOVE = 100;
@@ -124,9 +124,13 @@ export const ResourceScheduler = forwardRef<
   // Flat `events` join the resources first, so every rule below sees them.
   // Group headers are rows too, so heights, virtualization and the grid layout
   // treat them like the resources around them.
+  const allResources = useMemo(
+    () => withEvents(resourcesProp, events),
+    [resourcesProp, events]
+  );
   const initialResources = useMemo(
-    () => withGroups(withEvents(resourcesProp, events), collapsed),
-    [resourcesProp, events, collapsed]
+    () => withGroups(allResources, collapsed),
+    [allResources, collapsed]
   );
   const helpId = `rs-help${useId()}`;
   // Spoken by screen readers through the live region below.
@@ -205,13 +209,15 @@ export const ResourceScheduler = forwardRef<
   const utilization = useMemo(
     () =>
       showUtilization
-        ? new Map(
-            resources
+        ? new Map([
+            ...resources
               .filter((r) => !isGroupRow(r))
-              .map((r) => [r.id, getUtilization(r, range, { businessHours })])
-          )
+              .map((r): [string, Utilization] => [r.id, getUtilization(r, range, { businessHours })]),
+            // A header adds up everything below it, folded or not.
+            ...groupUtilization(allResources, range, { businessHours }),
+          ])
         : undefined,
-    [showUtilization, resources, range, businessHours]
+    [showUtilization, resources, allResources, range, businessHours]
   );
 
   // Fires on mount and whenever the range changes; the latest callback is
