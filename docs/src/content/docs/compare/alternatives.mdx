@@ -37,7 +37,7 @@ Be honest about the gaps. If any of these are must-haves, use a more mature libr
 
 ## Migrating from FullCalendar
 
-The model differs: here every event lives inside its resource (`resource.events`), where FullCalendar keeps a flat event list with a `resourceId`. Group your events by resource when you build `resources`, and map the callbacks:
+The model is close. Like FullCalendar, you can keep one flat list of events and name each one's resource with `resourceId` (`resourceIds` for several): pass it as the `events` prop next to `resources`. Events can also sit inside their resource (`resource.events`). The callbacks map like this:
 
 | FullCalendar | Resource Scheduler |
 |---|---|
