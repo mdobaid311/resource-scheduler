@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- **Touch selection.** Press and hold an empty slot for about a third of a second, drag across more slots and lift to select them, as a mouse drag does; the selection goes to `onSlotSelect` or `onEventCreate`. A quick swipe on empty space still scrolls the grid, and a tap still selects one slot. Checked with real touch events in Chrome (the docs smoke test); not yet on physical devices.
+
 ## [1.3.0] - 2026-10-10
 
 The first release since 1.1.1. Version 1.2.0 was prepared but never published to npm, so everything listed under it below ships here too, including the fix for the crash under React 18 and the styles that no longer leak into your app. Upgrading from 1.1.1 needs no code changes.

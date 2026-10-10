@@ -299,6 +299,10 @@ export interface TimelineGridProps {
   dragEnd: { date: Date; resourceId: string } | null;
   onMouseDown: (date: Date, resourceId: string, e?: React.MouseEvent) => void;
   onMouseEnter: (date: Date, resourceId: string) => void;
+  /** Ends a selection started with `onMouseDown`. Called when a touch selection is lifted. */
+  onMouseUp?: () => void;
+  /** Drops the selection without creating anything (the browser took a touch gesture). */
+  onCancelSelect?: () => void;
   onEventClick?: (event: SchedulerEvent, resource: Resource) => void;
   renderEventPopover?: (
     event: SchedulerEvent,

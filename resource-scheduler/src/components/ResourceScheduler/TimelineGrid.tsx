@@ -5,6 +5,7 @@ import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
 import { SchedulerDragContext, useEventDrag } from "./hooks/useEventDrag";
 import { useGridKeyboard } from "./hooks/useGridKeyboard";
+import { useTouchSelect } from "./hooks/useTouchSelect";
 import { useNow } from "./hooks/useNow";
 import { useI18n } from "./i18n";
 import type { TimelineGridProps } from "./types";
@@ -23,6 +24,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   dragEnd,
   onMouseDown,
   onMouseEnter,
+  onMouseUp,
+  onCancelSelect,
   onEventClick,
   renderEventPopover,
   onEventDrop,
@@ -92,6 +95,14 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           0,
           slots.findIndex((s) => isSameDay(s, now))
         );
+
+  // Touch: hold and drag across empty slots to select them, like the mouse does.
+  useTouchSelect(gridRef, {
+    onStart: (slot, resourceId) => onMouseDown(slot, resourceId),
+    onEnter: onMouseEnter,
+    onEnd: () => onMouseUp?.(),
+    onCancel: () => onCancelSelect?.(),
+  });
 
   const keyboard = useGridKeyboard({
     rowCount: resources.length,

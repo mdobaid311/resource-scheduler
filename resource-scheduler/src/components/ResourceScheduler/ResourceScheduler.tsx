@@ -262,6 +262,8 @@ export const ResourceScheduler = forwardRef<
     dragEnd,
     handleMouseDown,
     handleMouseEnter,
+    handleMouseUp,
+    cancelSelection,
     commitRange,
   } = useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes);
 
@@ -415,6 +417,8 @@ export const ResourceScheduler = forwardRef<
               dragEnd={dragEnd}
               onMouseDown={handleMouseDown}
               onMouseEnter={handleMouseEnter}
+              onMouseUp={handleMouseUp}
+              onCancelSelect={cancelSelection}
               onEventClick={onEventClick}
               renderEventPopover={renderEventPopover}
               onEventDrop={onEventDrop}

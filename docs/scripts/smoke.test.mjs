@@ -238,6 +238,51 @@ describe("touch", () => {
     await context.close();
   });
 
+  it("holds and drags across empty slots to create an event", async () => {
+    const { page, context, errors } = await open(CONFLICTS, { touch: true });
+    const before = await page.locator("[data-rs-event]").count();
+    const from = await centerOf(await cell(page, "chen", 9));
+    const to = await centerOf(await cell(page, "chen", 10));
+
+    const cdp = await context.newCDPSession(page);
+    const send = (type, p) =>
+      cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: p.x, y: p.y, id: 1 }] : [] });
+    await send("touchStart", from);
+    await page.waitForTimeout(500); // the hold that starts a selection
+    for (let i = 1; i <= 10; i++) {
+      await send("touchMove", { x: from.x + ((to.x - from.x) * i) / 10, y: from.y });
+    }
+    await send("touchEnd");
+    await page.waitForTimeout(250);
+
+    assert.equal(await log(page), "Created");
+    assert.equal(await page.locator("[data-rs-event]").count(), before + 1);
+    assert.match(
+      await page.locator('[data-rs-event][aria-label^="New Event, Chen Wu"]').getAttribute("aria-label"),
+      /9:00 AM to 10:30 AM/
+    );
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("leaves a quick swipe across empty slots to the browser, which scrolls", async () => {
+    const { page, context } = await open(CONFLICTS, { touch: true });
+    const before = await page.locator("[data-rs-event]").count();
+    const from = await centerOf(await cell(page, "chen", 9));
+
+    const cdp = await context.newCDPSession(page);
+    const send = (type, p) =>
+      cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: p.x, y: p.y, id: 1 }] : [] });
+    await send("touchStart", from);
+    for (let i = 1; i <= 6; i++) await send("touchMove", { x: from.x + i * 12, y: from.y });
+    await send("touchEnd");
+    await page.waitForTimeout(500);
+
+    assert.equal(await log(page), IDLE_LOG);
+    assert.equal(await page.locator("[data-rs-event]").count(), before);
+    await context.close();
+  });
+
   it("taps an empty slot to create an event", async () => {
     const { page, context } = await open(CONFLICTS, { touch: true });
     const { x, y } = await centerOf(await cell(page, "chen", 9));
