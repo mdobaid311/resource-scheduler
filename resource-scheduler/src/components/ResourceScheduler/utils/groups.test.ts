@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Resource } from "../types";
-import { isGroupRow, withGroups } from "./groups";
+import { groupUtilization, isGroupRow, withGroups } from "./groups";
 
 const res = (id: string, group?: string | string[]): Resource => ({ id, name: id.toUpperCase(), events: [], group });
 const ids = (rows: Resource[]) => rows.map((r) => r.id);
@@ -94,5 +94,41 @@ describe("withGroups with nested groups", () => {
     const list = [res("a", []), res("b")];
     expect(withGroups(list)).toBe(list);
     expect(ids(withGroups([res("c", ["", "W"])]))).toEqual(["rs-group:W", "c"]);
+  });
+});
+
+describe("groupUtilization", () => {
+  const day = { start: new Date(2026, 9, 7), end: new Date(2026, 9, 8) }; // a Wednesday
+  const at = (hour: number) => new Date(2026, 9, 7, hour);
+  const busy = (id: string, group: string | string[] | undefined, hours: number): Resource => ({
+    ...res(id, group),
+    events: hours ? [{ id: `${id}-e`, title: "E", startDate: at(9), endDate: at(9 + hours) }] : [],
+  });
+  const options = { businessHours: {} }; // Monday to Friday, 9 to 17: 480 minutes a resource
+
+  it("adds up the booked and available time of everything in a group", () => {
+    const totals = groupUtilization([busy("a", "X", 4), busy("b", "X", 2), busy("c", undefined, 8)], day, options);
+    expect(totals.get("rs-group:X")).toEqual({ bookedMinutes: 360, availableMinutes: 960, ratio: 360 / 960 });
+    expect(totals.size).toBe(1);
+  });
+
+  it("counts a nested group's resources in every group above it", () => {
+    const totals = groupUtilization(
+      [busy("a", ["H", "W1"], 8), busy("b", ["H", "W2"], 0), busy("c", ["H"], 4)],
+      day,
+      options
+    );
+    expect(totals.get("rs-group:H")).toMatchObject({ bookedMinutes: 720, availableMinutes: 1440 });
+    expect(totals.get("rs-group:H / W1")).toMatchObject({ bookedMinutes: 480, availableMinutes: 480, ratio: 1 });
+    expect(totals.get("rs-group:H / W2")).toMatchObject({ bookedMinutes: 0, availableMinutes: 480, ratio: 0 });
+  });
+
+  it("has no ratio when nothing in the group is available", () => {
+    const sunday = { start: new Date(2026, 9, 11), end: new Date(2026, 9, 12) };
+    expect(groupUtilization([busy("a", "X", 0)], sunday, options).get("rs-group:X")?.ratio).toBeNull();
+  });
+
+  it("is empty when no resource has a group", () => {
+    expect(groupUtilization([busy("a", undefined, 4)], day, options).size).toBe(0);
   });
 });

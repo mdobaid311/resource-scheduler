@@ -38,6 +38,7 @@ All of these are exported from `resource-scheduler`.
 ## Utilization
 
 - **`getUtilization(resource, { start, end }, { businessHours? })`** returns `{ bookedMinutes, availableMinutes, ratio }`. Booked time inside the available time (business hours minus `unavailable`, times `capacity`) over a range (`end` exclusive); `ratio` is `null` when nothing is available. What `showUtilization` draws. See [Utilization](/guides/utilization/).
+- **`groupUtilization(resources, { start, end }, { businessHours? })`** returns a `Map` from a group header's id (`"rs-group:" + the group's key`) to the same `{ bookedMinutes, availableMinutes, ratio }`, summed over every resource below the group, nested ones included. What a group header shows. See [Resource groups](/guides/resource-groups/).
 
 ## Dates and slots
 

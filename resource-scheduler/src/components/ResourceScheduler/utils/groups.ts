@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/utils/groups.ts
-import type { Resource } from "../types";
+import type { BusinessHours, Resource, VisibleRange } from "../types";
+import { getUtilization, type Utilization } from "./utilization";
 
 /**
  * A group header, shaped like a resource without events so it flows through
@@ -21,6 +22,36 @@ const SEPARATOR = " / ";
 
 // The names a resource sits under, outermost first; empty names do not count.
 const pathOf = (r: Resource): string[] => ([] as string[]).concat(r.group ?? []).filter(Boolean);
+
+/**
+ * The utilization of each group over `range`: the booked and available time of
+ * every resource below it, nested ones included, folded or not, keyed by the
+ * header's `id`. Resources without a group are left out. `ratio` is `null`
+ * when nothing in the group is available.
+ */
+export const groupUtilization = (
+  resources: Resource[],
+  range: VisibleRange,
+  { businessHours }: { businessHours?: BusinessHours } = {}
+): Map<string, Utilization> => {
+  const sums = new Map<string, { booked: number; available: number }>();
+  for (const resource of resources) {
+    const path = pathOf(resource);
+    if (!path.length) continue;
+    const { bookedMinutes, availableMinutes } = getUtilization(resource, range, { businessHours });
+    path.forEach((_, depth) => {
+      const key = path.slice(0, depth + 1).join(SEPARATOR);
+      const sum = sums.get(key) ?? { booked: 0, available: 0 };
+      sums.set(key, { booked: sum.booked + bookedMinutes, available: sum.available + availableMinutes });
+    });
+  }
+  return new Map(
+    [...sums].map(([key, { booked, available }]) => [
+      `rs-group:${key}`,
+      { bookedMinutes: booked, availableMinutes: available, ratio: available > 0 ? booked / available : null },
+    ])
+  );
+};
 
 /**
  * Lays resources out under group headers. A group sits where its first member

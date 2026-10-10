@@ -60,7 +60,7 @@ export default function GroupsDemo() {
           <span>Collapsed: {collapsed.length ? collapsed.join(", ") : "none"}</span>
         </>
       }
-      caption="Click a group header, or Tab to it and press Enter, to fold it. Drag an event from one floor to another: the groups only organise the rows."
+      caption="Click a group header, or Tab to it and press Enter, to fold it. Each header shows the booked share of everything below it, folded or not. Drag an event from one floor to another and the totals follow."
     >
       <ResourceScheduler
         resources={resources}
@@ -72,6 +72,7 @@ export default function GroupsDemo() {
         timeColumnWidth="80px"
         resourceColumnWidth="170px"
         ariaLabel="Meeting rooms by floor"
+        showUtilization
         eventOverlap={false}
         collapsedGroups={collapsed}
         onCollapsedGroupsChange={setCollapsed}

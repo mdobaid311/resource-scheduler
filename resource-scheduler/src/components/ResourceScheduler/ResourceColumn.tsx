@@ -73,7 +73,13 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         const rowHeight = heights[start + i];
         if (isGroupRow(resource)) {
           const { name, key, depth, count, collapsed } = resource.groupHeader;
-          const label = labels.group(name, count);
+          // With showUtilization a header adds up everything below it, folded or not.
+          const total = utilization?.get(resource.id);
+          const totalPercent =
+            total && total.ratio !== null ? Math.round((total.bookedMinutes * 100) / total.availableMinutes) : null;
+          const label = total
+            ? `${labels.group(name, count)}, ${labels.utilization(hours(total.bookedMinutes), hours(total.availableMinutes))}`
+            : labels.group(name, count);
           // Each level of nesting steps in; the first level keeps the default padding.
           const indent = depth ? { paddingInlineStart: 12 + depth * 16 } : undefined;
           const body = (
@@ -83,7 +89,18 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
                 className={`size-4 shrink-0 ${collapsed ? "-rotate-90 rtl:rotate-90" : ""}`}
               />
               <span className="truncate">{name}</span>
-              <span aria-hidden="true" className="ms-auto text-xs text-ocrs-muted-foreground">
+              {total && (
+                <span aria-hidden="true" className="ms-auto flex items-center gap-2 text-xs font-normal text-ocrs-muted-foreground">
+                  <span className="h-1.5 w-12 overflow-hidden rounded-full bg-ocrs-secondary">
+                    <span
+                      className={`block h-full ${totalPercent !== null && totalPercent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+                      style={{ width: Math.min(totalPercent ?? 0, 100) + "%" }}
+                    />
+                  </span>
+                  <span className="w-9 text-end tabular-nums">{totalPercent === null ? "–" : totalPercent + "%"}</span>
+                </span>
+              )}
+              <span aria-hidden="true" className={`${total ? "" : "ms-auto "}text-xs text-ocrs-muted-foreground`}>
                 {count}
               </span>
             </>

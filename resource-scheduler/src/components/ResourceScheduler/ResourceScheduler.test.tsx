@@ -1373,9 +1373,23 @@ describe("ResourceScheduler", () => {
       });
     });
 
-    it("shows utilization on resources, not on headers", () => {
+    it("shows utilization as a meter on resources and as a total on headers", () => {
       show({ showUtilization: true });
-      expect(screen.getAllByRole("meter")).toHaveLength(4);
+      expect(screen.getAllByRole("meter")).toHaveLength(4); // the resources
+      // A header adds up what is below it (two resources of 2 hours each) and says so aloud.
+      const header = screen.getByRole("button", { name: "Ward A, 2 resources, 0 of 4 hours booked" });
+      expect(header.textContent).toContain("0%");
+    });
+
+    it("keeps a folded group's total on its header", () => {
+      show({ showUtilization: true, defaultCollapsedGroups: ["Ward A"] });
+      expect(cells("ann")).toHaveLength(0);
+      expect(screen.getByRole("button", { name: "Ward A, 2 resources, 0 of 4 hours booked" })).toBeTruthy();
+    });
+
+    it("shows no totals on headers without showUtilization", () => {
+      show();
+      expect(toggle("Ward A", 2).textContent).not.toContain("%");
     });
 
     it("has no detectable accessibility violations", async () => {
