@@ -10,6 +10,7 @@ import { useI18n } from "./i18n";
 import type { TimelineGridProps } from "./types";
 import { isCellUnavailable } from "./utils/availability";
 import { formatSlotLabel, isToday } from "./utils/dateUtils";
+import { isGroupRow } from "./utils/groups";
 
 export const TimelineGrid: React.FC<TimelineGridProps> = ({
   resources,
@@ -93,12 +94,16 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           slots.findIndex((s) => isSameDay(s, now))
         );
 
+  // Group headers are rows of the grid but not places for the cursor: it counts
+  // resources only, and `resourceRows[n]` is the grid row of the nth one.
+  const resourceRows = resources.flatMap((r, row) => (isGroupRow(r) ? [] : [row]));
+
   const keyboard = useGridKeyboard({
-    rowCount: resources.length,
+    rowCount: resourceRows.length,
     colCount: slots.length,
     initialCol,
     idPrefix,
-    slotAt: (row, col) => ({ resourceId: resources[row].id, date: slots[col] }),
+    slotAt: (row, col) => ({ resourceId: resources[resourceRows[row]].id, date: slots[col] }),
     onSelect: (resourceId, from, to) => onSelectRange?.(resourceId, from, to),
     announce,
   });
@@ -113,7 +118,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     resources.findIndex((r) => r.events.some((e) => e.id === id));
   const pinned = new Set<number>();
   if (rowRange) {
-    if (keyboard.cursor) pinned.add(keyboard.cursor.row);
+    if (keyboard.cursor) pinned.add(resourceRows[keyboard.cursor.row]);
     if (carried) {
       pinned.add(rowOfResource(carried.placement?.resourceId ?? null));
       pinned.add(rowOfEvent(carried.eventId));
@@ -218,6 +223,31 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
       >
         {resources.map((resource, rowIndex) => {
           if (!isRendered(rowIndex)) return null;
+
+          if (isGroupRow(resource)) {
+            // A band across the grid; the toggle lives in the resource column.
+            const { name, count, collapsed } = resource.groupHeader;
+            return (
+              <div
+                key={resource.id}
+                role="row"
+                aria-rowindex={rowIndex + 1}
+                style={{ display: "contents" }}
+              >
+                <div
+                  role="gridcell"
+                  aria-colindex={1}
+                  aria-colspan={slots.length}
+                  aria-expanded={!collapsed}
+                  aria-label={i18n.labels.group(name, count)}
+                  className="bg-ocrs-muted border-b"
+                  style={{ gridRow: rowIndex + 2, gridColumn: "1 / -1" }}
+                />
+              </div>
+            );
+          }
+
+          const keyRow = resourceRows.indexOf(rowIndex); // the keyboard cursor's row
           const eventPositions = calculateEventPositions(resource.events, slots);
 
           return (
@@ -266,7 +296,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     colIndex >= selectionRange.start &&
                     colIndex <= selectionRange.end) ||
                   (keyboardSelection &&
-                    keyboardSelection.row === rowIndex &&
+                    keyboardSelection.row === keyRow &&
                     colIndex >= keyboardSelection.from &&
                     colIndex <= keyboardSelection.to);
 
@@ -279,13 +309,13 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                 return (
                   <EmptySlotItem
                     key={`${resource.id}-${colIndex}`}
-                    id={keyboard.cellId(rowIndex, colIndex)}
+                    id={keyboard.cellId(keyRow, colIndex)}
                     label={`${resource.name}, ${slotLabels[colIndex]}${
                       unavailable ? `, ${i18n.labels.unavailable}` : ""
                     }`}
                     isUnavailable={unavailable}
                     isActive={
-                      keyboard.cursor?.row === rowIndex &&
+                      keyboard.cursor?.row === keyRow &&
                       keyboard.cursor.col === colIndex
                     }
                     colIndex={colIndex}

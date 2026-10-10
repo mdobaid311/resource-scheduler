@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **Resource groups.** `Resource.group` lists resources under a collapsible header with that name, at the place the group's first member is; resources without one stay plain rows. `defaultCollapsedGroups`, or `collapsedGroups` with `onCollapsedGroupsChange` to control it. Headers are buttons with `aria-expanded` (`labels.group(name, count)` is their spoken text), the grid's arrow keys step over them, events can be dragged between groups, and headers are rows for virtualization. Nothing changes without a `group`. One level only. The JS size budget in `check:size` went from 20 KB to 22 KB for this (20.1 KB used).
 - **Recipes** (docs): shift roster (recurring shifts, contracted hours, leave), equipment rental (stock counts with `capacity` and `isValidDrop`, service days, `findAvailableSlots`) and field service dispatch (shifts and breaks, booking the earliest technician), each with a live demo and the complete data model.
 
 ## [1.3.0] - 2026-10-10

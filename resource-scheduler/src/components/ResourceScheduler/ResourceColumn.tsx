@@ -1,7 +1,9 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
+import { ChevronDown } from "lucide-react";
 import React from "react";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
+import { isGroupRow } from "./utils/groups";
 import type { Utilization } from "./utils/utilization";
 
 const hours = (minutes: number) => Math.round(minutes / 6) / 10;
@@ -43,6 +45,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   getResourceRowHeight,
   renderResourceHeader,
   utilization,
+  onToggleGroup,
   rowRange,
 }) => {
   const { labels } = useI18n();
@@ -66,6 +69,40 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}
       {resources.slice(start, end).map((resource, i) => {
         const rowHeight = heights[start + i];
+        if (isGroupRow(resource)) {
+          const { name, count, collapsed } = resource.groupHeader;
+          const label = labels.group(name, count);
+          const body = (
+            <>
+              <ChevronDown
+                aria-hidden="true"
+                className={`size-4 shrink-0 ${collapsed ? "-rotate-90 rtl:rotate-90" : ""}`}
+              />
+              <span className="truncate">{name}</span>
+              <span aria-hidden="true" className="ms-auto text-xs text-ocrs-muted-foreground">
+                {count}
+              </span>
+            </>
+          );
+          const cell = "border-b border-e bg-ocrs-muted text-sm font-medium flex items-center gap-2 overflow-hidden";
+          return onToggleGroup ? (
+            <button
+              key={resource.id}
+              type="button"
+              aria-expanded={!collapsed}
+              aria-label={label}
+              onClick={() => onToggleGroup(name)}
+              className={`${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`}
+              style={{ height: rowHeight + "px" }}
+            >
+              {body}
+            </button>
+          ) : (
+            <div key={resource.id} aria-label={label} className={`${cell} px-3`} style={{ height: rowHeight + "px" }}>
+              {body}
+            </div>
+          );
+        }
         const value = utilization?.get(resource.id);
         return (
           <div

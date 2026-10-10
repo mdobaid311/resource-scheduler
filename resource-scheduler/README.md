@@ -175,6 +175,9 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `businessHours` | `{ daysOfWeek?, startHour?, endHour? }` | `undefined` | Shade time outside working hours and non-working days (`{}` is Monday to Friday, 9 to 17). A resource's own `businessHours` overrides it; `false` means always available. Hours apply to the day view only |
 | `blockUnavailable` | `boolean` | `false` | Reject every move, resize and create that touches a shaded slot (outside business hours or inside a resource's `unavailable` ranges) |
 | `nowIndicator` | `boolean` | `false` | Day view: a line at the current time, moved every minute |
+| `collapsedGroups` | `string[]` | `undefined` | The groups (`Resource.group`) that are folded. Pass it with `onCollapsedGroupsChange` to control it |
+| `defaultCollapsedGroups` | `string[]` | `[]` | Groups that start folded when you do not control `collapsedGroups` |
+| `onCollapsedGroupsChange` | `(groups: string[]) => void` | `undefined` | Called with the new list when the user folds or unfolds a group |
 | `showUtilization` | `boolean` | `false` | A bar under each resource name: how much of its available time (business hours minus `unavailable`, times `capacity`) is booked in the visible range. Over 100% means more bookings at once than it can take. `getUtilization` is exported for the same numbers elsewhere |
 | `locale` | date-fns `Locale` | English | e.g. `import { de } from "date-fns/locale"`. Names, date formats, 12/24-hour clock and the first day of the week follow it |
 | `hour12` | `boolean` | the locale's | `true` for a 12-hour clock, `false` for 24-hour |
@@ -222,6 +225,7 @@ interface Resource {
   businessHours?: BusinessHours | false;  // overrides the prop; false = always available
   unavailable?: { start: Date; end: Date }[];  // time off, shaded in the grid (end is exclusive)
   capacity?: number;       // bookings it can take at once; only utilization uses it. Default 1
+  group?: string;          // listed under a collapsible header with this name
 }
 
 interface SchedulerEvent {
