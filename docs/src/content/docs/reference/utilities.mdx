@@ -30,6 +30,11 @@ All of these are exported from `resource-scheduler`.
 - **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
 - **`findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })`** returns `{ start, end }[]`, the free slots earliest first. With several resources, only times when all are free. See [Business hours and availability](/guides/availability/).
 
+## Export
+
+- **`eventsToICS(events, { resources?, name?, now? })`** returns an iCalendar file as a string. Timed events in UTC, whole local days as all-day events, `recurrence` as `RRULE` and `exceptions` as `EXDATE`; `resources` writes the resource name as `LOCATION`.
+- **`eventsToCSV(events, { resources? })`** returns `id,title,resource,start,end,description` as a CSV string, one row per resource of an event, with cells that start with `=`, `+`, `-` or `@` defused against spreadsheet formulas. See [Export](/guides/export/).
+
 ## Utilization
 
 - **`getUtilization(resource, { start, end }, { businessHours? })`** returns `{ bookedMinutes, availableMinutes, ratio }`. Booked time inside the available time (business hours minus `unavailable`, times `capacity`) over a range (`end` exclusive); `ratio` is `null` when nothing is available. What `showUtilization` draws. See [Utilization](/guides/utilization/).

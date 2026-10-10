@@ -1,0 +1,66 @@
+---
+title: Export to a calendar or spreadsheet
+description: Turn events into an iCalendar file for Google Calendar, Outlook and Apple Calendar, or a CSV file for a spreadsheet.
+---
+
+import ExportDemo from "../../../components/demos/ExportDemo";
+
+Two pure functions turn a list of events into text: `eventsToICS` for a calendar app and `eventsToCSV` for a spreadsheet. They return strings, so they work in the browser for a "Download" button and on a server for a feed.
+
+<ExportDemo client:only="react" />
+
+## Use
+
+```ts
+import { eventsToICS, eventsToCSV } from "resource-scheduler";
+
+const ics = eventsToICS(events, { resources, name: "Meeting rooms" });
+const csv = eventsToCSV(events, { resources });
+
+function download(name: string, type: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: name });
+  link.click();
+  URL.revokeObjectURL(url);
+}
+download("rooms.ics", "text/calendar", ics);
+```
+
+`events` is a flat list. If yours live inside the resources, flatten them first and keep the resource id on each:
+
+```ts
+const events = resources.flatMap((r) => r.events.map((e) => ({ ...e, resourceId: r.id })));
+```
+
+`resources` is optional. With it, an event's `resourceId` becomes a name (`LOCATION` in the calendar file, the `resource` column in the CSV); without it the id is used in the CSV and the calendar file has no location.
+
+## The calendar file
+
+- **Timed events** are written in UTC, so every calendar app places them at the right moment.
+- **Whole days** (an event that starts and ends at local midnight, like a rental) are written as all-day events. The end is exclusive, as it is in iCalendar.
+- **Recurring events** stay one event: `recurrence` becomes `RRULE` (`FREQ`, `INTERVAL`, `BYDAY`, `UNTIL`, `COUNT`) and `exceptions` become `EXDATE`, so the calendar app expands them itself.
+- **Room names as locations.** Passing `resources` writes the resource name as `LOCATION`. That suits rooms and equipment; for people, leave `resources` out.
+- The `UID` is `<id>@resource-scheduler`, the same on every export, which is what calendar apps use to recognise an event.
+- Text is escaped and lines are folded at 75 bytes without splitting a character.
+
+The output is covered by tests, and it was also checked by parsing it back with the independent `ical.js` library: titles with commas, semicolons and non-Latin characters, a long folded title, an all-day event, two locations, and a weekly series with an exception all read back as written.
+
+## The spreadsheet file
+
+`eventsToCSV` writes `id,title,resource,start,end,description`, one row per resource of an event, with local dates like `2026-10-07 09:00`. Cells with commas, quotes or line breaks are quoted.
+
+A cell that starts with `=`, `+`, `-` or `@` gets a leading `'`. Event titles often come from users, and a spreadsheet would run such a cell as a formula, which is how a hostile title can make a request or leak data from whoever opens the export. The quote is visible in the cell; strip it if you read the file back.
+
+A recurring event is one row, with its first occurrence. For a row per occurrence, expand the series first:
+
+```ts
+import { expandEvents, eventsToCSV } from "resource-scheduler";
+
+const csv = eventsToCSV(expandEvents(events, from, to), { resources });
+```
+
+## Not included
+
+- **Reading** an `.ics` file (import). Only export is built.
+- **Time zones.** Dates are local `Date`s, so the UTC times in the calendar file are for the time zone of the machine that runs the function. A server in another zone writes different times for the same events.
+- **Print styles.** Use the browser's own print for now.
