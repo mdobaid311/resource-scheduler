@@ -71,6 +71,7 @@ Each has a live demo and the complete data model.
 - [Shift roster](https://resource-scheduler-demo.vercel.app/recipes/shift-roster/): recurring shifts, contracted hours, leave, utilization
 - [Equipment rental](https://resource-scheduler-demo.vercel.app/recipes/equipment-rental/): stock counts with `capacity` and `isValidDrop`, service days, finding free days
 - [Field service dispatch](https://resource-scheduler-demo.vercel.app/recipes/field-service-dispatch/): shifts, breaks, and booking the earliest technician with `findAvailableSlots`
+- [Project allocation](https://resource-scheduler-demo.vercel.app/recipes/project-allocation/): whole-day allocations, project windows with `isValidDrop`, bench time with `showUtilization`
 
 ## Reference
 

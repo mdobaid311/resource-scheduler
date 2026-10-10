@@ -1,0 +1,86 @@
+---
+title: Project allocation
+description: Allocate people to projects by the day, keep allocations inside each project's dates, and see who is on the bench.
+---
+
+import ProjectAllocationDemo from "../../../components/demos/ProjectAllocationDemo";
+
+People are the rows, working days are the columns, and a bar is a person on a project. The bar next to each name shows how much of their available time is allocated, so a person at 0% is on the bench and leave is not counted against anyone.
+
+<ProjectAllocationDemo client:only="react" />
+
+## The data model
+
+Three tables, and the scheduler only ever sees the join of two of them as flat events.
+
+```ts
+import type { ResourceInput, SchedulerEvent } from "resource-scheduler";
+
+// people: who can be allocated, and when they are away.
+const people: ResourceInput[] = [
+  { id: "di", name: "Di Park", unavailable: [{ start: new Date(2026, 9, 12), end: new Date(2026, 9, 17) }] },
+];
+
+// projects: not shown by the scheduler, but they own the rules.
+const projects = {
+  apollo: { name: "Apollo", color: "#3b82f6", from: new Date(2026, 8, 21), to: new Date(2026, 10, 12) }, // `to` is exclusive
+};
+
+// allocations: one person on one project for whole days.
+interface Allocation { id: string; personId: string; projectId: string; start: Date; end: Date }
+
+// What you pass to the scheduler: each allocation as an event on its person's row.
+const events: SchedulerEvent[] = allocations.map((a) => ({
+  id: a.id,
+  title: projects[a.projectId].name,
+  resourceId: a.personId,
+  startDate: a.start,
+  endDate: a.end,                      // exclusive: the day after the last day worked
+  color: projects[a.projectId].color,
+}));
+```
+
+In SQL that is `people`, `projects(starts_on, ends_on)` and `allocations(person_id, project_id, from_day, to_day)`. The scheduler never needs to know about projects: it gets a title and a colour, and you look the project up from the event's `id` when it asks you a question.
+
+## How each rule is expressed
+
+| You want | Use |
+|---|---|
+| One project at a time per person | `eventOverlap={false}` |
+| Allocations stay inside the project's dates | `isValidDrop`, below |
+| Leave counts as unavailable | `unavailable` on the person, with `blockUnavailable` |
+| Working days only | `businessHours={{}}` and `hideWeekends`; an allocation continues over the hidden weekend |
+| Who is on the bench, who is full | `showUtilization`: allocated working days over available ones |
+| Months and quarters at a glance | `initialView={ViewType.Month}` with `availableViews` and a narrow `dateColumnWidth` |
+| Allocate from your own control | `onSlotSelect`, then add an allocation for the project picked in the control |
+
+## Keeping allocations inside the project
+
+`isValidDrop` runs for every move, resize and selection with the row and range being tried. An existing allocation knows its project; a new selection takes the project chosen in your control:
+
+```tsx
+<ResourceScheduler
+  resources={people}
+  events={events}
+  eventOverlap={false}
+  isValidDrop={(event, { start, end }) => {
+    const project = projects[allocations.find((a) => a.id === event.id)?.projectId ?? selectedProjectId];
+    return start >= project.from && end <= project.to;
+  }}
+  onSlotSelect={({ resourceId, start, end }) =>
+    setAllocations((all) => [...all, { id: crypto.randomUUID(), personId: resourceId, projectId: selectedProjectId, start, end }])
+  }
+  onEventDrop={(event, _from, personId, start, end) =>
+    setAllocations((all) => all.map((a) => (a.id === event.id ? { ...a, personId, start, end } : a)))
+  }
+/>
+```
+
+A rejected place turns red before the drop and nothing reaches your handlers. Check the same window in your API before saving.
+
+## Make it real
+
+- **Splits are not modelled.** The scheduler counts time, not percentages: two allocations over the same days read as 200%, not as two halves. Split a person across projects by days (Monday to Wednesday on one, the rest on another), or keep a percentage in your own data and draw it with `renderTimeSlot`.
+- **Bench reports.** `getUtilization(person, { start, end }, { businessHours: {} })` gives the same numbers on a server, for a "who is free next month" list.
+- **Many people.** Rows are virtualized, so a few hundred people are fine. Use `onRangeChange` to load only the allocations in the months on screen.
+- **Pending allocations.** A tentative booking is another colour on the same row: store a `status` and set the event's `color` from it.
