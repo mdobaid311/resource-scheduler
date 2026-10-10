@@ -51,6 +51,21 @@ describe("useEventCreation", () => {
     expect(result.current.dragStart).toBeNull();
   });
 
+  it("drops a selection without creating anything when it is cancelled", () => {
+    const onCreate = vi.fn();
+    const { result } = renderHook(() =>
+      useEventCreation(onCreate, ViewType.Day)
+    );
+
+    act(() => result.current.handleMouseDown(slot(9), "r1"));
+    act(() => result.current.cancelSelection());
+    act(releaseMouse);
+
+    expect(result.current.isDragging).toBe(false);
+    expect(result.current.dragStart).toBeNull();
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
   it("skips creation when the placement is rejected", () => {
     const onCreate = vi.fn();
     const checkPlacement = vi.fn(() => false);
