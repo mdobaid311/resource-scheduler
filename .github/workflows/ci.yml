@@ -60,3 +60,10 @@ jobs:
         working-directory: docs
       - run: npm run build
         working-directory: docs
+      - name: Smoke test in Chrome (mouse, keyboard and touch)
+        # Serves the built docs and drives the live demos with real input events.
+        working-directory: docs
+        run: |
+          npx astro preview --port 4399 &
+          for i in $(seq 30); do curl -sf -o /dev/null http://localhost:4399/ && break; sleep 1; done
+          npm run smoke

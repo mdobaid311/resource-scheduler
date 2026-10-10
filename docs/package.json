@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "record": "node scripts/record-hero.mjs",
     "bench": "node scripts/bench.mjs",
+    "smoke": "node --test scripts/smoke.test.mjs",
     "astro": "astro"
   },
   "dependencies": {

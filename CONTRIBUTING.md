@@ -21,7 +21,7 @@ npm run build
 npm run check:size   # gzip budget, and no stray files in dist/
 ```
 
-CI runs the same commands on Node 20 and 22. Add a line to `CHANGELOG.md` under Unreleased for anything users can see. Please follow the [code of conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), not a public issue.
+CI runs the same commands on Node 20 and 22. It also builds the docs and runs a smoke test in Chrome that drives the live demos with real mouse, keyboard and touch input; locally, run `npm run build` then `npm run preview -- --port 4399` in `docs/`, and `npm run smoke` in a second terminal. Add a line to `CHANGELOG.md` under Unreleased for anything users can see. Please follow the [code of conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), not a public issue.
 
 ## Guidelines
 
