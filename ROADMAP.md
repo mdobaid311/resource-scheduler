@@ -100,7 +100,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Business hours / unavailable ranges** shading per resource (`businessHours`, `Resource.businessHours`, `Resource.unavailable`) and optional `blockUnavailable` (done on branch `feat/availability`). `Resource.capacity` (simultaneous bookings) feeds utilization only; it does not enforce anything
 - [x] **Flat data model**: `events` prop with `resourceId` or `resourceIds`, alongside the nested `resource.events`; `resource.events` is optional on input (done on branch `feat/flat-events`)
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
-- [ ] **Resource grouping / hierarchy** with collapse (L)
+- [~] **Resource grouping** with collapse (done on branch `feat/resource-groups`): `Resource.group`, `collapsedGroups` / `defaultCollapsedGroups` / `onCollapsedGroupsChange`, header buttons, keyboard, virtualization. One level only. Still open: nested hierarchy and group totals (utilization of a whole group)
 - [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
 - [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
 - [x] **Touch** (done on branches `ci/e2e-smoke` and `feat/touch-select`): dragging and resizing events, tapping an empty slot, and press-and-hold then drag across empty slots to create all work with real touch events in Chrome, covered by the smoke test; a quick swipe still scrolls. Not yet tried on physical devices (that stays on the list under P0)
@@ -119,7 +119,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [~] **Utilization row** (done on branch `feat/utilization`): `showUtilization` draws a booked-vs-available bar per resource for the visible range, from business hours, `unavailable` and the new `Resource.capacity`; `getUtilization` is exported. Still open: a per-column histogram or total row across resources
 - [ ] **ICS import/export, CSV, print stylesheet** (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
-- [~] **Recipes** with complete data models: room booking, shift roster, equipment rental and field service dispatch are done (branch `docs/recipes`, each with a live demo). Still open: project allocation (M)
+- [x] **Recipes** with complete data models: room booking, shift roster, equipment rental, field service dispatch and project allocation, each with a live demo
 - [ ] Docs with `llms.txt` so AI coding assistants generate correct usage (S)
 
 ### P3: Later, decide by evidence

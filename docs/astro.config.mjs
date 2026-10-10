@@ -87,6 +87,7 @@ export default defineConfig({
             { label: "Conflict control", slug: "guides/conflict-control" },
             { label: "Business hours and availability", slug: "guides/availability" },
             { label: "Utilization", slug: "guides/utilization" },
+            { label: "Resource groups", slug: "guides/resource-groups" },
             { label: "Large data and performance", slug: "guides/performance" },
             { label: "Languages and clocks", slug: "guides/internationalization" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
@@ -101,6 +102,7 @@ export default defineConfig({
             { label: "Shift roster", slug: "recipes/shift-roster" },
             { label: "Equipment rental", slug: "recipes/equipment-rental" },
             { label: "Field service dispatch", slug: "recipes/field-service-dispatch" },
+            { label: "Project allocation", slug: "recipes/project-allocation" },
           ],
         },
         {

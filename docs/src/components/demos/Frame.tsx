@@ -15,7 +15,8 @@ export function Frame({
   children: ReactNode;
 }) {
   return (
-    <figure className="demo-frame">
+    // `not-content` keeps Starlight's markdown rules (a 1rem margin between siblings) off the scheduler.
+    <figure className="demo-frame not-content">
       {controls && <div className="demo-controls">{controls}</div>}
       <div style={{ height }}>{children}</div>
       {log !== undefined && (

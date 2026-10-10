@@ -1135,6 +1135,132 @@ describe("ResourceScheduler", () => {
     });
   });
 
+  describe("resource groups", () => {
+    const day = new Date(2026, 2, 10);
+    // Laid out as: header A, Ann, Cy, header B, Bob, Di.
+    const people: Resource[] = [
+      { id: "ann", name: "Ann", events: [], group: "Ward A" },
+      { id: "bob", name: "Bob", events: [], group: "Ward B" },
+      { id: "cy", name: "Cy", events: [], group: "Ward A" },
+      { id: "di", name: "Di", events: [] },
+    ];
+    const show = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}) =>
+      render(
+        <ResourceScheduler
+          resources={people}
+          initialDate={day}
+          initialView={ViewType.Day}
+          dayStartHour={9}
+          dayEndHour={11}
+          {...props}
+        />
+      );
+    const cells = (id: string) => document.querySelectorAll<HTMLElement>(`[data-rs-resource="${id}"]`);
+    const toggle = (name: string, count: number) =>
+      screen.getByRole("button", { name: `${name}, ${count} resource${count === 1 ? "" : "s"}` });
+    const activeLabel = () =>
+      document
+        .getElementById(screen.getByRole("grid").getAttribute("aria-activedescendant")!)
+        ?.getAttribute("aria-label");
+
+    it("adds no group rows when no resource has a group", () => {
+      render(<ResourceScheduler resources={[{ id: "a", name: "A", events: [] }]} initialDate={day} />);
+      // (the view selector is a combobox button, which also has aria-expanded)
+      expect(document.querySelectorAll("button[aria-expanded]:not([role=combobox])")).toHaveLength(0);
+    });
+
+    it("puts a header before each group and lists its members under it", () => {
+      show();
+      expect(toggle("Ward A", 2).getAttribute("aria-expanded")).toBe("true");
+      expect(toggle("Ward B", 1)).toBeTruthy();
+      // Grid rows: the date header is row 1, so Ann is row 3 under the Ward A header on row 2.
+      const row = (id: string) => cells(id)[0].style.gridRow;
+      expect([row("ann"), row("cy"), row("bob"), row("di")]).toEqual(["3", "4", "6", "7"]);
+      expect(screen.getByRole("grid").getAttribute("aria-rowcount")).toBe("6");
+    });
+
+    it("collapses and expands a group from its header", () => {
+      show();
+      fireEvent.click(toggle("Ward A", 2));
+      expect(cells("ann")).toHaveLength(0);
+      expect(cells("cy")).toHaveLength(0);
+      expect(cells("bob").length).toBeGreaterThan(0);
+      expect(toggle("Ward A", 2).getAttribute("aria-expanded")).toBe("false");
+
+      fireEvent.click(toggle("Ward A", 2));
+      expect(cells("ann").length).toBeGreaterThan(0);
+      expect(toggle("Ward A", 2).getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("starts collapsed with defaultCollapsedGroups", () => {
+      show({ defaultCollapsedGroups: ["Ward B"] });
+      expect(cells("bob")).toHaveLength(0);
+      expect(cells("ann").length).toBeGreaterThan(0);
+    });
+
+    it("lets you control the collapsed groups", () => {
+      const onChange = vi.fn();
+      const { rerender } = show({ collapsedGroups: [], onCollapsedGroupsChange: onChange });
+      fireEvent.click(toggle("Ward A", 2));
+      expect(onChange).toHaveBeenCalledWith(["Ward A"]);
+      expect(cells("ann").length).toBeGreaterThan(0); // nothing changes until you pass it back
+
+      rerender(
+        <ResourceScheduler
+          resources={people}
+          initialDate={day}
+          initialView={ViewType.Day}
+          dayStartHour={9}
+          dayEndHour={11}
+          collapsedGroups={["Ward A"]}
+          onCollapsedGroupsChange={onChange}
+        />
+      );
+      expect(cells("ann")).toHaveLength(0);
+    });
+
+    it("moves the keyboard cursor between resources and over the headers", () => {
+      show();
+      const grid = screen.getByRole("grid");
+      fireEvent.focus(grid);
+      expect(activeLabel()).toMatch(/^Ann,/);
+      fireEvent.keyDown(grid, { key: "ArrowDown" });
+      expect(activeLabel()).toMatch(/^Cy,/);
+      fireEvent.keyDown(grid, { key: "ArrowDown" }); // not the Ward B header
+      expect(activeLabel()).toMatch(/^Bob,/);
+      fireEvent.keyDown(grid, { key: "ArrowDown" });
+      expect(activeLabel()).toMatch(/^Di,/);
+    });
+
+    it("selects slots of the right resource under a group", () => {
+      const onSlotSelect = vi.fn();
+      show({ onSlotSelect });
+      const bob = cells("bob");
+      fireEvent.mouseDown(bob[0]);
+      fireEvent.mouseEnter(bob[1]);
+      fireEvent.mouseUp(window);
+      expect(onSlotSelect).toHaveBeenCalledWith({
+        resourceId: "bob",
+        start: new Date(2026, 2, 10, 9),
+        end: new Date(2026, 2, 10, 11), // two one-hour slots
+      });
+    });
+
+    it("shows utilization on resources, not on headers", () => {
+      show({ showUtilization: true });
+      expect(screen.getAllByRole("meter")).toHaveLength(4);
+    });
+
+    it("has no detectable accessibility violations", async () => {
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+      const { container } = show({ showUtilization: true });
+      const results = await axe.run(container, { rules: { "color-contrast": { enabled: false } } });
+      expect(
+        results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)
+      ).toEqual([]);
+    });
+  });
+
   describe("utilization", () => {
     // The system time is Wednesday 7 October 2026.
     const at = (hour: number) => new Date(2026, 9, 7, hour);

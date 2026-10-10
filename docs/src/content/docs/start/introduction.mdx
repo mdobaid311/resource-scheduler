@@ -20,9 +20,9 @@ It is MIT licensed, and everything in these docs is in the free package. There i
 
 Be honest with yourself before you pick it:
 
-- **No recurring events.** You store and expand recurrences yourself.
-- **No virtualization.** Very large timelines (thousands of resources, or a year view for many resources) will be slow. It suits boards of tens of resources.
-- **No resource hierarchy or grouping**, no time zones, no calendar sync, no Gantt dependencies.
+- **Recurring events are basic.** Daily, weekly, monthly and yearly repeats with exceptions are built in; RRULE strings, hourly repeats and time zones are not.
+- **Only rows are virtualized.** 1,000 resources is fine ([benchmark](/guides/performance/)), but a year view across many resources renders every day column and will be slow.
+- **No nested resource hierarchy**, no time zones, no calendar sync, no Gantt dependencies.
 - **Not yet tried with a real screen reader** (it passes axe and keyboard tests). See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).
 
 The [roadmap](https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md) lists what is planned. If you need Gantt dependencies or tens of thousands of events today, look at the [alternatives](/compare/alternatives/).
