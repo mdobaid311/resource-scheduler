@@ -42,7 +42,7 @@ interface Resource {
   businessHours?: BusinessHours | false; // overrides the prop; false = always available
   unavailable?: UnavailableRange[];      // time off, shaded in the grid
   capacity?: number;                     // simultaneous bookings, for utilization only. Default 1
-  group?: string;                        // listed under a collapsible header with this name
+  group?: string | string[];             // header name, or a path to nest it: ["Building", "Floor 1"]
 }
 
 interface BusinessHours {

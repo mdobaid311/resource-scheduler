@@ -33,7 +33,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | MUI X Scheduler | The Event Timeline is Premium |
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: there is no resource hierarchy or time zone support yet, and only rows are virtualized, so for very large timelines pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: there is no time zone support yet, and only rows are virtualized, so for very large timelines pick a heavier tool.
 
 ## Features
 
@@ -226,7 +226,7 @@ interface Resource {
   businessHours?: BusinessHours | false;  // overrides the prop; false = always available
   unavailable?: { start: Date; end: Date }[];  // time off, shaded in the grid (end is exclusive)
   capacity?: number;       // bookings it can take at once; only utilization uses it. Default 1
-  group?: string;          // listed under a collapsible header with this name
+  group?: string | string[];  // collapsible header name, or a path to nest it: ["Building", "Floor 1"]
 }
 
 interface SchedulerEvent {

@@ -6,25 +6,26 @@ import { Frame } from "./Frame";
 import { AMBER, BLUE, GREEN, TEAL, VIOLET, at } from "./sample";
 import { useSchedule } from "./useSchedule";
 
-// Rooms on two floors and an annex. `group` is the only thing that says where each belongs.
+// Rooms on two floors of a main building, and an annex. `group` is the only thing that says
+// where each belongs: a path nests it, a plain name is one level.
 const rooms = (): Resource[] => [
   {
     id: "atlas",
     name: "Atlas",
-    group: "Floor 1",
+    group: ["Main building", "Floor 1"],
     events: [{ id: "r1", title: "Sprint planning", startDate: at(0, 9), endDate: at(0, 10, 30), color: BLUE }],
   },
-  { id: "borealis", name: "Borealis", group: "Floor 1", events: [] },
+  { id: "borealis", name: "Borealis", group: ["Main building", "Floor 1"], events: [] },
   {
     id: "cirrus",
     name: "Cirrus",
-    group: "Floor 2",
+    group: ["Main building", "Floor 2"],
     events: [{ id: "r2", title: "Interview", startDate: at(0, 11), endDate: at(0, 12), color: AMBER }],
   },
   {
     id: "delta",
     name: "Delta",
-    group: "Floor 2",
+    group: ["Main building", "Floor 2"],
     events: [{ id: "r3", title: "Design review", startDate: at(0, 14), endDate: at(0, 15), color: VIOLET }],
   },
   {
@@ -36,7 +37,8 @@ const rooms = (): Resource[] => [
   { id: "foxtrot", name: "Foxtrot", group: "Annex", events: [{ id: "r5", title: "1:1", startDate: at(0, 16), endDate: at(0, 16, 30), color: GREEN }] },
 ];
 
-const GROUPS = ["Floor 1", "Floor 2", "Annex"];
+// The floors sit inside "Main building": folding it folds them with it.
+const GROUPS = ["Main building", "Annex"];
 
 /** group, and collapsedGroups / onCollapsedGroupsChange to control which are folded. */
 export default function GroupsDemo() {

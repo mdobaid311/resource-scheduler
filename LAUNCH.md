@@ -25,7 +25,7 @@ Proof points, all in the repo:
 - Keyboard and screen reader support, with an axe-core test in CI.
 - Themed with `--rs-*` CSS variables; scoped, so it does not leak into your app.
 - Repeating events, and rows virtualized for big boards (1,000 resources is about 424 DOM nodes; `npm run bench` in `docs/` reproduces it).
-- Honest comparison page, dated, with what is missing (time zones, nested hierarchy, RRULE strings, virtualized columns).
+- Honest comparison page, dated, with what is missing (time zones, RRULE strings as input, group totals, virtualized columns).
 
 ## Show HN
 
@@ -39,7 +39,7 @@ Post a weekday morning US Eastern. Link the GitHub repo directly.
 >
 > What it does: drag to create, move and resize events; reject double bookings with one prop; shade business hours and time off; keyboard and screen reader support; repeating events; rows virtualized for large boards; five views; dark mode through CSS variables. You can `npm install` it or copy the source into your repo with the shadcn CLI.
 >
-> What it does not do yet: time zones, nested resource hierarchy, RRULE strings, virtualized columns (a year view across many resources is slow; 1,000 resources in a week view is fine, the benchmark is in the docs and you can rerun it), a Vue or Svelte version.
+> What it does not do yet: time zones, RRULE strings as input, group totals, virtualized columns (a year view across many resources is slow; 1,000 resources in a week view is fine, the benchmark is in the docs and you can rerun it), a Vue or Svelte version.
 >
 > Docs with live demos: https://resource-scheduler-demo.vercel.app/ . There is a comparison page with what the alternatives cost and where this one falls short. I would like to hear what blocks you from using it.
 
@@ -53,7 +53,7 @@ Read each sub's self-promotion rules first and post in the showcase thread. Disc
 
 **Body:**
 
-> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: <link>. Source: <link>. Missing for now: time zones and a nested hierarchy. Feedback welcome, especially on the API.
+> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: <link>. Source: <link>. Missing for now: time zones and group totals. Feedback welcome, especially on the API.
 
 ## X / Bluesky thread
 

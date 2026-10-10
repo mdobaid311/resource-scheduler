@@ -13,7 +13,7 @@ A **resource timeline** has resources (people, rooms, machines) down the side an
 
 | | Resource timeline | Cost | Notes |
 |---|---|---|---|
-| **Resource Scheduler** (this) | Included | Free, MIT | Recurring events and row virtualization included; no nested hierarchy, time zones or RRULE strings yet |
+| **Resource Scheduler** (this) | Included | Free, MIT | Recurring events, row virtualization and nested resource groups included; no time zones or RRULE strings as input yet |
 | **FullCalendar** | Premium add-on | Premium starts at $480 per developer | Mature, broad feature set, official React connector |
 | **MUI X Scheduler** | Event Timeline is Premium | Community is free (MIT, beta); Premium is per developer | Recurring events are also Premium |
 | **DayPilot Lite** | Included (horizontal) | Free, Apache 2.0 | Resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
@@ -31,7 +31,7 @@ Be honest about the gaps. If any of these are must-haves, use a more mature libr
 
 - **Recurring rules beyond the basics.** Daily, weekly, monthly and yearly repeats with exceptions are built in; RRULE strings, hourly repeats and time-zone rules are not.
 - **Tens of thousands of events, or a year view across many resources.** Rows are virtualized, columns are not.
-- **Nested resource hierarchy** (departments inside divisions).
+- **A resource tree with its own data.** Nested groups (departments inside divisions, with collapsing headers) are built in; totals per group, drag to reorder and loading a branch on demand are not.
 - **Gantt dependencies**, critical path, utilization charts and resource levelling. Bryntum is the specialist.
 - **Calendar sync** (Google, Outlook, iCal) and server-side scheduling engines.
 
