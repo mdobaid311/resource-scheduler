@@ -55,6 +55,11 @@
           "target": "@components/resource-scheduler/TimelineHeader.tsx"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/classNames.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/classNames.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/use-media-query.tsx",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/use-media-query.tsx"

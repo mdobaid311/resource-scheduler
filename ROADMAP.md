@@ -111,7 +111,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 
 ### P2: Customisability (your stated goal)
 - [ ] **Theming tokens**: `--rs-*` CSS variables, light/dark, density (compact/comfortable), documented theme gallery (M)
-- [ ] **`classNames` and `components` override maps** (slots pattern), replacing the pile of `render*` props; keep the old ones as aliases (L)
+- [~] **`classNames` and `components` override maps** (slots pattern) (`classNames` done on branch `feat/class-names`: seven parts, tailwind-merge, no change without it). Still open: a `components` map to replace whole parts, replacing the pile of `render*` props, and a `density` option (L)
 - [ ] **Headless layer**: split pure logic (layout, conflicts, recurrence, date math) from UI; export `useSchedulerState` etc. (L)
 - [x] **shadcn registry** (done on branch `feat/shadcn-registry`): generated `registry.json` so `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` copies the source into the user's repo. Verified in a fresh Vite 8 + Tailwind 4 + shadcn app. Merged to `main` and confirmed to resolve with `shadcn view`. Still open: tag a release and pin installs to it; submit to the community directory at registry.directory (form, POST or PR).
 - [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)

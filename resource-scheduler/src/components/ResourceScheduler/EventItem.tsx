@@ -1,5 +1,6 @@
 // src/components/ResourceScheduler/EventItem.tsx
 import React, { useContext, useState } from "react";
+import { useClassNames, withClass } from "./classNames";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import { useI18n } from "./i18n";
 import {
@@ -32,6 +33,7 @@ export const EventItem: React.FC<EventItemProps> = ({
   const [open, setOpen] = useState(false);
   const drag = useContext(SchedulerDragContext);
   const i18n = useI18n();
+  const classNames = useClassNames();
   const movingThis =
     drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
   const opacity = movingThis ? 0.5 : 1;
@@ -141,7 +143,10 @@ export const EventItem: React.FC<EventItemProps> = ({
           </div>
         ) : (
           <div
-            className={`event-item text-ocrs-foreground p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`}
+            className={withClass(
+              `event-item text-ocrs-foreground p-2 text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`,
+              classNames.event
+            )}
             style={{
               backgroundColor: `${event.color}20`,
               borderColor: event.color,

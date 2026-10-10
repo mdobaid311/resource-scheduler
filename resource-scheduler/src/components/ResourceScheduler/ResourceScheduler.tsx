@@ -1,6 +1,9 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "./hooks/use-media-query";
+import { ClassNamesContext, type SchedulerClassNames, withClass } from "./classNames";
 import { buildI18n, I18nContext } from "./i18n";
+
+const NO_CLASS_NAMES: SchedulerClassNames = {};
 import React, {
   forwardRef,
   useCallback,
@@ -77,6 +80,7 @@ export const ResourceScheduler = forwardRef<
   collapsedGroups,
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
+  classNames,
   virtualize,
   renderEventPopover,
   allowViewChange = true,
@@ -376,9 +380,13 @@ export const ResourceScheduler = forwardRef<
 
   return (
     <I18nContext.Provider value={i18n}>
+      <ClassNamesContext.Provider value={classNames ?? NO_CLASS_NAMES}>
       <div
         dir={i18n.dir}
-        className="rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden"
+        className={withClass(
+          "rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden",
+          classNames?.root
+        )}
         style={
           {
             "--rs-sticky-left": resourceColumnWidth,
@@ -464,6 +472,7 @@ export const ResourceScheduler = forwardRef<
           </div>
         </div>
       </div>
+      </ClassNamesContext.Provider>
     </I18nContext.Provider>
   );
 });

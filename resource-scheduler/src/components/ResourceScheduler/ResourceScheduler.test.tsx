@@ -1135,6 +1135,70 @@ describe("ResourceScheduler", () => {
     });
   });
 
+  describe("classNames", () => {
+    const day = new Date(2026, 2, 10);
+    const resources: Resource[] = [
+      {
+        id: "a",
+        name: "Ann",
+        group: "Team",
+        events: [
+          { id: "e", title: "E", startDate: new Date(2026, 2, 10, 9), endDate: new Date(2026, 2, 10, 10) },
+        ],
+      },
+    ];
+    const show = (classNames?: React.ComponentProps<typeof ResourceScheduler>["classNames"]) =>
+      render(
+        <ResourceScheduler
+          resources={resources}
+          initialDate={day}
+          initialView={ViewType.Day}
+          dayStartHour={9}
+          dayEndHour={11}
+          classNames={classNames}
+        />
+      );
+
+    it("adds your classes to each part", () => {
+      show({
+        root: "c-root",
+        toolbar: "c-toolbar",
+        dateHeader: "c-date",
+        resourceCell: "c-res",
+        groupHeader: "c-group",
+        slot: "c-slot",
+        event: "c-event",
+      });
+      expect(document.querySelector(".rs-root")!.classList.contains("c-root")).toBe(true);
+      expect(document.querySelectorAll(".c-toolbar")).toHaveLength(1);
+      expect(document.querySelectorAll(".c-date").length).toBeGreaterThanOrEqual(2);
+      expect(document.querySelectorAll(".c-slot")).toHaveLength(
+        document.querySelectorAll("[data-rs-slot]").length
+      );
+      expect(document.querySelector(".c-event")!.hasAttribute("data-rs-event")).toBe(true);
+      expect(document.querySelector(".c-group")).toBe(screen.getByRole("button", { name: "Team, 1 resource" }));
+      expect(document.querySelector(".c-res")!.textContent).toContain("Ann");
+    });
+
+    it("lets your class win over a conflicting default", () => {
+      show({ event: "rounded-none" });
+      const card = document.querySelector("[data-rs-event]")!;
+      expect(card.classList.contains("rounded-none")).toBe(true);
+      expect(card.classList.contains("rounded")).toBe(false);
+    });
+
+    it("changes nothing without it", () => {
+      // useId makes different ids on each render; compare everything else.
+      const strip = (html: string) =>
+        html.replace(/\s(id|for|aria-describedby|aria-activedescendant|aria-controls)="[^"]*"/g, "");
+      const plain = show();
+      const before = strip(plain.container.innerHTML);
+      plain.unmount();
+      const empty = show({});
+      expect(strip(empty.container.innerHTML)).toBe(before);
+    });
+  });
+
   describe("resource groups", () => {
     const day = new Date(2026, 2, 10);
     // Laid out as: header A, Ann, Cy, header B, Bob, Di.

@@ -160,6 +160,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeColumnWidth` | `string` | `"90px"` | Width of time columns (day view) |
 | `dateColumnWidth` | `string` | `"140px"` | Width of date columns (other views) |
 | `allowViewChange` | `boolean` | `true` | Whether to show view type selector |
+| `classNames` | `{ root?, toolbar?, dateHeader?, resourceCell?, groupHeader?, slot?, event? }` | `undefined` | Extra classes for those parts, merged over the defaults with tailwind-merge so a conflicting utility wins (the utility has to exist in your CSS) |
 | `ariaLabel` | `string` | `"Resource schedule"` | Accessible name of the schedule grid |
 | `onSlotSelect` | `({ resourceId, start, end }) => void` | `undefined` | Called when the user clicks or drag-selects empty slots. Providing it replaces the built-in creation (`onEventCreate` is not called) so you can open your own dialog. The overlap rules apply. `end` is exclusive |
 | `slotDuration` | `number` | `60` | Day view only: minutes per slot (15, 30, 60, ...) |

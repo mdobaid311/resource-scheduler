@@ -77,6 +77,10 @@ Only `resources` is required.
 - **`renderDateHeader`**: `(date, view) => ReactNode`. A column header.
 - **`renderEmptyCell`**: `(date, resource) => ReactNode`. Content inside an empty slot.
 
+## Styling
+
+- **`classNames`**: `SchedulerClassNames`, `{ root, toolbar, dateHeader, resourceCell, groupHeader, slot, event }`. Extra classes for those parts, merged over the defaults with tailwind-merge. See [Theming](/guides/theming/).
+
 ## Layout and accessibility
 
 - **`resourceColumnWidth`**: `string`, default `"220px"` (`"140px"` on small screens). Pixel values only.
