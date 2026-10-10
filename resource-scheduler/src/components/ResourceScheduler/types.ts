@@ -105,9 +105,10 @@ export interface Resource {
   /**
    * Puts the resource under a collapsible header with this name. Resources
    * with the same group are listed together, at the place the group's first
-   * member is.
+   * member is. A path nests it: `["Main building", "Floor 1"]` is the group
+   * "Floor 1" inside "Main building".
    */
-  group?: string;
+  group?: string | string[];
 }
 
 /** What the grid covers. `end` is exclusive. */
@@ -238,7 +239,8 @@ export interface ResourceSchedulerProps {
    */
   blockUnavailable?: boolean;
   /**
-   * Names of the groups (`Resource.group`) that are collapsed. Pass it, with
+   * The groups (`Resource.group`) that are collapsed, by name; a nested group
+   * is its path joined with " / ", like "Main building / Floor 1". Pass it, with
    * `onCollapsedGroupsChange`, to control it yourself.
    */
   collapsedGroups?: string[];
@@ -296,7 +298,7 @@ export interface ResourceColumnProps {
   renderResourceHeader?: (resource: Resource) => React.ReactNode;
   /** Booked against available time by resource id. Resources without an entry show no bar. */
   utilization?: Map<string, Utilization>;
-  /** Called with a group's name when its header is toggled. Without it the headers are plain labels. */
+  /** Called with a group's key (its name, or its path joined with " / ") when its header is toggled. Without it the headers are plain labels. */
   onToggleGroup?: (group: string) => void;
   /** Render only these rows (end exclusive); spacers keep the full height. */
   rowRange?: { start: number; end: number };

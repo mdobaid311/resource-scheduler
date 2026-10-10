@@ -1310,6 +1310,69 @@ describe("ResourceScheduler", () => {
       });
     });
 
+    describe("nested", () => {
+      const nested: Resource[] = [
+        { id: "ann", name: "Ann", events: [], group: ["Main", "Floor 1"] },
+        { id: "bob", name: "Bob", events: [], group: ["Main", "Floor 2"] },
+        { id: "cy", name: "Cy", events: [], group: "Annex" },
+      ];
+      const showNested = (props: Partial<React.ComponentProps<typeof ResourceScheduler>> = {}) =>
+        render(
+          <ResourceScheduler
+            resources={nested}
+            initialDate={day}
+            initialView={ViewType.Day}
+            dayStartHour={9}
+            dayEndHour={11}
+            {...props}
+          />
+        );
+
+      it("puts a header at each level and keeps the rows aligned", () => {
+        showNested();
+        expect(toggle("Main", 2)).toBeTruthy();
+        expect(toggle("Floor 1", 1)).toBeTruthy();
+        expect(toggle("Floor 2", 1)).toBeTruthy();
+        expect(toggle("Annex", 1)).toBeTruthy();
+        // Rows: Main, Floor 1, Ann, Floor 2, Bob, Annex, Cy; the date header is row 1.
+        const row = (id: string) => cells(id)[0].style.gridRow;
+        expect([row("ann"), row("bob"), row("cy")]).toEqual(["4", "6", "8"]);
+        expect(screen.getByRole("grid").getAttribute("aria-rowcount")).toBe("7");
+      });
+
+      it("collapses a parent with its nested headers and resources", () => {
+        showNested();
+        fireEvent.click(toggle("Main", 2));
+        expect(screen.queryByRole("button", { name: "Floor 1, 1 resource" })).toBeNull();
+        expect(cells("ann")).toHaveLength(0);
+        expect(cells("bob")).toHaveLength(0);
+        expect(cells("cy").length).toBeGreaterThan(0);
+
+        fireEvent.click(toggle("Main", 2));
+        expect(cells("ann").length).toBeGreaterThan(0);
+        expect(toggle("Floor 1", 1)).toBeTruthy();
+      });
+
+      it("reports a nested group by its path", () => {
+        const onChange = vi.fn();
+        showNested({ collapsedGroups: [], onCollapsedGroupsChange: onChange });
+        fireEvent.click(toggle("Floor 1", 1));
+        expect(onChange).toHaveBeenCalledWith(["Main / Floor 1"]);
+      });
+
+      it("starts with a nested group collapsed", () => {
+        showNested({ defaultCollapsedGroups: ["Main / Floor 2"] });
+        expect(cells("bob")).toHaveLength(0);
+        expect(cells("ann").length).toBeGreaterThan(0);
+      });
+
+      it("indents a nested header further than its parent", () => {
+        showNested();
+        expect(toggle("Main", 2).getAttribute("style") ?? "").not.toContain("padding-inline-start");
+        expect(toggle("Floor 1", 1).getAttribute("style") ?? "").toContain("padding-inline-start: 28px");
+      });
+    });
+
     it("shows utilization on resources, not on headers", () => {
       show({ showUtilization: true });
       expect(screen.getAllByRole("meter")).toHaveLength(4);

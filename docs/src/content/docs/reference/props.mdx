@@ -54,7 +54,7 @@ Only `resources` is required.
 
 ## Groups
 
-- **`collapsedGroups`**: `string[]`. The groups (`Resource.group`) that are folded. Pass it with `onCollapsedGroupsChange` to control it.
+- **`collapsedGroups`**: `string[]`. The groups (`Resource.group`) that are folded, by name; a nested group is its path joined with " / ", such as `"Main building / Floor 1"`. Pass it with `onCollapsedGroupsChange` to control it.
 - **`defaultCollapsedGroups`**: `string[]`. Groups that start folded when you do not control `collapsedGroups`.
 - **`onCollapsedGroupsChange`**: `(groups: string[]) => void`. Called with the new list when the user folds or unfolds a group. See [Resource groups](/guides/resource-groups/).
 

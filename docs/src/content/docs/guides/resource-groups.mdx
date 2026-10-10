@@ -23,9 +23,26 @@ const rooms: Resource[] = [
 ```
 
 - A group's header sits where its **first member** is, and all its members follow it in their original order, even if they were spread out in your list. Resources without a `group` keep their place.
-- The group name is its identity: resources with the same string are in the same group, and it is the text on the header.
+- The group name is its identity: resources with the same string are in the same group, and it is the text on the header. (A path nests it, below.)
 - Headers are not resources. They have no events, and `renderResourceHeader`, `onEventClick` and the other handlers never receive one.
 - Without any `group`, nothing changes.
+
+## Nested groups
+
+Give `group` a path to nest it, outermost first. The demo above is built this way: two floors inside "Main building", and a one-level "Annex".
+
+```tsx
+const rooms: Resource[] = [
+  { id: "atlas", name: "Atlas", group: ["Main building", "Floor 1"], events: [] },
+  { id: "cirrus", name: "Cirrus", group: ["Main building", "Floor 2"], events: [] },
+  { id: "hall", name: "Hall", group: ["Main building"], events: [] },   // directly in the building
+  { id: "echo", name: "Echo", group: "Annex", events: [] },
+];
+```
+
+Each level gets a header, indented one step further than its parent, and a header's number counts every resource below it, nested ones included. Folding a parent folds everything inside it. Order works as before at every level: a group sits where its first member is, and a resource that belongs to the parent itself stays where it is among the groups.
+
+A nested group is named by its path with " / " between the names, in `collapsedGroups`, `defaultCollapsedGroups` and `onCollapsedGroupsChange`: `["Main building / Floor 1"]` folds just that floor. A plain one-name group keeps its plain name, so existing lists still work. Two floors called "Floor 1" in different buildings are different groups, because their paths differ.
 
 ## Folding
 
@@ -56,5 +73,5 @@ With `collapsedGroups` set, the list is yours: the scheduler calls `onCollapsedG
 
 ## Not included
 
-- Nested groups. `group` is one level; for a tree, join the levels in the name ("Hospital / Ward A") and the headers stay flat.
+- Moving a resource between groups by dragging its name. The group comes from your data.
 - Totals on the header, such as the utilization of the whole group. `getUtilization` gives you the numbers per resource to sum yourself.

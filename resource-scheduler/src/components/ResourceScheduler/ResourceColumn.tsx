@@ -72,8 +72,10 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       {resources.slice(start, end).map((resource, i) => {
         const rowHeight = heights[start + i];
         if (isGroupRow(resource)) {
-          const { name, count, collapsed } = resource.groupHeader;
+          const { name, key, depth, count, collapsed } = resource.groupHeader;
           const label = labels.group(name, count);
+          // Each level of nesting steps in; the first level keeps the default padding.
+          const indent = depth ? { paddingInlineStart: 12 + depth * 16 } : undefined;
           const body = (
             <>
               <ChevronDown
@@ -93,12 +95,12 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               type="button"
               aria-expanded={!collapsed}
               aria-label={label}
-              onClick={() => onToggleGroup(name)}
+              onClick={() => onToggleGroup(key)}
               className={withClass(
                 `${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`,
                 classNames.groupHeader
               )}
-              style={{ height: rowHeight + "px" }}
+              style={{ height: rowHeight + "px", ...indent }}
             >
               {body}
             </button>
@@ -107,7 +109,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               key={resource.id}
               aria-label={label}
               className={withClass(`${cell} px-3`, classNames.groupHeader)}
-              style={{ height: rowHeight + "px" }}
+              style={{ height: rowHeight + "px", ...indent }}
             >
               {body}
             </div>
