@@ -9,13 +9,14 @@
 // (20.1 KB used, about 10% headroom), then to 24 KB for ICS and CSV export
 // (21.3 KB used, plus touch selection waiting to merge). The file format
 // helpers then moved to their own entry point (resource-scheduler/exchange,
-// budget below), which took the main bundle back to 21.7 KB.
+// budget below), which took the main bundle back to 21.7 KB. The exchange entry
+// is 4.1 KB with the .ics import (1.4 KB before it).
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
   "dist/index.esm.js": 23_000,
-  "dist/exchange.esm.js": 2_500,
+  "dist/exchange.esm.js": 5_000,
   "dist/resource-scheduler.css": 7_000,
 };
 const EXPECTED_FILES = new Set([

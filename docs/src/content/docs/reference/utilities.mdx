@@ -34,6 +34,7 @@ All of these are exported from `resource-scheduler`.
 
 Imported from `resource-scheduler/exchange`, not from the main entry point.
 
+- **`icsToEvents(text, { resources?, resourceId?, onWarning? })`** reads the events of an iCalendar file into scheduler events: UTC, `TZID` (IANA) and floating times, all-day dates, `RRULE`/`EXDATE`, changed occurrences, and `LOCATION` matched to `resources` (`resourceId` for the rest). Cancelled events are left out, and a rule the scheduler cannot show is imported once with a message to `onWarning`. See [Export and import](/guides/export/#import).
 - **`eventsToICS(events, { resources?, name?, now? })`** returns an iCalendar file as a string. Timed events in UTC, whole local days as all-day events, `recurrence` as `RRULE` and `exceptions` as `EXDATE`; `resources` writes the resource name as `LOCATION`.
 - **`eventsToCSV(events, { resources? })`** returns `id,title,resource,start,end,description` as a CSV string, one row per resource of an event, with cells that start with `=`, `+`, `-` or `@` defused against spreadsheet formulas. See [Export](/guides/export/).
 
