@@ -24,7 +24,8 @@ Proof points, all in the repo:
 - Drag create, move and resize on pointer events, with a red footprint when a drop is not allowed (`eventOverlap`, `isValidDrop`, business hours).
 - Keyboard and screen reader support, with an axe-core test in CI.
 - Themed with `--rs-*` CSS variables; scoped, so it does not leak into your app.
-- Honest comparison page, dated, with what is missing (no recurring events, no virtualization yet).
+- Repeating events, and rows virtualized for big boards (1,000 resources is about 424 DOM nodes; `npm run bench` in `docs/` reproduces it).
+- Honest comparison page, dated, with what is missing (time zones, nested hierarchy, RRULE strings, virtualized columns).
 
 ## Show HN
 
@@ -36,13 +37,13 @@ Post a weekday morning US Eastern. Link the GitHub repo directly.
 
 > I needed a resource timeline (rows are people or rooms, time across) for a booking app. FullCalendar's is a paid tier, MUI X's is Premium, DayPilot's free edition leaves out the parts I wanted, so I built one and put it under MIT.
 >
-> What it does: drag to create, move and resize events; reject double bookings with one prop; shade business hours and time off; keyboard and screen reader support; five views; dark mode through CSS variables. You can `npm install` it or copy the source into your repo with the shadcn CLI.
+> What it does: drag to create, move and resize events; reject double bookings with one prop; shade business hours and time off; keyboard and screen reader support; repeating events; rows virtualized for large boards; five views; dark mode through CSS variables. You can `npm install` it or copy the source into your repo with the shadcn CLI.
 >
-> What it does not do yet: recurring events, virtualization for thousands of rows (it is fine for tens to a few hundred, I have not published a benchmark), timezones, a Vue or Svelte version.
+> What it does not do yet: time zones, nested resource hierarchy, RRULE strings, virtualized columns (a year view across many resources is slow; 1,000 resources in a week view is fine, the benchmark is in the docs and you can rerun it), a Vue or Svelte version.
 >
 > Docs with live demos: https://resource-scheduler-demo.vercel.app/ . There is a comparison page with what the alternatives cost and where this one falls short. I would like to hear what blocks you from using it.
 
-Expect: "why not FullCalendar?" (answer with the comparison page, factually), "does it scale?" (be straight: not virtualized yet), "license?" (MIT).
+Expect: "why not FullCalendar?" (answer with the comparison page, factually), "does it scale?" (be straight: rows are virtualized and benchmarked at 1,000 resources, columns are not), "license?" (MIT).
 
 ## r/reactjs and r/webdev
 
@@ -52,7 +53,7 @@ Read each sub's self-promotion rules first and post in the showcase thread. Disc
 
 **Body:**
 
-> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: <link>. Source: <link>. Missing for now: recurring events and virtualization. Feedback welcome, especially on the API.
+> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: <link>. Source: <link>. Missing for now: time zones and a nested hierarchy. Feedback welcome, especially on the API.
 
 ## X / Bluesky thread
 
@@ -73,8 +74,8 @@ Each tutorial in ROADMAP section 6b (room booking, shift planner, clinic board) 
 ## Replies to have ready
 
 - **Why not FullCalendar?** It is excellent. Its resource timeline is in the Premium tier (see the dated comparison page for the current price). This one is MIT and covers the resource timeline case only, not a general calendar.
-- **Does it handle thousands of rows?** Not yet. It renders every resource row, so it suits tens to a few hundred. Virtualization is on the roadmap and I will publish a benchmark before claiming anything.
-- **Recurring events?** Not yet. On the roadmap as an optional module.
+- **Does it handle thousands of rows?** Rows, yes: only the ones near the viewport are rendered, so 1,000 resources is about 424 DOM nodes and a 7 ms pointer move (`npm run bench` in `docs/` reproduces the numbers). Columns, no: a year view across many resources renders every day and is slow.
+- **Recurring events?** Yes: daily, weekly, monthly and yearly with exceptions. Not RRULE strings, hourly repeats or time zones.
 - **Why Tailwind / shadcn?** The npm build ships a precompiled stylesheet, so no Tailwind setup is needed. The shadcn route copies the source if you want to edit it.
 - **Can I use it from Next.js?** Yes. The bundle starts with `"use client"`.
 
