@@ -117,7 +117,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Imperative ref API**: `scrollToTime`, `goTo`, `setView`, `getVisibleRange` (done on branch `feat/view-controls`)
 - [x] **Recurring events** (done on branch `feat/recurring-events`): daily, weekly (byWeekday), monthly, yearly with interval, until, count and exceptions; wall-clock stable across DST; occurrences carry `seriesId`; `expandRecurrence` / `expandEvents` exported. Premium in MUI X, so a strong differentiator. Still open: RRULE strings and the rarer rules (bySetPos, byMonthDay, hourly), time zones, an "edit this and following" helper
 - [~] **Utilization row** (done on branch `feat/utilization`): `showUtilization` draws a booked-vs-available bar per resource for the visible range, from business hours, `unavailable` and the new `Resource.capacity`; `getUtilization` is exported. Still open: a per-column histogram or total row across resources
-- [ ] **ICS import/export, CSV, print stylesheet** (M)
+- [~] **ICS export and CSV** (done on branch `feat/export-ics-csv`): `eventsToICS` (with `RRULE`/`EXDATE`) and `eventsToCSV` (with spreadsheet formula protection), checked against ical.js. Still open: reading an `.ics` file, a print stylesheet (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
 - [x] **Recipes** with complete data models: room booking, shift roster, equipment rental, field service dispatch and project allocation, each with a live demo
 - [ ] Docs with `llms.txt` so AI coding assistants generate correct usage (S)
