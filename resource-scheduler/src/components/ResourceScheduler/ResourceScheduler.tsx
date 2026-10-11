@@ -8,7 +8,6 @@ import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
 
 const NO_CLASS_NAMES: SchedulerClassNames = {};
-import { addDays, addMinutes, startOfDay } from "date-fns";
 import React, {
   forwardRef,
   useCallback,
@@ -37,6 +36,7 @@ import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
 import { groupUtilization, isGroupRow, withGroups } from "./utils/groups";
+import { getColumnRange } from "./utils/layout";
 import { columnUtilization, getUtilization, type Utilization } from "./utils/utilization";
 import {
   isPlacementAllowed,
@@ -258,11 +258,7 @@ const SchedulerView = forwardRef<
       showColumnUtilization
         ? columnUtilization(
             allResources,
-            columnSlots.map((slot) =>
-              viewType === ViewType.Day
-                ? { start: slot, end: addMinutes(slot, slotMinutes) }
-                : { start: startOfDay(slot), end: addDays(startOfDay(slot), 1) }
-            ),
+            columnSlots.map((slot) => getColumnRange(slot, viewType, slotMinutes)),
             { businessHours }
           )
         : undefined,

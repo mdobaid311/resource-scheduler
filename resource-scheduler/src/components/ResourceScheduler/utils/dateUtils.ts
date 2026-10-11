@@ -13,6 +13,7 @@ import {
   endOfQuarter,
   endOfWeek,
   endOfYear,
+  format,
   isAfter,
   isSameDay,
   max,
@@ -23,7 +24,7 @@ import {
   startOfWeek,
   startOfYear,
 } from "date-fns";
-import { defaultI18n } from "../i18n";
+import { defaultI18n, type I18nContextValue } from "../i18nCore";
 import { type SchedulerEvent, ViewType } from "../types";
 
 /** Day view slot axis. Date-based views always use whole days. */
@@ -425,6 +426,33 @@ export const formatEventTime = (
   return atMidnight(event.startDate) && atMidnight(event.endDate)
     ? labels.allDay
     : `${fmt.time(event.startDate)} - ${fmt.time(event.endDate)}`;
+};
+
+// The title of the period on screen: "October 7, 2026", "Oct 5 – Oct 9, 2026",
+// "October 2026", "Q4 2026" or "2026". The week names the first and last day
+// it shows, so it follows `weekStartsOn` and `hideWeekends`.
+export const formatPeriodTitle = (
+  currentDate: Date,
+  viewType: ViewType,
+  { weekStartsOn, hideWeekends }: ViewOptions = {},
+  { fmt, locale }: Pick<I18nContextValue, "fmt" | "locale"> = defaultI18n
+): string => {
+  switch (viewType) {
+    case ViewType.Day:
+      return fmt.titleDay(currentDate);
+    case ViewType.Week: {
+      const days = getDatesInView(currentDate, viewType, { weekStartsOn, hideWeekends });
+      return `${fmt.titleDateStart(days[0])} – ${fmt.titleDateEnd(days[days.length - 1])}`;
+    }
+    case ViewType.Month:
+      return fmt.monthYear(currentDate);
+    case ViewType.Quarter:
+      return fmt.quarterYear(currentDate);
+    case ViewType.Year:
+      return format(currentDate, "yyyy", { locale });
+    default:
+      return fmt.titleDay(currentDate);
+  }
 };
 
 export const isToday = (date: Date, now: Date = new Date()): boolean => {

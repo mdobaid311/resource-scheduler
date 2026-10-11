@@ -120,6 +120,11 @@
           "target": "@components/resource-scheduler/i18n.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/i18nCore.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/i18nCore.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/index.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/index.ts"
@@ -165,6 +170,11 @@
           "target": "@components/resource-scheduler/utils/dateUtils.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/drag.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/drag.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/events.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/events.ts"
@@ -188,6 +198,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/keyboard.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/keyboard.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/layout.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/layout.ts"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/placement.ts",

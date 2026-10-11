@@ -1,0 +1,157 @@
+---
+title: Build your own UI
+description: Draw a resource timeline with your own markup, framework or server, using the scheduling logic of Resource Scheduler as plain functions with no React and no CSS.
+---
+
+import HeadlessDemo from "../../../components/demos/HeadlessDemo";
+
+[`classNames`](/guides/theming/) restyles the scheduler and [`components`](/guides/components/) swaps its parts. When you need different markup altogether (a table, a canvas, a Vue or Svelte app, a PDF, an email), build on `resource-scheduler/headless` instead: the layout, recurrence, rules and date math the component is made of, as functions.
+
+<HeadlessDemo client:only="react" />
+
+The header, the columns, the shaded hours, the events and the utilization figures above come from the functions below and a few inline styles. The demo is React, but the functions are not: the entry has no React, no CSS and no `"use client"`, so the same code runs in a server component, a worker or another framework. [Read the demo's source](https://github.com/mdobaid311/resource-scheduler/blob/main/docs/src/components/demos/HeadlessDemo.tsx).
+
+## A view in four steps
+
+```ts
+import {
+  ViewType,
+  getColumns,
+  getVisibleResources,
+  layoutEvents,
+  getRowHeights,
+} from "resource-scheduler/headless";
+
+const view = ViewType.Week;
+const options = { dayStartHour: 8, dayEndHour: 18, weekStartsOn: 1 };
+
+// 1. The columns across: the slots of the day in the day view, the days of the period in the others.
+const columns = getColumns(date, view, options);
+
+// 2. Your resources as they look in this period: recurring events expanded, events outside it left out.
+const rows = getVisibleResources(resources, date, view, options);
+
+// 3. Where each event goes in its row: first column, how many columns, and which lane.
+const placed = rows.map((row) => layoutEvents(row.events, columns, view));
+// [{ event, startPosition: 2, span: 3, lane: 0 }, { event, startPosition: 3, span: 1, lane: 1 }, ...]
+
+// 4. How tall each row has to be to hold its lanes.
+const heights = getRowHeights(rows, columns, view);
+```
+
+Events that overlap in time are stacked in lanes, the first lane that is free, so a row is as tall as its deepest overlap. Draw `columns` as the header, each of `rows` as a line, and each placed event across `span` columns, `lane` lines down. With CSS grid that is a few lines:
+
+```tsx
+import { LANES, getGridTemplateRows } from "resource-scheduler/headless";
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: `140px repeat(${columns.length}, 96px)`, // a name column, then one per column
+    gridTemplateRows: getGridTemplateRows(heights), // "auto 60px 112px ...": the header, then the rows
+  }}
+>
+  {/* grid row 1 is the header; column 1 holds the resource names */}
+  {rows.map((row, r) =>
+    placed[r].map(({ event, startPosition, span, lane }) => (
+      <div
+        key={event.id}
+        style={{
+          gridRow: r + 2,
+          gridColumn: `${startPosition + 2} / span ${span}`,
+          marginTop: lane * LANES.comfortable.lane,
+        }}
+      >
+        {event.title}
+      </div>
+    ))
+  )}
+</div>;
+```
+
+You hold the state (the date, the view, your data); the functions hold no state of their own.
+
+## The header
+
+`navigateDate` moves a day, week, month, quarter or year, depending on the view. `formatPeriodTitle` writes the title the way the component does, and `buildI18n` carries the language: pass `{ locale, hour12, labels }` and everything it formats follows.
+
+```ts
+import { buildI18n, formatPeriodTitle, navigateDate } from "resource-scheduler/headless";
+import { de } from "date-fns/locale";
+
+const i18n = buildI18n({ locale: de });
+
+formatPeriodTitle(date, view, options, i18n); // "5. Okt. 2026 – 11. Okt. 2026" (the week, Monday first)
+const next = navigateDate(date, view, "next");
+i18n.fmt.hourHeader(column); // "09:00", for the day view's column headers
+i18n.fmt.weekday(column); // "Mi." for a Wednesday
+i18n.labels.views.week; // "Week", or your own wording from `labels`
+```
+
+## What else you can draw
+
+| You want | Use |
+| --- | --- |
+| Shaded closed hours and time off | `isCellUnavailable(row, column, { businessHours, viewType })` |
+| A line at the current time | `getTimePosition(now, getVisibleRange(date, view, options))`, a percentage across the day |
+| A utilization bar | `getUtilization(row, range, { businessHours })`, or `columnUtilization` for the totals row |
+| Collapsible groups | `withGroups(resources, collapsed)` adds header rows; `isGroupRow` tells them apart; `GROUP_ROW_HEIGHT` is their height |
+| Highlight today | `isToday(column, now)` |
+| Thousands of rows or columns | `getRowWindow(heights, scrollTop, viewportHeight, overscan)` and `getColumnWindow(...)` return what to render |
+| A day view in 15-minute slots | `slotDuration: 15` in `options` |
+
+## Drag, resize and create
+
+The pointer handling is yours, because it depends on your markup. The functions turn "the slot under the pointer" into a result. In a `pointermove`, find the resource row and the column under the pointer however you like (`elementsFromPoint` with a `data-` attribute on each cell does it), then:
+
+```ts
+import {
+  getMovePlacement,
+  getResizePlacement,
+  getSelectedColumns,
+  getSelectionBounds,
+  isPlacementAllowed,
+  isSlotInRange,
+} from "resource-scheduler/headless";
+
+// Moving: where would the event land, and may it?
+const placement = getMovePlacement(event, { resourceId, slot }, view);
+const allowed = isPlacementAllowed(event, placement, rows, { eventOverlap: false });
+const footprint = columns.filter((column) => isSlotInRange(column, placement, view)); // the cells to tint
+
+// Resizing the end of an event that sits on `row`:
+const resized = getResizePlacement(event, row.id, "end", { resourceId, slot }, view);
+
+// Creating: tint the columns between where the press started and the pointer now,
+// and when it is released, hand the range to your dialog.
+const tinted = getSelectedColumns(columns, pressedSlot, slot, view); // { start, end } column indices, or null
+const range = getSelectionBounds(pressedSlot, slot, view); // { start, end } times, end exclusive
+```
+
+`getMovePlacement` keeps the event's length (and its time of day outside the day view); `getResizePlacement` snaps to the slot under the pointer and returns `null` when the edge would cross the other one or the pointer is on another row. Both return a `Placement` that `isPlacementAllowed` checks against the overlap and validity rules. On release, save it in your own state.
+
+For the keyboard, `moveCursor` steps a cursor over the grid for the arrow, Home and End keys and `stepPlacement` moves a picked-up event one slot or day, both returning `null` when the step is not possible. `formatSlotLabel`, `formatRangeLabel` and `i18n.labels.announce` give you the words to read out.
+
+## On a server
+
+Nothing above needs a browser, so the rules can run where the data is:
+
+```ts
+// app/api/bookings/route.ts: no "use client", runs on the server
+import { findAvailableSlots, getUtilization, isPlacementAllowed } from "resource-scheduler/headless";
+
+const placement = { resourceId, start, end };
+if (!isPlacementAllowed(newEvent, placement, resources, { eventOverlap: false })) {
+  return Response.json({ error: "That time is taken" }, { status: 409 });
+}
+
+const free = findAvailableSlots(resources, { from, to, duration: 60, limit: 5 }); // "when is everyone free?"
+const load = resources.map((r) => getUtilization(r, { start: monday, end: nextMonday }));
+```
+
+## Keep in mind
+
+- **Dates are local wall-clock times.** The component's `timeZone` prop converts at its boundary; do the same: `utcToZoned(instant, zone)` on the way in, `zonedToUtc(date, zone)` on the way out. See [Time zones](/guides/time-zones/).
+- **Accessibility is yours to build.** The component's grid roles, focus handling and live announcements are markup, so they are not in the functions. The logic and the words are: `moveCursor`, `stepPlacement`, `formatSlotLabel`, `formatRangeLabel` and the labels in `buildI18n`.
+- **`end` is exclusive** everywhere: an event that ends at midnight does not touch the next day.
+- **The functions are the component's own.** `ResourceScheduler` calls them, so a fix to the layout reaches both, and the [Headless API](/reference/headless/) page lists every export.
