@@ -68,18 +68,25 @@ const team = (): Resource[] => [
 export default function UtilizationDemo() {
   const { resources, move, resize, log } = useSchedule(team);
   const [show, setShow] = useState(true);
+  const [totals, setTotals] = useState(false);
 
   return (
     <Frame
       height={590}
       log={log}
       controls={
-        <label>
-          <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-          Show utilization
-        </label>
+        <>
+          <label>
+            <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
+            Show utilization
+          </label>
+          <label>
+            <input type="checkbox" checked={totals} onChange={(e) => setTotals(e.target.checked)} />
+            Show column totals
+          </label>
+        </>
       }
-      caption="Drag or resize an event and the bars follow. Bob is over 100%, Chen is out Thursday and Friday, Dana works part time, the lab has two stations. Switch to the day or month view to measure another range."
+      caption="Drag or resize an event and the bars follow. Bob is over 100%, Chen is out Thursday and Friday, Dana works part time, the lab has two stations. Switch to the day or month view to measure another range. The column totals add up everyone's booked and available time per day."
     >
       <ResourceScheduler
         resources={resources}
@@ -87,6 +94,7 @@ export default function UtilizationDemo() {
         availableViews={[ViewType.Day, ViewType.Week, ViewType.Month]}
         businessHours={{}}
         showUtilization={show}
+        showColumnUtilization={totals}
         resourceColumnWidth="190px"
         dateColumnWidth="120px"
         onEventDrop={move}

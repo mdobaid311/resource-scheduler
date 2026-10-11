@@ -2,10 +2,12 @@
 import { useMediaQuery } from "./hooks/use-media-query";
 import { ClassNamesContext, type SchedulerClassNames, withClass } from "./classNames";
 import { useClock } from "./clock";
+import { ColumnUtilizationRow } from "./ColumnUtilization";
 import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
 
 const NO_CLASS_NAMES: SchedulerClassNames = {};
+import { addDays, addMinutes, startOfDay } from "date-fns";
 import React, {
   forwardRef,
   useCallback,
@@ -33,7 +35,7 @@ import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
 import { groupUtilization, isGroupRow, withGroups } from "./utils/groups";
-import { getUtilization, type Utilization } from "./utils/utilization";
+import { columnUtilization, getUtilization, type Utilization } from "./utils/utilization";
 import {
   isPlacementAllowed,
   type Placement,
@@ -80,6 +82,7 @@ const SchedulerView = forwardRef<
   blockUnavailable,
   nowIndicator,
   showUtilization,
+  showColumnUtilization,
   collapsedGroups,
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
@@ -227,6 +230,27 @@ const SchedulerView = forwardRef<
           ])
         : undefined,
     [showUtilization, resources, allResources, range, businessHours]
+  );
+
+  // One entry per column of the grid, over every resource, folded away or not.
+  const columnSlots = useMemo(
+    () => (showColumnUtilization ? (viewType === ViewType.Day ? getTimeSlots() : getDatesInView()) : []),
+    [showColumnUtilization, viewType, getTimeSlots, getDatesInView]
+  );
+  const columnTotals = useMemo(
+    () =>
+      showColumnUtilization
+        ? columnUtilization(
+            allResources,
+            columnSlots.map((slot) =>
+              viewType === ViewType.Day
+                ? { start: slot, end: addMinutes(slot, slotMinutes) }
+                : { start: startOfDay(slot), end: addDays(startOfDay(slot), 1) }
+            ),
+            { businessHours }
+          )
+        : undefined,
+    [showColumnUtilization, allResources, columnSlots, viewType, slotMinutes, businessHours]
   );
 
   // Fires on mount and whenever the range changes; the latest callback is
@@ -441,6 +465,7 @@ const SchedulerView = forwardRef<
             utilization={utilization}
             onToggleGroup={toggleGroup}
             rowRange={rowRange}
+            showColumnUtilization={showColumnUtilization}
           />
 
           <div className="flex-1">
@@ -485,6 +510,14 @@ const SchedulerView = forwardRef<
               renderTimeSlot={renderTimeSlot}
               renderEmptyCell={renderEmptyCell}
             />
+            {columnTotals && (
+              <ColumnUtilizationRow
+                slots={columnSlots}
+                viewType={viewType}
+                values={columnTotals}
+                columnWidth={viewType === ViewType.Day ? timeColumnWidth : dateColumnWidth}
+              />
+            )}
           </div>
         </div>
       </div>

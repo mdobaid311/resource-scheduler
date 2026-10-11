@@ -283,6 +283,13 @@ export interface ResourceSchedulerProps {
    */
   showUtilization?: boolean;
   /**
+   * A row under the grid with one cell per column: how much of all the
+   * resources' available time is booked in that column (an hour in the day
+   * view, a day in the others). Same rules as `showUtilization`, and resources
+   * in collapsed groups count. `columnUtilization` does the same sum.
+   */
+  showColumnUtilization?: boolean;
+  /**
    * Render only the rows near the viewport. Default: on above 100 resources.
    * It needs the scheduler to sit in a box with a fixed height; without one
    * every row is drawn, as before.
@@ -322,6 +329,8 @@ export interface ResourceColumnProps {
   onToggleGroup?: (group: string) => void;
   /** Render only these rows (end exclusive); spacers keep the full height. */
   rowRange?: { start: number; end: number };
+  /** Add the label of the row under the grid with each column's utilization. */
+  showColumnUtilization?: boolean;
 }
 
 export interface TimelineHeaderProps {

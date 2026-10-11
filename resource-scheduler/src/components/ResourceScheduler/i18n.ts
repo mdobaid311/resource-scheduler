@@ -25,6 +25,8 @@ export interface SchedulerLabels {
   to: string;
   /** Utilization of a resource, shown on hover and read out: "6.5 of 8 hours booked". Hours are rounded to 0.1. */
   utilization: (bookedHours: number, availableHours: number) => string;
+  /** Name of the row under the grid with each column's utilization (`showColumnUtilization`): "Utilization". */
+  columnUtilization: string;
   /** A group header, read out with its open or closed state: "Ward A, 3 resources". */
   group: (name: string, count: number) => string;
   /** Keyboard instructions, visually hidden. */
@@ -65,6 +67,7 @@ export const defaultLabels: SchedulerLabels = {
   unavailable: "unavailable",
   to: "to",
   utilization: (booked, available) => `${booked} of ${available} hours booked`,
+  columnUtilization: "Utilization",
   group: (name, count) => `${name}, ${count} resource${count === 1 ? "" : "s"}`,
   help: (canResize) =>
     "Arrow keys move between slots. Enter or Space selects a slot; hold Shift with Left or Right to select several. " +

@@ -169,6 +169,28 @@ describe("mouse", () => {
   });
 });
 
+describe("column utilization", () => {
+  it("adds up every resource per column, lined up with the grid", async () => {
+    const { page, context, errors } = await open("/guides/utilization/");
+    await page.getByLabel("Show column totals").check();
+    const meters = page.getByRole("group", { name: "Utilization" }).getByRole("meter");
+    assert.equal(await meters.count(), 7);
+
+    // Monday: 46 hours available (Ann, Bob, Chen 8 each, Dana 6, the lab 2 x 8) and 44 booked.
+    const monday = meters.nth(1);
+    assert.match(await monday.getAttribute("aria-label"), /Monday, October 5, 2026, 44 of 46 hours booked$/);
+    assert.equal(await monday.textContent(), "96%");
+    assert.equal(await meters.nth(0).textContent(), "–"); // nothing is available on Sunday
+
+    // The cell sits under the same column as the grid's Monday slots.
+    const slot = await page.locator('[data-rs-resource="chen"][data-rs-slot]').nth(1).boundingBox();
+    const cell = await monday.boundingBox();
+    assert.ok(Math.abs(slot.x - cell.x) < 1.5 && Math.abs(slot.width - cell.width) < 1.5, `${JSON.stringify([slot, cell])}`);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("import", () => {
   it("reads a calendar file into the board and says what it could not show", async () => {
     const { page, context, errors } = await open("/guides/export/");

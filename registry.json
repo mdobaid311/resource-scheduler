@@ -20,6 +20,11 @@
       ],
       "files": [
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/ColumnUtilization.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/ColumnUtilization.tsx"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/EmptySlotItem.tsx",
           "type": "registry:component",
           "target": "@components/resource-scheduler/EmptySlotItem.tsx"

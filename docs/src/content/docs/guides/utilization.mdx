@@ -44,9 +44,19 @@ const resources: Resource[] = [
 
 Capacity changes only the utilization numbers. It does not stop anyone from double booking: for that, use [`eventOverlap`](/guides/conflict-control/) or an `isValidDrop` that counts the bookings.
 
+## Totals per column
+
+`showColumnUtilization` adds a row under the grid with one cell per column: how much of everyone's available time is booked in it. In the day view a column is an hour (or a slot), in the other views a day. It answers "which day is overloaded?" at a glance, and it works with or without `showUtilization`.
+
+```tsx
+<ResourceScheduler resources={resources} businessHours={{}} showColumnUtilization />
+```
+
+The row is counted like the bars: each resource's available time is its business hours minus `unavailable`, times `capacity`, and booked time is the part of its events inside that. The cell adds booked and available time over **all** resources, also those folded away inside a collapsed group, so 44 of 46 hours is 96% however many rows are on screen. A cell where nothing is available (a Sunday) shows "–". The row sticks to the bottom of the scheduler while the rows scroll, and each cell is a `role="meter"` read out with its column and hours.
+
 ## Without the component
 
-`getUtilization` is the function the bars use. It is pure, so you can run it on a server, in a report or in your own header:
+`getUtilization` is the function the bars use, and `columnUtilization` the one behind the totals row. They are pure, so you can run it on a server, in a report or in your own header:
 
 ```ts
 import { getUtilization } from "resource-scheduler";
@@ -58,6 +68,8 @@ const { bookedMinutes, availableMinutes, ratio } = getUtilization(
 );
 // ratio is 0.58 for 58%, above 1 when overbooked, and null when nothing is available
 ```
+
+`columnUtilization(resources, columns, { businessHours })` adds up several resources over a list of columns (ranges in order, `end` exclusive) and returns one `{ bookedMinutes, availableMinutes, ratio }` per column, for a chart or a report of your own. It reads each resource's events once however many columns there are.
 
 If your events are a flat list, merge them first with `withEvents(resources, events)`. For a custom display, keep the visible range from `onRangeChange` and call `getUtilization` in `renderResourceHeader`:
 
@@ -82,9 +94,10 @@ const [range, setRange] = useState<{ start: Date; end: Date }>();
 
 ## Words
 
-The hover text and the screen reader label come from `labels.utilization(bookedHours, availableHours)`, with hours rounded to a tenth. Translate it like any other [label](/guides/internationalization/).
+The hover text and the screen reader label come from `labels.utilization(bookedHours, availableHours)`, with hours rounded to a tenth, and the name of the totals row is `labels.columnUtilization` ("Utilization"). Translate them like any other [label](/guides/internationalization/).
 
 ## Not included
 
-- A per-day histogram or a total row across resources. `getUtilization` with a one-day range gives you the numbers for your own.
+- A chart. The totals row is a bar and a percentage per column; `columnUtilization` gives you the numbers for a real chart.
+- Totals of a group or a selection of rows. The row always adds up every resource; `groupUtilization` gives a group's total.
 - A weekly hours budget as a separate number. Express it as `businessHours` (a part-timer working Monday, Wednesday and Friday) and `unavailable` (leave).

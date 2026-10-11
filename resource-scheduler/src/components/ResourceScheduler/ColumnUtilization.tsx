@@ -1,0 +1,83 @@
+// src/components/ResourceScheduler/ColumnUtilization.tsx
+import React from "react";
+import { COLUMN_UTILIZATION_HEIGHT } from "./density";
+import { useI18n } from "./i18n";
+import type { ViewType } from "./types";
+import { formatSlotLabel } from "./utils/dateUtils";
+import type { Utilization } from "./utils/utilization";
+
+const hours = (minutes: number) => Math.round(minutes / 6) / 10;
+
+/** The name of the row, at the foot of the resource column. It stays in view while the rows scroll. */
+export const ColumnUtilizationLabel: React.FC = () => {
+  const { labels } = useI18n();
+  return (
+    <div
+      className="sticky bottom-0 z-10 flex items-center justify-center border-e border-t bg-ocrs-gray-50 px-2 text-sm font-medium text-ocrs-muted-foreground"
+      style={{ height: COLUMN_UTILIZATION_HEIGHT + "px" }}
+    >
+      {labels.columnUtilization}
+    </div>
+  );
+};
+
+/**
+ * The row under the grid: one cell per column with the share of all resources'
+ * available time that is booked in it. A cell's bar stops at 100% and turns
+ * red above it.
+ */
+export const ColumnUtilizationRow: React.FC<{
+  /** The column dates, as in the grid: slots in the day view, days otherwise. */
+  slots: Date[];
+  viewType: ViewType;
+  values: Utilization[];
+  columnWidth: string;
+}> = ({ slots, viewType, values, columnWidth }) => {
+  const i18n = useI18n();
+  const { labels } = i18n;
+  return (
+    <div
+      role="group"
+      aria-label={labels.columnUtilization}
+      className="sticky bottom-0 z-10 grid border-t bg-ocrs-white"
+      style={{
+        gridTemplateColumns: `repeat(${slots.length}, ${columnWidth})`,
+        height: COLUMN_UTILIZATION_HEIGHT + "px",
+      }}
+    >
+      {slots.map((slot, i) => {
+        const value = values[i];
+        // From the minutes, not the ratio: 0.575 * 100 is 57.49999999999999.
+        const percent =
+          !value || value.ratio === null ? null : Math.round((value.bookedMinutes * 100) / value.availableMinutes);
+        const filled = Math.min(percent ?? 0, 100);
+        const label = `${formatSlotLabel(slot, viewType, i18n)}, ${labels.utilization(
+          hours(value?.bookedMinutes ?? 0),
+          hours(value?.availableMinutes ?? 0)
+        )}`;
+        return (
+          <div
+            key={i}
+            role="meter"
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={filled}
+            title={label}
+            className="flex flex-col items-center justify-center gap-1 border-e px-1"
+          >
+            <span className="text-xs tabular-nums text-ocrs-muted-foreground">
+              {percent === null ? "–" : percent + "%"}
+            </span>
+            <span className="h-1.5 w-full max-w-12 overflow-hidden rounded-full bg-ocrs-secondary">
+              <span
+                className={`block h-full ${percent !== null && percent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+                style={{ width: filled + "%" }}
+              />
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};

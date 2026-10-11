@@ -181,6 +181,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `defaultCollapsedGroups` | `string[]` | `[]` | Groups that start folded when you do not control `collapsedGroups` |
 | `onCollapsedGroupsChange` | `(groups: string[]) => void` | `undefined` | Called with the new list when the user folds or unfolds a group |
 | `showUtilization` | `boolean` | `false` | A bar under each resource name: how much of its available time (business hours minus `unavailable`, times `capacity`) is booked in the visible range. Over 100% means more bookings at once than it can take. `getUtilization` is exported for the same numbers elsewhere |
+| `showColumnUtilization` | `boolean` | `false` | A row under the grid with a bar per column: how much of all resources' available time is booked in that hour (day view) or day. Counts resources in collapsed groups |
 | `locale` | date-fns `Locale` | English | e.g. `import { de } from "date-fns/locale"`. Names, date formats, 12/24-hour clock and the first day of the week follow it |
 | `hour12` | `boolean` | the locale's | `true` for a 12-hour clock, `false` for 24-hour |
 | `timeZone` | `string` | the browser's | An IANA zone such as `"Europe/Paris"`: events, business hours, today and the now line are shown in it, and handlers receive instants. An unknown name warns and the local zone is used |
