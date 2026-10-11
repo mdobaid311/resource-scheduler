@@ -427,6 +427,6 @@ export const formatEventTime = (
     : `${fmt.time(event.startDate)} - ${fmt.time(event.endDate)}`;
 };
 
-export const isToday = (date: Date): boolean => {
-  return isSameDay(date, new Date());
+export const isToday = (date: Date, now: Date = new Date()): boolean => {
+  return isSameDay(date, now);
 };

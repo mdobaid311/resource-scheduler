@@ -209,6 +209,28 @@ describe("import", () => {
   });
 });
 
+describe("time zones", () => {
+  it("shows the same events in the zone you pick and reports the instant to store", async () => {
+    const { page, context, errors } = await open("/guides/time-zones/");
+
+    // Sprint planning is at 08:00 UTC: 5:00 PM in Tokyo (where the demo starts), 4:00 AM in New York.
+    assert.match(await label(page, "t1"), /5:00 PM to 6:30 PM/);
+    await page.getByLabel("Time zone").selectOption("America/New_York");
+    assert.match(await label(page, "t1"), /4:00 AM to 5:30 AM/);
+
+    // Move it one slot later with the keyboard: what is reported is the instant, 09:00 UTC.
+    await event(page, "t1").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(250);
+    assert.match(await log(page), /^Moved "Sprint planning": store \d{4}-\d{2}-\d{2}T09:00:00\.000Z$/);
+    assert.match(await label(page, "t1"), /5:00 AM to 6:30 AM/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("keyboard", () => {
   it("picks an event up, moves it to another resource and drops it", async () => {
     const { page, context, errors } = await open(KEYBOARD);

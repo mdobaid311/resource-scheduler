@@ -106,7 +106,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Touch** (done on branches `ci/e2e-smoke` and `feat/touch-select`): dragging and resizing events, tapping an empty slot, and press-and-hold then drag across empty slots to create all work with real touch events in Chrome, covered by the smoke test; a quick swipe still scrolls. Not yet tried on physical devices (that stays on the list under P0)
 - [x] **Row virtualization** with a published, reproducible benchmark (done on branch `feat/virtualization`; `docs/scripts/bench.mjs`). 1,000 resources: 31,458 DOM nodes down to 424, drag 68.9 ms down to 7.1 ms per pointer move. Still open: column virtualization (year view), and the 0.5 s first render at 1,000 resources.
 - [ ] **Column virtualization and a bigger benchmark** (L). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); run ours at that size and report the numbers honestly
-- [~] **i18n**: `locale` (date-fns), `hour12`, `labels` for all UI and screen reader text, and `dir="rtl"` are done (branch `feat/i18n`). Still open: IANA `timeZone` prop
+- [~] **i18n**: `locale` (date-fns), `hour12`, `labels` for all UI and screen reader text, and `dir="rtl"` are done (branch `feat/i18n`). IANA `timeZone` prop is done too (branch `feat/time-zone`: `utcToZoned`, `zonedToUtc`, handlers receive instants). Still open:
 - [x] **Lazy loading**: `onRangeChange({ start, end, view })` for fetching per visible window (done on branch `feat/view-controls`)
 
 ### P2: Customisability (your stated goal)

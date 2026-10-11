@@ -148,6 +148,18 @@ export interface ResourceSchedulerProps {
    */
   events?: SchedulerEvent[];
   initialDate?: Date;
+  /**
+   * An IANA time zone such as "Europe/Paris" or "America/New_York", to show and
+   * report time there instead of in the browser's zone. Events (instants) are
+   * drawn at their wall-clock time in the zone, `businessHours` are hours in
+   * it, and "today" and the now line follow it. Dates handed to handlers
+   * (`onEventDrop`, `onSlotSelect`, `onDateChange`, ...) are the instants they
+   * stand for, ready to store. Render props (`renderEventPopover`, ...) get
+   * wall-clock Dates in the zone, so `format` shows its time; `utcToZoned`
+   * converts your own. Recurrence `until` and `exceptions` are calendar days
+   * and are not converted. An unknown name warns and the local zone is used.
+   */
+  timeZone?: string;
   initialView?: ViewType;
   availableViews?: ViewType[];
   /** First day of the week, 0 (Sunday) to 6 (Saturday). Default 0. */

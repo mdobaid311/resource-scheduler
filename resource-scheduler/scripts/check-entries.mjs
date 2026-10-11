@@ -10,16 +10,17 @@
 // where it does not belong: the main entry has it (it holds components), the
 // exchange entry must not, because functions from a "use client" module cannot
 // be called from server code.
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
+const SHARED_CHUNK = /^[A-Za-z0-9_]+-[A-Za-z0-9_-]{8}[.]c?js$/;
 
 const ENTRIES = [
   {
     specifier: "resource-scheduler",
     files: ["dist/index.esm.js", "dist/index.cjs"],
-    exports: ["ResourceScheduler", "ViewType", "defaultLabels", "expandRecurrence", "findAvailableSlots"],
+    exports: ["ResourceScheduler", "ViewType", "defaultLabels", "expandRecurrence", "findAvailableSlots", "utcToZoned", "zonedToUtc"],
     component: "ResourceScheduler",
     client: true,
   },
@@ -65,6 +66,13 @@ for (const entry of ENTRIES) {
       hasBanner === entry.client ? [] : [entry.client ? "banner is missing" : "banner must not be there"]
     );
   }
+}
+
+// Code both entries share is a chunk (`name-<hash>.js`). The exchange entry imports it, so it
+// must not carry the banner either.
+for (const file of readdirSync("dist").filter((f) => SHARED_CHUNK.test(f))) {
+  const hasBanner = readFileSync(`dist/${file}`, "utf8").trimStart().startsWith('"use client"');
+  report(`dist/${file} has no "use client"`, hasBanner ? ["banner must not be there"] : []);
 }
 
 process.exit(failed ? 1 : 0);

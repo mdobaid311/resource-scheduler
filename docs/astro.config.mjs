@@ -91,6 +91,7 @@ export default defineConfig({
             { label: "Export and import calendar files", slug: "guides/export" },
             { label: "Large data and performance", slug: "guides/performance" },
             { label: "Languages and clocks", slug: "guides/internationalization" },
+            { label: "Time zones", slug: "guides/time-zones" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
             { label: "Theming", slug: "guides/theming" },
             { label: "Next.js and SSR", slug: "guides/nextjs-and-ssr" },

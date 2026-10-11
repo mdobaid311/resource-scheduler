@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/TimelineHeader.tsx
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useClock } from "./clock";
 import { useI18n } from "./i18n";
 import type { TimelineHeaderProps } from "./types";
 import { isToday } from "./utils/dateUtils";
@@ -15,6 +16,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 }) => {
   const { fmt } = useI18n();
   const classNames = useClassNames();
+  const now = useClock()();
   const slots = viewType === "day" ? getTimeSlots() : getDatesInView();
 
   return (
@@ -31,7 +33,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
           key={i}
           className={withClass(
             `p-2 text-center border-b h-14 flex flex-col items-center justify-center border-e ${
-              isToday(slot) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
+              isToday(slot, now) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
             }`,
             classNames.dateHeader
           )}
@@ -42,14 +44,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             <>
               <span
                 className={`text-xs font-medium ${
-                  isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
+                  isToday(slot, now) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 }`}
               >
                 {fmt.hourHeader(slot)}
               </span>
               <span
                 className={`text-xs ${
-                  isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
+                  isToday(slot, now) ? "text-blue-500" : "text-ocrs-muted-foreground"
                 }`}
               >
                 {fmt.weekday(slot)}
@@ -59,14 +61,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             <div className="group flex flex-col items-center">
               <span
                 className={`text-xs font-medium ${
-                  isToday(slot) ? "text-blue-600" : "text-ocrs-muted-foreground"
+                  isToday(slot, now) ? "text-blue-600" : "text-ocrs-muted-foreground"
                 } uppercase`}
               >
                 {fmt.weekday(slot)}
               </span>
               <span
                 className={`text-sm font-medium ${
-                  isToday(slot) ? "text-blue-700" : "text-ocrs-foreground"
+                  isToday(slot, now) ? "text-blue-700" : "text-ocrs-foreground"
                 }`}
               >
                 {fmt.dayOfMonth(slot)}
@@ -74,7 +76,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
               {(i === 0 || slot.getDate() === 1) && (
                 <span
                   className={`text-xs ${
-                    isToday(slot) ? "text-blue-500" : "text-ocrs-muted-foreground"
+                    isToday(slot, now) ? "text-blue-500" : "text-ocrs-muted-foreground"
                   }`}
                 >
                   {fmt.monthShort(slot)}
