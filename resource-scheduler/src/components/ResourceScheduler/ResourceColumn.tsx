@@ -2,6 +2,7 @@
 import { ChevronDown } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
+import { ColumnUtilizationLabel } from "./ColumnUtilization";
 import { useDensity } from "./density";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
@@ -49,6 +50,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   utilization,
   onToggleGroup,
   rowRange,
+  showColumnUtilization,
 }) => {
   const { labels } = useI18n();
   const classNames = useClassNames();
@@ -158,6 +160,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         );
       })}
       {after > 0 && <div aria-hidden="true" style={{ height: after + "px" }} />}
+      {showColumnUtilization && <ColumnUtilizationLabel />}
     </div>
   );
 };

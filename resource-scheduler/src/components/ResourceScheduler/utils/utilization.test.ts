@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BusinessHours, Resource, SchedulerEvent } from "../types";
-import { getUtilization } from "./utilization";
+import { columnUtilization, getUtilization } from "./utilization";
+import { expandEvents } from "./recurrence";
 
 // October 2026: Sun the 4th, Mon the 5th, Wed the 7th, Sun the 11th.
 const d = (day: number, hour = 0, minute = 0) => new Date(2026, 9, day, hour, minute);
@@ -177,5 +178,95 @@ describe("getUtilization", () => {
       availableMinutes: 0,
       ratio: null,
     });
+  });
+});
+
+// A slow reference that walks the columns one minute at a time and shares no code
+// with columnUtilization except expandEvents.
+const reference = (resources: Resource[], column: { start: Date; end: Date }, shared?: BusinessHours) => {
+  let booked = 0;
+  let available = 0;
+  for (const r of resources) {
+    const hours = r.businessHours === undefined ? shared : r.businessHours || undefined;
+    const days = hours?.daysOfWeek ?? [1, 2, 3, 4, 5];
+    const from = hours?.startHour ?? 9;
+    const to = hours?.endHour ?? 17;
+    const events = expandEvents(r.events, column.start, column.end);
+    for (let t = column.start.getTime(); t < column.end.getTime(); t += 60_000) {
+      const at = new Date(t);
+      if (hours && !(days.includes(at.getDay()) && at.getHours() >= from && at.getHours() < to)) continue;
+      if ((r.unavailable ?? []).some((u) => t >= u.start.getTime() && t < u.end.getTime())) continue;
+      available += r.capacity ?? 1;
+      booked += events.filter((e) => t >= e.startDate.getTime() && t < e.endDate.getTime()).length;
+    }
+  }
+  return { bookedMinutes: booked, availableMinutes: available };
+};
+
+describe("columnUtilization", () => {
+  const ann = res({
+    id: "ann",
+    capacity: 2,
+    unavailable: [{ start: d(6, 12), end: d(6, 14) }],
+    events: [
+      event("a1", d(7, 9), d(7, 13)),
+      event("a2", d(7, 11), d(7, 15)), // overlaps a1
+      { ...event("a3", d(5, 9), d(5, 10)), recurrence: { freq: "daily", count: 4 } },
+    ],
+  });
+  const bob = res({
+    id: "bob",
+    businessHours: { startHour: 8, endHour: 12, daysOfWeek: [3, 4] },
+    events: [event("b1", d(7, 7), d(7, 10)), event("b2", d(7, 16), d(8, 10))],
+  });
+  const cat = res({ id: "cat", businessHours: false, events: [event("c1", d(10, 22), d(11, 3))] });
+  const all = [ann, bob, cat];
+
+  const days = Array.from({ length: 7 }, (_, i) => ({ start: d(5 + i), end: d(6 + i) }));
+  const halfHours = Array.from({ length: 8 }, (_, i) => ({
+    start: d(7, 8, i * 30),
+    end: d(7, 8, i * 30 + 30),
+  }));
+  const someDays = [days[0], days[2], days[4]]; // columns need not touch, as with hideWeekends
+
+  for (const [name, columns, shared] of [
+    ["day columns with office hours", days, office],
+    ["day columns with every hour available", days, undefined],
+    ["half-hour columns", halfHours, office],
+    ["columns that do not touch", someDays, office],
+  ] as const) {
+    it(`adds up every resource per column: ${name}`, () => {
+      const got = columnUtilization(all, [...columns], { businessHours: shared });
+      expect(got).toHaveLength(columns.length);
+      columns.forEach((column, i) => {
+        const expected = reference(all, column, shared);
+        expect(got[i].bookedMinutes, `booked, column ${i}`).toBe(expected.bookedMinutes);
+        expect(got[i].availableMinutes, `available, column ${i}`).toBe(expected.availableMinutes);
+        expect(got[i].ratio).toBe(
+          expected.availableMinutes > 0 ? expected.bookedMinutes / expected.availableMinutes : null
+        );
+      });
+    });
+  }
+
+  it("gives a column nothing is available in a null ratio", () => {
+    const [saturday] = columnUtilization([ann, bob], [{ start: d(10), end: d(11) }], { businessHours: office });
+    expect(saturday).toEqual({ bookedMinutes: 0, availableMinutes: 0, ratio: null });
+  });
+
+  it("returns no columns for no columns, and empty columns for no resources", () => {
+    expect(columnUtilization(all, [])).toEqual([]);
+    expect(columnUtilization([], days.slice(0, 2))).toEqual([
+      { bookedMinutes: 0, availableMinutes: 0, ratio: null },
+      { bookedMinutes: 0, availableMinutes: 0, ratio: null },
+    ]);
+  });
+
+  it("agrees with getUtilization over one column", () => {
+    for (const r of all) {
+      expect(columnUtilization([r], [week], { businessHours: office })[0]).toEqual(
+        getUtilization(r, week, { businessHours: office })
+      );
+    }
   });
 });

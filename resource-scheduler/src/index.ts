@@ -62,7 +62,10 @@ export {
 } from "./components/ResourceScheduler/utils/availability";
 export type { FindSlotsOptions } from "./components/ResourceScheduler/utils/availability";
 export { groupUtilization } from "./components/ResourceScheduler/utils/groups";
-export { getUtilization } from "./components/ResourceScheduler/utils/utilization";
+export {
+  columnUtilization,
+  getUtilization,
+} from "./components/ResourceScheduler/utils/utilization";
 export type { Utilization } from "./components/ResourceScheduler/utils/utilization";
 export {
   isPlacementAllowed,

@@ -15,6 +15,9 @@ export const ROW_PADDING = 8;
 /** A row with a utilization bar is never shorter than this: the name and the bar need it. */
 export const UTILIZATION_ROW_HEIGHT = 60;
 
+/** Height in px of the row under the grid with each column's utilization. */
+export const COLUMN_UTILIZATION_HEIGHT = 44;
+
 export const DensityContext = createContext<Density>("comfortable");
 
 export const useDensity = () => useContext(DensityContext);
