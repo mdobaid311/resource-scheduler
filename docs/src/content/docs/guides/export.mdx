@@ -5,14 +5,14 @@ description: Turn events into an iCalendar file for Google Calendar, Outlook and
 
 import ExportDemo from "../../../components/demos/ExportDemo";
 
-Two pure functions turn a list of events into text: `eventsToICS` for a calendar app and `eventsToCSV` for a spreadsheet. They return strings, so they work in the browser for a "Download" button and on a server for a feed.
+Two pure functions turn a list of events into text: `eventsToICS` for a calendar app and `eventsToCSV` for a spreadsheet. They return strings, so they work in the browser for a "Download" button and on a server for a feed. They live in their own entry point, `resource-scheduler/exchange`: no React, no `"use client"`, so a server component or a route handler can import them, and they stay out of the component bundle.
 
 <ExportDemo client:only="react" />
 
 ## Use
 
 ```ts
-import { eventsToICS, eventsToCSV } from "resource-scheduler";
+import { eventsToICS, eventsToCSV } from "resource-scheduler/exchange";
 
 const ics = eventsToICS(events, { resources, name: "Meeting rooms" });
 const csv = eventsToCSV(events, { resources });
@@ -54,7 +54,8 @@ A cell that starts with `=`, `+`, `-` or `@` gets a leading `'`. Event titles of
 A recurring event is one row, with its first occurrence. For a row per occurrence, expand the series first:
 
 ```ts
-import { expandEvents, eventsToCSV } from "resource-scheduler";
+import { expandEvents } from "resource-scheduler";
+import { eventsToCSV } from "resource-scheduler/exchange";
 
 const csv = eventsToCSV(expandEvents(events, from, to), { resources });
 ```
