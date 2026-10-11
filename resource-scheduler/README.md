@@ -33,7 +33,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | MUI X Scheduler | The Event Timeline is Premium |
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: only rows are virtualized, so for very large timelines pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
 
 ## Features
 
@@ -188,6 +188,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | `"rtl"` mirrors the layout for Arabic, Hebrew and other right-to-left languages and flips the left and right arrow keys |
 | `labels` | `PartialLabels` | English | Text of the toolbar, headers, view names and screen reader messages. Any subset; see `defaultLabels` for the full set |
 | `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn |
+| `virtualizeColumns` | `boolean` | on above 100 columns | Render only the columns near the viewport (the year view, a day in 5-minute slots). Needs column widths in px, the default; with another unit every column is drawn |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
 | `components` | `SchedulerComponents` | `undefined` | Replace whole parts with your own components (hooks work): `Toolbar`, `Event` (card content), `EventPopover`, `ResourceHeader`, `DateHeader`, `EmptyCell`. Wins over the matching `render*` prop |

@@ -32,7 +32,9 @@ export const ColumnUtilizationRow: React.FC<{
   viewType: ViewType;
   values: Utilization[];
   columnWidth: string;
-}> = ({ slots, viewType, values, columnWidth }) => {
+  /** Render only these columns (end exclusive). */
+  colRange?: { start: number; end: number };
+}> = ({ slots, viewType, values, columnWidth, colRange }) => {
   const i18n = useI18n();
   const { labels } = i18n;
   return (
@@ -46,6 +48,7 @@ export const ColumnUtilizationRow: React.FC<{
       }}
     >
       {slots.map((slot, i) => {
+        if (colRange && (i < colRange.start || i >= colRange.end)) return null;
         const value = values[i];
         // From the minutes, not the ratio: 0.575 * 100 is 57.49999999999999.
         const percent =
@@ -58,6 +61,7 @@ export const ColumnUtilizationRow: React.FC<{
         return (
           <div
             key={i}
+            style={colRange ? { gridColumn: i + 1 } : undefined}
             role="meter"
             aria-label={label}
             aria-valuemin={0}

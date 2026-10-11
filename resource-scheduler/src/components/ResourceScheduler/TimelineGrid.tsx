@@ -12,7 +12,7 @@ import { useNow } from "./hooks/useNow";
 import { useI18n } from "./i18n";
 import type { TimelineGridProps } from "./types";
 import { isCellUnavailable } from "./utils/availability";
-import { formatSlotLabel, isToday } from "./utils/dateUtils";
+import { formatSlotLabel, isSlotInRange, isToday } from "./utils/dateUtils";
 import { isGroupRow } from "./utils/groups";
 
 export const TimelineGrid: React.FC<TimelineGridProps> = ({
@@ -38,6 +38,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   businessHours,
   nowIndicator,
   rowRange,
+  colRange,
   ariaLabel,
   describedBy,
   announce,
@@ -141,6 +142,18 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   }
   const isRendered = (row: number) =>
     !rowRange || (row >= rowRange.start && row < rowRange.end) || pinned.has(row);
+
+  // With a column window, what is still in use stays mounted too: the cursor's
+  // cell, the event being carried or about to get focus back, and the slots
+  // the carried event would land on.
+  const footprint = carried?.placement;
+  const footprintCols = new Set<number>();
+  if (colRange && footprint) {
+    slots.forEach((slot, col) => {
+      if (isSlotInRange(slot, footprint, viewType, slotMinutes)) footprintCols.add(col);
+    });
+  }
+  const inWindow = (col: number) => !colRange || (col >= colRange.start && col < colRange.end);
 
   // An event carried by keyboard: keep the place it would land in view. (A
   // pointer drag is already over its target.)
@@ -272,7 +285,15 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
               style={{ display: "contents" }}
             >
               {/* Event cells */}
-              {eventPositions.map(({ event, startPosition, span, lane }) => (
+              {eventPositions
+                .filter(
+                  ({ event, startPosition, span }) =>
+                    !colRange ||
+                    (startPosition < colRange.end && startPosition + span > colRange.start) ||
+                    event.id === carried?.eventId ||
+                    event.id === drag.pendingFocus.current
+                )
+                .map(({ event, startPosition, span, lane }) => (
                 <div
                   key={event.id}
                   role="gridcell"
@@ -303,6 +324,13 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
 
               {/* Empty Cells */}
               {slots.map((slot, colIndex) => {
+                if (
+                  !inWindow(colIndex) &&
+                  !footprintCols.has(colIndex) &&
+                  !(keyboard.cursor?.row === keyRow && keyboard.cursor.col === colIndex)
+                ) {
+                  return null;
+                }
                 const keyboardSelection = keyboard.selection;
                 const isSelected =
                   (selectionRange &&

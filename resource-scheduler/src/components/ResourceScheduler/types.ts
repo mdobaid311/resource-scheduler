@@ -303,6 +303,13 @@ export interface ResourceSchedulerProps {
    * every row is drawn, as before.
    */
   virtualize?: boolean;
+  /**
+   * Render only the columns near the viewport. Default: on above 100 columns
+   * (the year view, a day in 5-minute slots). It needs the column widths in px,
+   * as the defaults are; with another unit, or without a box to measure, every
+   * column is drawn.
+   */
+  virtualizeColumns?: boolean;
   resourceColumnWidth?: string;
   timeColumnWidth?: string;
   dateColumnWidth?: string;
@@ -386,6 +393,8 @@ export interface TimelineHeaderProps {
   getTimeSlots: () => Date[];
   getDatesInView: () => Date[];
   renderDateHeader?: (date: Date, view: ViewType) => React.ReactNode;
+  /** Render only these columns (end exclusive); the grid keeps its full width. */
+  colRange?: { start: number; end: number };
 }
 
 export interface TimelineGridProps {
@@ -438,6 +447,8 @@ export interface TimelineGridProps {
   getGridTemplateRows: () => string;
   renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;
   renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
+  /** Render only these columns (end exclusive). Cells still in use stay mounted. */
+  colRange?: { start: number; end: number };
 }
 
 export interface EventItemProps {

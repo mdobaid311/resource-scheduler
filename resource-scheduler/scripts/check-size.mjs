@@ -11,12 +11,13 @@
 // helpers then moved to their own entry point (resource-scheduler/exchange,
 // budget below), which took the main bundle back to 21.7 KB. The exchange entry
 // is 3.9 KB with the .ics import (1.4 KB before it). The main bundle
-// went to 24 KB for the timeZone prop (22.5 KB used).
+// went to 24 KB for the timeZone prop (22.5 KB used). Then to 26 KB for the
+// column totals, the components map and column virtualization (24.2 KB used).
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 24_000,
+  "dist/index.esm.js": 26_000,
   "dist/exchange.esm.js": 5_000,
   "dist/resource-scheduler.css": 7_000,
 };

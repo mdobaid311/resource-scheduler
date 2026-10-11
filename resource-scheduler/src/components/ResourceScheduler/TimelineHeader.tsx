@@ -14,6 +14,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
   getTimeSlots,
   getDatesInView,
   renderDateHeader,
+  colRange,
 }) => {
   const { fmt } = useI18n();
   const classNames = useClassNames();
@@ -30,9 +31,11 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
         })`,
       }}
     >
-      {slots.map((slot, i) => (
+      {slots.map((slot, i) =>
+        colRange && (i < colRange.start || i >= colRange.end) ? null : (
         <div
           key={i}
+          style={colRange ? { gridColumn: i + 1 } : undefined}
           className={withClass(
             `p-2 text-center border-b h-14 flex flex-col items-center justify-center border-e ${
               isToday(slot, now) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"

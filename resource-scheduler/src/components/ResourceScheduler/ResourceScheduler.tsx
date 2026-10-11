@@ -32,6 +32,7 @@ import {
   ViewType,
 } from "./types";
 import { withTimeZone } from "./withTimeZone";
+import { getColumnWindow, parsePx } from "./utils/columnWindow";
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
@@ -53,6 +54,12 @@ const QUANTUM = 160;
 const OVERSCAN = 320;
 // The sticky date header above the first row (h-14).
 const HEADER_HEIGHT = 56;
+// Column virtualization: on above this many columns unless `virtualizeColumns`
+// says otherwise. The window moves every COLUMN_STEP px of scrolling and
+// reaches COLUMN_OVERSCAN px beyond the viewport.
+const VIRTUALIZE_COLUMNS_ABOVE = 100;
+const COLUMN_STEP = 320;
+const COLUMN_OVERSCAN = 640;
 
 const SchedulerView = forwardRef<
   ResourceSchedulerHandle,
@@ -91,6 +98,7 @@ const SchedulerView = forwardRef<
   components,
   density,
   virtualize,
+  virtualizeColumns,
   renderEventPopover,
   allowViewChange = true,
   resourceColumnWidth: propResourceColumnWidth,
@@ -346,6 +354,43 @@ const SchedulerView = forwardRef<
   const timeColumnWidth = propTimeColumnWidth || (isMobile ? "70px" : "90px");
   const dateColumnWidth = propDateColumnWidth || (isMobile ? "90px" : "140px");
 
+  // Only the columns near the viewport are rendered when there are many (the
+  // year view). The scroll position is rounded, so the state only changes every
+  // COLUMN_STEP px. Without a column width in px, or a box to measure, every
+  // column is drawn.
+  const columnCount = useMemo(
+    () => (viewType === ViewType.Day ? getTimeSlots().length : getDatesInView().length),
+    [viewType, getTimeSlots, getDatesInView]
+  );
+  const columnPx = parsePx(viewType === ViewType.Day ? timeColumnWidth : dateColumnWidth);
+  const virtualCols = (virtualizeColumns ?? columnCount > VIRTUALIZE_COLUMNS_ABOVE) && columnPx !== undefined;
+  const [columnView, setColumnView] = useState({ left: 0, width: 1280 });
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!virtualCols || !scroller) return;
+    const read = () => {
+      // Right to left, scrollLeft counts from the right edge and goes negative.
+      const left = Math.floor(Math.abs(scroller.scrollLeft) / COLUMN_STEP) * COLUMN_STEP;
+      const width = scroller.clientWidth;
+      setColumnView((v) => (v.left === left && v.width === width ? v : { left, width }));
+    };
+    read();
+    scroller.addEventListener("scroll", read, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(read);
+    observer?.observe(scroller);
+    return () => {
+      scroller.removeEventListener("scroll", read);
+      observer?.disconnect();
+    };
+  }, [virtualCols]);
+  const colRange = useMemo(
+    () =>
+      virtualCols
+        ? getColumnWindow(columnCount, columnPx!, columnView.left, columnView.width > 0 ? columnView.width + COLUMN_STEP : 0, COLUMN_OVERSCAN)
+        : undefined,
+    [virtualCols, columnCount, columnPx, columnView]
+  );
+
   const handleViewChange = (newView: ViewType) => {
     setViewType(newView);
     onViewChange?.(newView);
@@ -485,6 +530,7 @@ const SchedulerView = forwardRef<
               getTimeSlots={getTimeSlots}
               getDatesInView={getDatesInView}
               renderDateHeader={renderDateHeader}
+              colRange={colRange}
             />
 
             <TimelineGrid
@@ -518,6 +564,7 @@ const SchedulerView = forwardRef<
               getGridTemplateRows={getGridTemplateRows}
               renderTimeSlot={renderTimeSlot}
               renderEmptyCell={renderEmptyCell}
+              colRange={colRange}
             />
             {columnTotals && (
               <ColumnUtilizationRow
@@ -525,6 +572,7 @@ const SchedulerView = forwardRef<
                 viewType={viewType}
                 values={columnTotals}
                 columnWidth={viewType === ViewType.Day ? timeColumnWidth : dateColumnWidth}
+                colRange={colRange}
               />
             )}
           </div>

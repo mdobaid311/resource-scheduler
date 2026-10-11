@@ -1,18 +1,17 @@
 ---
 title: Large data and performance
-description: How the scheduler behaves with hundreds of resources, what row virtualization does, the measured numbers and how to reproduce them.
+description: How the scheduler behaves with thousands of resources and a year of columns, what row and column virtualization do, the measured numbers and how to reproduce them.
 ---
 
 ## What it can handle
 
-The grid renders resource rows and one cell per row and day (or slot). That is cheap for tens of rows and costly for thousands, so from 100 resources up the scheduler draws only the rows near the viewport (**row virtualization**) and keeps the rest out of the DOM.
+The grid renders resource rows and one cell per row and day (or slot). That is cheap for tens of rows and costly for thousands, so from 100 resources up the scheduler draws only the rows near the viewport (**row virtualization**) and keeps the rest out of the DOM. Wide views get the same treatment for columns (see [Wide views](#wide-views-column-virtualization)).
 
 - It switches on by itself **above 100 resources**. Force it with `virtualize` or turn it off with `virtualize={false}`.
 - The grid keeps its full height and `aria-rowcount`, so the scrollbar and assistive technology still know how many rows there are.
 - Rows in use stay mounted: the one holding the keyboard cursor, and the source and target of an event you are dragging. Moving an event by keyboard to a row far away scrolls it into view.
 - **It needs a box with a fixed height.** If the scheduler grows with its content and the page scrolls instead, there is no viewport to measure, so every row is drawn, exactly as without virtualization.
 - The browser's find-in-page only sees the rows that are mounted.
-- Only rows are virtualized. The columns of a year view (365 days) are all drawn.
 
 ```tsx
 <div style={{ height: 600 }}>
@@ -20,22 +19,59 @@ The grid renders resource rows and one cell per row and day (or slot). That is c
 </div>
 ```
 
+## Wide views: column virtualization
+
+A year view has 365 columns and a day in 5-minute slots has 288. With 50 resources that is 21,500 DOM nodes before a single scroll, so above **100 columns** the scheduler also draws only the columns near the viewport.
+
+- It switches on by itself **above 100 columns** (the year view, a day with `slotDuration={5}`). Force it with `virtualizeColumns` or turn it off with `virtualizeColumns={false}`. The week, month and quarter views never need it.
+- The grid keeps its full width and `aria-colcount`, so the scrollbar and assistive technology still know how many columns there are. The window moves every 320 px of scrolling and reaches 640 px beyond the viewport, so scrolling does not show blanks.
+- What is in use stays mounted: the cell holding the keyboard cursor (also after `Home` and `End`), the event you are carrying, and the slots it would land on. An event is drawn when any of its days is in the window.
+- **It needs the column widths in px**, as `timeColumnWidth` and `dateColumnWidth` are by default. With `rem`, `%` or `calc()` there is nothing to measure without the DOM, so every column is drawn. Without a box to measure (a hidden tab), every column is drawn too.
+- Right to left layouts work the same way. The totals row of [`showColumnUtilization`](/guides/utilization/) follows the window.
+- The browser's find-in-page only sees the columns that are mounted.
+
 ## Measured numbers
 
-Week view, 5 events per resource, a production build in Chrome on one Windows machine, October 2026. The median of three loads. Compare the rows with each other, not with your machine.
+A production build in Chrome on one Windows machine, October 2026, 5 events per resource (20 for the last table), the median of three loads. Compare the rows with each other, not with your machine.
+
+**Rows.** Week view:
 
 | Resources | Events | Virtualized | DOM nodes | First grid | Next week | Drag, per pointer move |
 |---:|---:|:--:|---:|---:|---:|---:|
-| 10 | 50 | off | 393 | 154 ms | 15 ms | 3.6 ms |
-| 100 | 500 | off | 3,178 | 275 ms | 18 ms | 10 ms |
-| 300 | 1,500 | off | 9,463 | 520 ms | 64 ms | 23.6 ms |
-| 300 | 1,500 | on | 424 | 271 ms | 17 ms | 4.5 ms |
-| 1,000 | 5,000 | off | 31,458 | 1,361 ms | 126 ms | 68.9 ms |
-| 1,000 | 5,000 | on | 424 | 492 ms | 26 ms | 7.1 ms |
+| 10 | 50 | off | 393 | 138 ms | 15 ms | 5 ms |
+| 100 | 500 | off | 3,178 | 247 ms | 20 ms | 10.9 ms |
+| 300 | 1,500 | off | 9,463 | 453 ms | 55 ms | 22 ms |
+| 300 | 1,500 | on | 424 | 165 ms | 16 ms | 5.5 ms |
+| 1,000 | 5,000 | off | 31,458 | 1,183 ms | 144 ms | 60.9 ms |
+| 1,000 | 5,000 | on | 424 | 207 ms | 19 ms | 5.6 ms |
 
 Without virtualization, dragging gets sluggish around 300 rows (a pointer move should stay under about 16 ms to hold 60 frames per second). With it, 1,000 rows drag as smoothly as 100.
 
-What is not solved: the first render at 1,000 resources still takes about 0.5 s, because layout work such as row heights and which events are visible still runs over every resource. Beyond several thousand resources, load a window of resources from your server instead.
+**Columns.** Year view (365 columns), rows virtualized as by default:
+
+| Resources | Events | Columns | DOM nodes | First grid | Next year | Jump to the end of the year |
+|---:|---:|:--:|---:|---:|---:|---:|
+| 50 | 250 | all | 21,534 | 659 ms | 202 ms | 6 ms |
+| 50 | 250 | windowed | 1,353 | 153 ms | 36 ms | 38 ms |
+| 300 | 1,500 | all | 5,422 | 331 ms | 123 ms | 20 ms |
+| 300 | 1,500 | windowed | 384 | 193 ms | 59 ms | 28 ms |
+| 1,000 | 5,000 | all | 5,422 | 463 ms | 186 ms | 20 ms |
+| 1,000 | 5,000 | windowed | 370 | 309 ms | 123 ms | 22 ms |
+
+Drawing every column is faster only when you jump across the grid, because all of it is already there; the windowed grid needs a few frames to draw the new columns (up to about 40 ms). Everything else, the first render, a change of period and the DOM size, is better, most of all with few rows, where the columns were the whole cost.
+
+**Row heights are measured once.** Each row's height depends on how many events overlap in it, which takes a pass over its events. That pass used to run again on every render, so every step of a scroll window re-measured every resource, and each measurement rebuilt the list of columns. The heights are now cached per resource for as long as the view and the data stay the same, and the columns are built once per view. That is why 1,000 resources first draw in 0.2 s instead of 0.5 s.
+
+**The size of a published competitor benchmark.** 2,500 resources and 50,000 events, week view, 20 events per resource:
+
+| Resources | Events | Virtualized | DOM nodes | First grid | Next week | Drag, per pointer move |
+|---:|---:|:--:|---:|---:|---:|---:|
+| 2,500 | 50,000 | off | 239,673 | 8,535 ms | 430 ms | 413 ms |
+| 2,500 | 50,000 | on | 454 | 781 ms | 71 ms | 5.5 ms |
+
+That is the data size used by Bryntum's public scheduler benchmark. We have not run theirs, so these numbers are not a comparison with it; they are ours, measured the same way as the rows above, and you can rerun them.
+
+What is not solved: the first render still does work for every resource (which events fall in the range, how tall each row is), so it grows with the number of resources: 0.8 s at 2,500. Beyond several thousand resources, load a window of resources from your server instead.
 
 ## Reproduce it
 
@@ -44,14 +80,17 @@ The benchmark page and script are in the docs app. They use a fixed random seed,
 ```bash
 cd docs
 npm run build
-npm run preview -- --port 4399   # leave running
-npm run bench                    # or: npm run bench -- 10,100,500 5
+npm run preview -- --port 4399        # leave running
+npm run bench                         # rows: or npm run bench -- 10,100,500 5
+npm run bench -- 2500 20              # 2,500 resources, 50,000 events
+npm run bench -- 50,300,1000 5 year columns   # a wide view, every column against the window
 ```
 
-Each row is measured with `virtualize={false}` and with the default. If you publish numbers about your own setup, include the machine, the browser and the data size, like the table above.
+The row table is measured with `virtualize={false}` and with the default; the column table with `virtualizeColumns={false}` and with the default. If you publish numbers about your own setup, include the machine, the browser and the data size, like the tables above.
 
 ## Tips
 
 - Pass stable `resources` and event arrays (memoize them) so the scheduler can skip work between renders.
 - Fetch only the visible range with [`onRangeChange`](/guides/loading-and-control/) instead of loading a whole year.
-- Keep `renderEventPopover`, `renderTimeSlot` and `renderEmptyCell` light: they run for every visible event or cell.
+- Keep `renderEventPopover`, `renderTimeSlot` and `renderEmptyCell` (or the matching [`components`](/guides/components/)) light: they run for every visible event or cell.
+- In the year view, leave the column widths in px so the columns can be windowed.
