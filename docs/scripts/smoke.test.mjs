@@ -169,6 +169,43 @@ describe("mouse", () => {
   });
 });
 
+describe("components", () => {
+  it("draws the parts you replaced and keeps the behaviour of the card", async () => {
+    const { page, context, errors } = await open("/guides/components/");
+    const frame = page.locator(".demo-frame").first();
+
+    // A resource header and an event card of our own.
+    assert.ok(await frame.getByText("AL", { exact: true }).isVisible());
+    assert.equal(await frame.locator('[data-rs-event="a2"] strong').textContent(), "Design review");
+    assert.equal(await frame.locator('[data-rs-event="a2"]').textContent(), "Design review2h");
+
+    // The card still drags to another resource.
+    const wednesday = page.locator('[data-rs-resource="bob"][data-rs-slot]').nth(3);
+    await mouseDrag(page, await centerOf(event(page, "a2")), await centerOf(wednesday));
+    assert.equal(await log(page), 'Moved "Design review"');
+    assert.match(await label(page, "a2"), /Bob Ruiz/);
+
+    // A popover with its own state, closed through `close`.
+    await event(page, "d1").focus();
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("button", { name: "Mark done" }).click();
+    assert.ok(await dialog.getByRole("button", { name: "Done ✓" }).isVisible());
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await page.waitForTimeout(250);
+    assert.equal(await page.getByRole("dialog").count(), 0);
+
+    // A toolbar of our own, driving the scheduler.
+    assert.ok(await frame.getByText("Oct 4 – Oct 10, 2026").isVisible());
+    await frame.getByRole("button", { name: "Next period" }).click();
+    assert.ok(await frame.getByText("Oct 11 – Oct 17, 2026").isVisible());
+    await frame.getByRole("button", { name: "Day", exact: true }).click();
+    assert.ok(await frame.getByText("Day View").isVisible());
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("column utilization", () => {
   it("adds up every resource per column, lined up with the grid", async () => {
     const { page, context, errors } = await open("/guides/utilization/");

@@ -110,6 +110,38 @@ interface PlacementRules {
 }
 ```
 
+## `SchedulerComponents`
+
+The parts you can replace with the `components` prop. See [Replace parts](/guides/components/).
+
+```ts
+interface SchedulerComponents {
+  Toolbar?: React.ComponentType<ToolbarProps>;
+  Event?: React.ComponentType<{ event: SchedulerEvent; resource: Resource }>;
+  EventPopover?: React.ComponentType<{ event: SchedulerEvent; resource: Resource; close: () => void }>;
+  ResourceHeader?: React.ComponentType<{ resource: Resource }>;
+  DateHeader?: React.ComponentType<{ date: Date; view: ViewType }>;
+  EmptyCell?: React.ComponentType<{ date: Date; resource: Resource }>;
+}
+
+interface ToolbarProps {
+  title: string;      // the period as the locale writes it: "Oct 5 – Oct 9, 2026"
+  viewTitle: string;  // "Week View"
+  views: ViewType[];  // availableViews, or all of them
+  labels: SchedulerLabels;
+  dir: "ltr" | "rtl";
+  currentDate: Date;
+  viewType: ViewType;
+  onNavigate: (direction: "prev" | "next") => void;
+  onViewChange: (view: ViewType) => void;
+  onGoToToday: () => void;
+  allowViewChange?: boolean;
+  availableViews?: ViewType[];
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  hideWeekends?: boolean;
+}
+```
+
 ## `SlotOptions`
 
 ```ts

@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/EmptySlotItem.tsx
 import React, { useContext } from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useComponents } from "./components";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import type { EmptySlotItemProps } from "./types";
 import { isSlotInRange } from "./utils/dateUtils";
@@ -22,6 +23,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
   renderEmptyCell,
 }) => {
   const classNames = useClassNames();
+  const { EmptyCell } = useComponents();
   // While an event is moved or resized, tint every slot it would cover.
   const drag = useContext(SchedulerDragContext);
   const footprint = drag?.activeDrag?.placement;
@@ -79,7 +81,7 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
         }
       }}
     >
-      {renderEmptyCell && renderEmptyCell(slot, resource)}
+      {EmptyCell ? <EmptyCell date={slot} resource={resource} /> : renderEmptyCell && renderEmptyCell(slot, resource)}
     </div>
   );
 };

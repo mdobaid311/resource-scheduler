@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/EventItem.tsx
 import React, { useContext, useState } from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useComponents } from "./components";
 import { useDensity } from "./density";
 import { SchedulerDragContext } from "./hooks/useEventDrag";
 import { useI18n } from "./i18n";
@@ -35,6 +36,7 @@ export const EventItem: React.FC<EventItemProps> = ({
   const drag = useContext(SchedulerDragContext);
   const i18n = useI18n();
   const classNames = useClassNames();
+  const { Event: EventPart, EventPopover } = useComponents();
   const compact = useDensity() === "compact";
   const movingThis =
     drag?.activeDrag?.eventId === event.id && drag.activeDrag.mode === "move";
@@ -134,13 +136,17 @@ export const EventItem: React.FC<EventItemProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        {renderTimeSlot ? (
+        {EventPart || renderTimeSlot ? (
           <div
             className={`relative w-full h-full overflow-hidden ${focusRing}`}
             style={{ touchAction: "none", opacity }}
             {...dragProps}
           >
-            {renderTimeSlot(event, resource ? [resource] : [])}
+            {EventPart ? (
+              <EventPart event={event} resource={resource!} />
+            ) : (
+              renderTimeSlot!(event, resource ? [resource] : [])
+            )}
             {resizeHandles}
           </div>
         ) : (
@@ -184,7 +190,9 @@ export const EventItem: React.FC<EventItemProps> = ({
         )}
       </PopoverTrigger>
       <PopoverContent side="top" dir={i18n.dir} className="z-[2000] w-fit p-3">
-        {renderEventPopover ? (
+        {EventPopover ? (
+          <EventPopover event={event} resource={resource!} close={onClose} />
+        ) : renderEventPopover ? (
           renderEventPopover(event, resource!, onClose)
         ) : (
           <div className="space-y-2">

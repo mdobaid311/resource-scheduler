@@ -1,0 +1,79 @@
+---
+title: Replace parts of the scheduler
+description: Swap the toolbar, event cards, popovers and headers for your own React components, with hooks and state, and keep dragging, resizing and the keyboard.
+---
+
+import ComponentsDemo from "../../../components/demos/ComponentsDemo";
+
+[`classNames`](/guides/theming/) restyles the parts. When styling is not enough, `components` replaces a part with a component of yours.
+
+<ComponentsDemo client:only="react" />
+
+```tsx
+import type { SchedulerComponents } from "resource-scheduler";
+
+const ResourceHeader: SchedulerComponents["ResourceHeader"] = ({ resource }) => (
+  <div className="flex items-center gap-2">
+    <Avatar name={resource.name} />
+    <span>{resource.name}</span>
+  </div>
+);
+
+// Outside your component, or memoized: see "Keep in mind" below.
+const components: SchedulerComponents = { ResourceHeader, Event, EventPopover, Toolbar };
+
+<ResourceScheduler resources={resources} components={components} />;
+```
+
+Give only the parts you want to change. Everything else stays as it is, and without `components` nothing changes.
+
+## The parts
+
+| Part | You get | Replaces |
+| --- | --- | --- |
+| `Toolbar` | `ToolbarProps`: `title`, `viewTitle`, `views`, `viewType`, `currentDate`, `onNavigate`, `onViewChange`, `onGoToToday`, `labels`, `dir`, `allowViewChange` | The bar with the date, arrows, Today and the view select |
+| `Event` | `{ event, resource }` | The content of an event card |
+| `EventPopover` | `{ event, resource, close }` | The details that open from an event |
+| `ResourceHeader` | `{ resource }` | The content of a resource's cell in the left column |
+| `DateHeader` | `{ date, view }` | The content of a column header |
+| `EmptyCell` | `{ date, resource }` | What is drawn inside every empty slot |
+
+**`Event` replaces the content, not the card.** The card around it keeps its size, its drag and resize handles, its keyboard use (Enter opens the details, Space picks it up), its focus ring and its screen reader name, so your event looks the way you want and still behaves. Size your content to fill the card (`height: 100%`).
+
+**`Toolbar` replaces the whole bar**, so you build the controls and the scheduler gives you what they need. `title` is the period as the locale writes it ("Oct 5 – Oct 9, 2026"), `viewTitle` the view in words, `views` the views to offer (`availableViews`, or all five). Navigation goes through the callbacks: `onNavigate("prev" | "next")`, `onViewChange(view)` and `onGoToToday()`. `labels` has every word in the language the scheduler was given, and `dir` is `"rtl"` when the layout is mirrored, so turn your arrows the other way. In a custom toolbar `classNames.toolbar` has nothing to style.
+
+```tsx
+const Toolbar: SchedulerComponents["Toolbar"] = ({ title, views, viewType, onNavigate, onViewChange, labels }) => (
+  <header>
+    <button onClick={() => onNavigate("prev")}>{labels.previousPeriod}</button>
+    <h2>{title}</h2>
+    <button onClick={() => onNavigate("next")}>{labels.nextPeriod}</button>
+    {views.map((view) => (
+      <button key={view} aria-pressed={view === viewType} onClick={() => onViewChange(view)}>
+        {labels.views[view]}
+      </button>
+    ))}
+  </header>
+);
+```
+
+## Why components and not render props
+
+The `render*` props (`renderTimeSlot`, `renderEventPopover`, `renderResourceHeader`, `renderDateHeader`, `renderEmptyCell`) still work. A part in `components` wins over the matching render prop when both are given. The difference is that a component is a component:
+
+- It can use **hooks and keep state**. A render prop is called as a plain function inside the scheduler's own render, so a hook in it belongs to the scheduler's component: lint rules flag it, and it breaks as soon as the prop is added or removed later. The popover in the demo above keeps its "Done" state in `useState`.
+- It shows up in React DevTools with a name, can be memoized, and can be shared with the rest of your app.
+- There is one prop to learn instead of five.
+
+## Keep in mind
+
+- **Define components outside your render**, or memoize them. A component created inside your component is a new type on every render, and React throws away and recreates it (and its state) each time. Passing a fresh `components={{ Event }}` object each render is fine as long as `Event` itself is the same function.
+- **Dates are wall-clock Dates with `timeZone`**, like the render props: `format(event.startDate, "p")` shows the zone's time. See [Time zones](/guides/time-zones/).
+- **Clicks inside an `Event` also reach the card**: a click opens the popover and a press starts a drag. For a button inside the card, call `event.stopPropagation()` on its `pointerdown` and `click`, or keep the card for interaction and use the popover for controls.
+- **Group headers** are not `ResourceHeader`: they are the scheduler's own bands, styled through `classNames.groupHeader`.
+- **`ResourceHeader` gets the resource only.** With [`showUtilization`](/guides/utilization/) the bar under the name stays.
+
+## Not included
+
+- Replacing the grid, a slot, the resource column or the group headers as a whole. Those carry the layout, the keyboard grid and the drag logic; use [`classNames`](/guides/theming/) and the tokens for them.
+- A headless version of the logic without the markup. The pure functions (`getUtilization`, `findAvailableSlots`, `expandEvents`, ...) are exported and work without the component.

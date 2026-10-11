@@ -94,6 +94,7 @@ export default defineConfig({
             { label: "Time zones", slug: "guides/time-zones" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
             { label: "Theming", slug: "guides/theming" },
+            { label: "Replace parts", slug: "guides/components" },
             { label: "Next.js and SSR", slug: "guides/nextjs-and-ssr" },
           ],
         },
