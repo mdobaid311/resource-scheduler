@@ -169,6 +169,49 @@ describe("mouse", () => {
   });
 });
 
+describe("column virtualization", () => {
+  it("draws only the columns near the viewport in the year view, and follows the scroll and the keyboard", async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(String(e)));
+    await page.clock.setFixedTime(NOW);
+    await page.goto(BASE + "/bench/?rows=30&events=6&view=year");
+    await page.waitForSelector("[data-rs-event]");
+
+    const grid = page.locator('[role="grid"]');
+    const scroller = page.locator(".rs-root .overflow-x-auto");
+    const cells = () => page.locator('[data-rs-resource="r0"][data-rs-slot]');
+    assert.equal(await grid.getAttribute("aria-colcount"), "365");
+
+    // The grid scrolls to today first; the window follows it: a few dozen of 365 columns per row.
+    await page.waitForFunction(() => document.querySelector(".rs-root .overflow-x-auto").scrollLeft > 30000);
+    const count = await cells().count();
+    assert.ok(count > 10 && count < 60, `columns per row: ${count}`);
+    const widthBefore = await scroller.evaluate((el) => el.scrollWidth);
+
+    // Jump to the end of the year: its cells are drawn, and the scrollbar still spans the whole year.
+    await scroller.evaluate((el) => (el.scrollLeft = el.scrollWidth));
+    await page.waitForSelector('[data-rs-slot][aria-colindex="365"]');
+    assert.equal(await scroller.evaluate((el) => el.scrollWidth), widthBefore);
+    assert.equal(await page.locator('[data-rs-slot][aria-colindex="1"]').count(), 0);
+
+    // Keyboard: Home goes back to the first column, End to the last, and the cursor cell is always there.
+    await grid.focus();
+    await page.keyboard.press("Home");
+    await page.waitForSelector('[data-rs-slot][aria-colindex="1"]');
+    // The cursor cell is mounted at once; the end of the year goes when the scroll has moved the window.
+    await page.waitForFunction(() => !document.querySelector('[data-rs-slot][aria-colindex="365"]'));
+    await page.keyboard.press("End");
+    await page.waitForSelector('[data-rs-slot][aria-colindex="365"]');
+    const active = await grid.getAttribute("aria-activedescendant");
+    assert.equal(await page.locator(`[id="${active}"]`).getAttribute("aria-colindex"), "365");
+
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("components", () => {
   it("draws the parts you replaced and keeps the behaviour of the card", async () => {
     const { page, context, errors } = await open("/guides/components/");

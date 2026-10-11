@@ -155,6 +155,11 @@
           "target": "@components/resource-scheduler/utils/availability.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/columnWindow.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/columnWindow.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/dateUtils.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/dateUtils.ts"

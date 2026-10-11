@@ -96,13 +96,15 @@ export const useScheduler = (
     [viewType]
   );
 
-  const getResourceRowHeight = useCallback(
+  // The columns of the grid, built once per view (the year view has 365).
+  const datesInView = useMemo(
+    () => (viewType === ViewType.Day ? getTimeSlotsMemoized() : getDatesInViewMemoized()),
+    [viewType, getTimeSlotsMemoized, getDatesInViewMemoized]
+  );
+
+  const measureRow = useCallback(
     (resource: Resource) => {
       if (isGroupRow(resource)) return GROUP_ROW_HEIGHT;
-      const datesInView =
-        viewType === ViewType.Day
-          ? getTimeSlotsMemoized()
-          : getDatesInViewMemoized();
       const eventPositions = calculateEventPositions(
         resource.events,
         datesInView
@@ -114,15 +116,23 @@ export const useScheduler = (
 
       return Math.max(lanes * lane + ROW_PADDING, minRowHeight);
     },
-    [
-      viewType,
-      lane,
-      minRowHeight,
-      calculateEventPositions,
-      getTimeSlotsMemoized,
-      getDatesInViewMemoized,
-    ]
+    [lane, minRowHeight, calculateEventPositions, datesInView]
   );
+
+  // A row is measured once for as long as the view and its resource object stay
+  // the same, so a re-render that only moves a scroll window (rows or columns)
+  // does not measure every row again.
+  const getResourceRowHeight = useMemo(() => {
+    const measured = new WeakMap<Resource, number>();
+    return (resource: Resource) => {
+      let height = measured.get(resource);
+      if (height === undefined) {
+        height = measureRow(resource);
+        measured.set(resource, height);
+      }
+      return height;
+    };
+  }, [measureRow]);
 
   const getRowHeights = useCallback(() => {
     return resources.map((resource) => getResourceRowHeight(resource));

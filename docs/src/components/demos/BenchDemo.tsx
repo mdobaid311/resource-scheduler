@@ -34,13 +34,20 @@ export default function BenchDemo() {
   const perRow = Number(params.get("events") ?? 5);
   // ?virtualize=false renders every row, for the before/after comparison.
   const virtualize = params.get("virtualize") === "false" ? false : undefined;
+  // ?columns=false renders every column, for the before/after comparison.
+  const virtualizeColumns = params.get("columns") === "false" ? false : undefined;
+  // ?view=year|quarter|month|day|week and ?slot=15 pick what is measured; the default is a week.
+  const view = Object.values(ViewType).find((v) => v === params.get("view")) ?? ViewType.Week;
+  const slotDuration = params.has("slot") ? Number(params.get("slot")) : undefined;
   const resources = useMemo(() => makeResources(rows, perRow), [rows, perRow]);
   return (
     <div style={{ height: 700 }} data-bench-root>
       <ResourceScheduler
         resources={resources}
         initialDate={new Date(2026, 9, 7)}
-        initialView={ViewType.Week}
+        initialView={view}
+        slotDuration={slotDuration}
+        virtualizeColumns={virtualizeColumns}
         eventOverlap={false}
         virtualize={virtualize}
         onEventDrop={() => {}}
