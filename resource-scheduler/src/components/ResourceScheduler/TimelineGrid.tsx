@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/TimelineGrid.tsx
 import { addDays, addMinutes, isSameDay, startOfDay } from "date-fns";
 import React, { useEffect, useId, useRef } from "react";
+import { useClock } from "./clock";
 import { LANES, useDensity } from "./density";
 import { EmptySlotItem } from "./EmptySlotItem";
 import { EventItem } from "./EventItem";
@@ -88,7 +89,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   });
 
   // The cursor starts at "now" when it is on screen, else at the first slot.
-  const now = new Date();
+  const now = useClock()();
   const initialCol =
     viewType === "day"
       ? slots.length && isSameDay(slots[0], now)
@@ -336,7 +337,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     resource={resource}
                     slot={slot}
                     isSelected={!!isSelected}
-                    isToday={isToday(slot)}
+                    isToday={isToday(slot, now)}
                     onMouseDown={onMouseDown}
                     onMouseEnter={onMouseEnter}
                     onCellClick={handleCellClick}

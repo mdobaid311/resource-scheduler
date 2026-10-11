@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/utils/importEvents.ts
 import { format, startOfDay } from "date-fns";
 import type { Recurrence, ResourceInput, SchedulerEvent } from "../types";
+import { wallToInstant } from "./timeZone";
 
 export interface ImportOptions {
   /**
@@ -93,38 +94,7 @@ const readEvents = (text: string) => {
 
 // --- Dates ----------------------------------------------------------------------
 
-const formatters = new Map<string, Intl.DateTimeFormat | null>();
-const zone = (timeZone: string) => {
-  if (!formatters.has(timeZone)) {
-    try {
-      formatters.set(
-        timeZone,
-        new Intl.DateTimeFormat("en-US", {
-          timeZone,
-          hourCycle: "h23",
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        })
-      );
-    } catch {
-      formatters.set(timeZone, null);
-    }
-  }
-  return formatters.get(timeZone) ?? undefined;
-};
-
-// How far the zone is ahead of UTC at that moment, in milliseconds.
-const offsetAt = (zoned: Intl.DateTimeFormat, ms: number) => {
-  const part = Object.fromEntries(zoned.formatToParts(ms).map((p) => [p.type, Number(p.value)]));
-  return Date.UTC(part.year, part.month - 1, part.day, part.hour, part.minute, part.second) - ms;
-};
-
-const DAY = 86_400_000;
-const DATE_VALUE =/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/i;
+const DATE_VALUE = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/i;
 
 // A date (`20261007`) is a whole local day. A date-time is UTC with a `Z`, in the
 // zone named by `TZID`, or else floating: the same wall-clock time wherever it is read.
@@ -150,15 +120,8 @@ const parseDate = (value: string, params: Record<string, string>, warn: Warn) =>
 
   const timeZone = params.TZID;
   if (timeZone) {
-    const zoned = zone(timeZone);
-    if (zoned) {
-      // The offsets a day either side are the only candidates. Around a clock
-      // change a time can fit both (it happens twice: the first one counts) or
-      // neither (it is skipped: the offset from before the change counts).
-      const before = offsetAt(zoned, wall - DAY);
-      const fits = [before, offsetAt(zoned, wall + DAY)].filter((o) => offsetAt(zoned, wall - o) === o);
-      return { date: new Date(fits.length ? wall - Math.max(...fits) : wall - before), allDay: false };
-    }
+    const instant = wallToInstant(wall, timeZone);
+    if (instant !== undefined) return { date: new Date(instant), allDay: false };
     warn(`Unknown time zone "${timeZone}": its times were read as local time.`);
   }
   return { date: new Date(year, month - 1, day, hour, minute, second), allDay: false };

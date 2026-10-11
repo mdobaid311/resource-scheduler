@@ -10,15 +10,19 @@
 // (21.3 KB used, plus touch selection waiting to merge). The file format
 // helpers then moved to their own entry point (resource-scheduler/exchange,
 // budget below), which took the main bundle back to 21.7 KB. The exchange entry
-// is 4.1 KB with the .ics import (1.4 KB before it).
+// is 3.9 KB with the .ics import (1.4 KB before it). The main bundle
+// went to 24 KB for the timeZone prop (22.5 KB used).
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 23_000,
+  "dist/index.esm.js": 24_000,
   "dist/exchange.esm.js": 5_000,
   "dist/resource-scheduler.css": 7_000,
 };
+// Code both entries use is split into one chunk, `name-<hash>.js` (and `.cjs`).
+const SHARED_CHUNK = /^[A-Za-z0-9_]+-[A-Za-z0-9_-]{8}[.]c?js$/;
+const CHUNKS_BUDGET = 1_500;
 const EXPECTED_FILES = new Set([
   "index.cjs",
   "index.esm.js",
@@ -32,7 +36,7 @@ const EXPECTED_FILES = new Set([
 let failed = false;
 
 for (const name of fs.readdirSync("dist")) {
-  if (!EXPECTED_FILES.has(name)) {
+  if (!EXPECTED_FILES.has(name) && !SHARED_CHUNK.test(name)) {
     console.error(`dist/${name} would be published but should not be (copied from public/?)`);
     failed = true;
   }
@@ -44,5 +48,12 @@ for (const [file, max] of Object.entries(BUDGET)) {
   console.log(`${ok ? "ok  " : "FAIL"} ${file}: ${size} bytes gzip (budget ${max})`);
   if (!ok) failed = true;
 }
+
+// The chunk is loaded by whichever entry is used, so its ESM size counts once.
+const chunks = fs.readdirSync("dist").filter((name) => SHARED_CHUNK.test(name) && name.endsWith(".js"));
+const chunkSize = chunks.reduce((sum, name) => sum + zlib.gzipSync(fs.readFileSync(`dist/${name}`), { level: 9 }).length, 0);
+const chunksOk = chunkSize <= CHUNKS_BUDGET;
+console.log(`${chunksOk ? "ok  " : "FAIL"} shared chunks: ${chunkSize} bytes gzip (budget ${CHUNKS_BUDGET})`);
+if (!chunksOk) failed = true;
 
 process.exit(failed ? 1 : 0);

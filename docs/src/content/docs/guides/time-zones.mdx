@@ -1,0 +1,53 @@
+---
+title: Time zones
+description: Show and report times in an IANA time zone such as Europe/Paris instead of the browser's own, for teams and rooms in another place.
+---
+
+import TimeZoneDemo from "../../../components/demos/TimeZoneDemo";
+
+By default the scheduler shows times in the viewer's own zone. Pass `timeZone` to show them in another one: a head office, a room in another city, the zone of whoever is booking.
+
+<TimeZoneDemo client:only="react" />
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  timeZone="America/New_York"
+  businessHours={{ startHour: 9, endHour: 17 }}
+  onEventDrop={(event, from, to, start, end) => save(event.id, start, end)}
+/>
+```
+
+`timeZone` takes an IANA name (`Europe/Paris`, `America/New_York`, `Asia/Kolkata`). Leave it out and nothing changes. A name the browser does not know warns in the console and falls back to the viewer's zone.
+
+## What changes
+
+- **Events** are instants, as a `Date` always is. An event at 08:00 UTC is drawn at 09:00 in London in summer and at 17:00 in Tokyo, on the day it falls on there.
+- **Business hours** are hours in the zone: `businessHours={{ startHour: 9, endHour: 17 }}` shades everything outside 9 to 17 on the clock of that zone.
+- **Today, the now line and the Today button** follow the zone.
+- **`unavailable` ranges** are instants, like events.
+- **Recurring events** repeat at the same wall-clock time in the zone, also across its clock changes, so a 09:00 standup stays at 09:00 when summer time starts.
+
+## What you receive
+
+Handlers give you **instants**, ready to store: `onEventDrop`, `onEventResize`, `onEventCreate`, `onSlotSelect`, `onEventClick`, `onDateChange`, `onRangeChange`, the arguments of `isValidDrop` and `eventOverlap`, and what the ref methods take and return (`goTo`, `scrollToTime`, `getVisibleRange`). Drop an event on 14:00 in the grid and `onEventDrop` hands you the moment that is 14:00 in the zone.
+
+**Render props** (`renderEventPopover`, `renderDateHeader`, `renderEmptyCell`, `renderTimeSlot`, `renderResourceHeader`) receive dates as wall-clock `Date`s in the zone: `format(event.startDate, "p")` shows the zone's time, which is what you want when drawing. To show a stored instant in the zone yourself, use `utcToZoned`; `zonedToUtc` goes the other way.
+
+```ts
+import { format } from "date-fns";
+import { utcToZoned, zonedToUtc } from "resource-scheduler";
+
+format(utcToZoned(event.startDate, "Asia/Tokyo"), "p"); // "5:00 PM" wherever the browser is
+zonedToUtc(new Date(2026, 9, 7, 9), "Asia/Tokyo"); // the instant it is 09:00 on 7 Oct in Tokyo
+```
+
+Export is unaffected: `eventsToICS` writes the instants, and `icsToEvents` reads `TZID` zones into instants.
+
+## Limits
+
+- **A day on the grid has 24 hours.** On the day a zone changes its clock, the hour that does not exist is still drawn, and the hour that happens twice is drawn once. A time that does not exist (02:30 when clocks go forward at 02:00) is stored as the moment an hour later, and one that happens twice as the first of the two, as RFC 5545 says.
+- **The viewer's machine cannot show a wall-clock time its own zone skips.** Because the grid works on wall-clock `Date`s, a time that does not exist in the *browser's* zone (02:30 on the night its clocks go forward) appears an hour later. This only matters when the browser's zone and `timeZone` change their clocks on different days and an event sits in that hour.
+- **Recurrence `until` and `exceptions` are calendar days**, not instants, and are never converted: `exceptions: [new Date(2026, 9, 14)]` means 14 October, in whichever zone you show.
+- **`weekStartsOn`, `locale` and `hour12`** are unchanged; `timeZone` only moves the clock.
+- **Changing `timeZone` while the scheduler is on screen** keeps the calendar day you were looking at, not the instant.

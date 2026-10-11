@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/ResourceScheduler.tsx
 import { useMediaQuery } from "./hooks/use-media-query";
 import { ClassNamesContext, type SchedulerClassNames, withClass } from "./classNames";
+import { useClock } from "./clock";
 import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
 
@@ -27,6 +28,7 @@ import {
   type SchedulerEvent,
   ViewType,
 } from "./types";
+import { withTimeZone } from "./withTimeZone";
 import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
@@ -49,7 +51,7 @@ const OVERSCAN = 320;
 // The sticky date header above the first row (h-14).
 const HEADER_HEIGHT = 56;
 
-export const ResourceScheduler = forwardRef<
+const SchedulerView = forwardRef<
   ResourceSchedulerHandle,
   ResourceSchedulerProps
 >(function ResourceScheduler({
@@ -98,6 +100,7 @@ export const ResourceScheduler = forwardRef<
   renderTimeSlot,
   renderEmptyCell,
 }, ref) {
+  const readClock = useClock();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
   const i18n = useMemo(
@@ -315,7 +318,7 @@ export const ResourceScheduler = forwardRef<
     setViewType(newView);
     onViewChange?.(newView);
 
-    const todaysDate = new Date();
+    const todaysDate = readClock();
     setCurrentDate(todaysDate);
     onDateChange?.(todaysDate);
   };
@@ -326,7 +329,7 @@ export const ResourceScheduler = forwardRef<
   };
 
   const goToToday = () => {
-    const today = new Date();
+    const today = readClock();
     setCurrentDate(today);
     onDateChange?.(today);
   };
@@ -490,5 +493,7 @@ export const ResourceScheduler = forwardRef<
     </I18nContext.Provider>
   );
 });
+
+export const ResourceScheduler = withTimeZone(SchedulerView);
 
 export default ResourceScheduler;

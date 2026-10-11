@@ -50,6 +50,11 @@ export {
 } from "./components/ResourceScheduler/utils/recurrence";
 export { getRowWindow } from "./components/ResourceScheduler/utils/rowWindow";
 export {
+  isValidTimeZone,
+  utcToZoned,
+  zonedToUtc,
+} from "./components/ResourceScheduler/utils/timeZone";
+export {
   findAvailableSlots,
   isCellUnavailable,
   resolveBusinessHours,

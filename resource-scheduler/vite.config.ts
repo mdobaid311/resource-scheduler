@@ -51,8 +51,9 @@ export default defineConfig({
       output: {
         // Next.js App Router: lets the package be imported from a server file.
         // Not on `exchange`: a "use client" module's functions cannot be called
-        // from a server component, and those are plain functions.
-        banner: (chunk) => (chunk.name === "exchange" ? "" : '"use client";'),
+        // from a server component, and those are plain functions. Code both entries share goes into
+        // a chunk that the exchange entry imports, so that has no banner either.
+        banner: (chunk) => (chunk.isEntry && chunk.name !== "exchange" ? '"use client";' : ""),
         // Fix CSS file naming
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {

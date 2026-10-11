@@ -60,6 +60,11 @@
           "target": "@components/resource-scheduler/classNames.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/clock.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/clock.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/density.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/density.ts"
@@ -190,9 +195,19 @@
           "target": "@components/resource-scheduler/utils/scrollUtils.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/timeZone.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/timeZone.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/utilization.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/utilization.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/withTimeZone.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/withTimeZone.tsx"
         }
       ],
       "cssVars": {

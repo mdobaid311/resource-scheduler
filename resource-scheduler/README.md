@@ -33,7 +33,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | MUI X Scheduler | The Event Timeline is Premium |
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: there is no time zone support yet, and only rows are virtualized, so for very large timelines pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: only rows are virtualized, so for very large timelines pick a heavier tool.
 
 ## Features
 
@@ -183,6 +183,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `showUtilization` | `boolean` | `false` | A bar under each resource name: how much of its available time (business hours minus `unavailable`, times `capacity`) is booked in the visible range. Over 100% means more bookings at once than it can take. `getUtilization` is exported for the same numbers elsewhere |
 | `locale` | date-fns `Locale` | English | e.g. `import { de } from "date-fns/locale"`. Names, date formats, 12/24-hour clock and the first day of the week follow it |
 | `hour12` | `boolean` | the locale's | `true` for a 12-hour clock, `false` for 24-hour |
+| `timeZone` | `string` | the browser's | An IANA zone such as `"Europe/Paris"`: events, business hours, today and the now line are shown in it, and handlers receive instants. An unknown name warns and the local zone is used |
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | `"rtl"` mirrors the layout for Arabic, Hebrew and other right-to-left languages and flips the left and right arrow keys |
 | `labels` | `PartialLabels` | English | Text of the toolbar, headers, view names and screen reader messages. Any subset; see `defaultLabels` for the full set |
 | `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn |
