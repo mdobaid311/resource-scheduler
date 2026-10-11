@@ -2,6 +2,7 @@
 import { useMediaQuery } from "./hooks/use-media-query";
 import { ClassNamesContext, type SchedulerClassNames, withClass } from "./classNames";
 import { useClock } from "./clock";
+import { ComponentsContext } from "./components";
 import { ColumnUtilizationRow } from "./ColumnUtilization";
 import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
@@ -87,6 +88,7 @@ const SchedulerView = forwardRef<
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
   classNames,
+  components,
   density,
   virtualize,
   renderEventPopover,
@@ -104,6 +106,12 @@ const SchedulerView = forwardRef<
   renderEmptyCell,
 }, ref) {
   const readClock = useClock();
+  // Keyed by the parts, so a new `components` object with the same parts does not re-render everything.
+  const { Toolbar, Event: EventPart, EventPopover, ResourceHeader, DateHeader, EmptyCell } = components ?? {};
+  const parts = useMemo(
+    () => ({ Toolbar, Event: EventPart, EventPopover, ResourceHeader, DateHeader, EmptyCell }),
+    [Toolbar, EventPart, EventPopover, ResourceHeader, DateHeader, EmptyCell]
+  );
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
   const i18n = useMemo(
@@ -421,6 +429,7 @@ const SchedulerView = forwardRef<
     <I18nContext.Provider value={i18n}>
       <ClassNamesContext.Provider value={classNames ?? NO_CLASS_NAMES}>
       <DensityContext.Provider value={density ?? "comfortable"}>
+      <ComponentsContext.Provider value={parts}>
       <div
         dir={i18n.dir}
         className={withClass(
@@ -521,6 +530,7 @@ const SchedulerView = forwardRef<
           </div>
         </div>
       </div>
+      </ComponentsContext.Provider>
       </DensityContext.Provider>
       </ClassNamesContext.Provider>
     </I18nContext.Provider>

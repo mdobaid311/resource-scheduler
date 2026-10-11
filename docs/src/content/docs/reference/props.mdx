@@ -74,6 +74,7 @@ Only `resources` is required.
 ## Rendering
 
 - **`renderEventPopover`**: `(event, resource, closePopover) => ReactNode`. Replaces the details popover.
+- **`components`**: `SchedulerComponents`. Replaces whole parts with your own React components (they can use hooks): `Toolbar`, `Event` (the content of the card), `EventPopover`, `ResourceHeader`, `DateHeader`, `EmptyCell`. A part given here wins over the matching `render*` prop. See [Replace parts](/guides/components/).
 - **`renderTimeSlot`**: `(event, resources) => ReactNode`. Replaces the event card; `resources` holds the one owning resource.
 - **`renderResourceHeader`**: `(resource) => ReactNode`. The cell in the left column.
 - **`renderDateHeader`**: `(date, view) => ReactNode`. A column header.

@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
+import { useComponents } from "./components";
 import { useI18n } from "./i18n";
 import { type SchedulerControlsProps, ViewType } from "./types";
 import { getDatesInView } from "./utils/dateUtils";
@@ -28,6 +29,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
 }) => {
   const { labels, fmt, locale, dir } = useI18n();
   const classNames = useClassNames();
+  const { Toolbar } = useComponents();
   // Previous and next point the other way when time runs right to left.
   const arrow = `h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`;
 
@@ -54,6 +56,35 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
         return fmt.titleDay(currentDate);
     }
   };
+
+  const views = availableViews ?? [
+    ViewType.Day,
+    ViewType.Week,
+    ViewType.Month,
+    ViewType.Quarter,
+    ViewType.Year,
+  ];
+
+  if (Toolbar) {
+    return (
+      <Toolbar
+        currentDate={currentDate}
+        viewType={viewType}
+        onNavigate={onNavigate}
+        onViewChange={onViewChange}
+        onGoToToday={onGoToToday}
+        allowViewChange={allowViewChange}
+        availableViews={availableViews}
+        weekStartsOn={weekStartsOn}
+        hideWeekends={hideWeekends}
+        title={getDateTitle()}
+        viewTitle={labels.viewTitle(labels.views[viewType])}
+        views={views}
+        labels={labels}
+        dir={dir}
+      />
+    );
+  }
 
   return (
     <div
@@ -119,15 +150,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             <SelectValue placeholder={labels.view} />
           </SelectTrigger>
           <SelectContent style={{ zIndex: 99 }}>
-            {(
-              availableViews ?? [
-                ViewType.Day,
-                ViewType.Week,
-                ViewType.Month,
-                ViewType.Quarter,
-                ViewType.Year,
-              ]
-            ).map((view) => (
+            {views.map((view) => (
               <SelectItem key={view} value={view}>
                 {labels.views[view]}
               </SelectItem>

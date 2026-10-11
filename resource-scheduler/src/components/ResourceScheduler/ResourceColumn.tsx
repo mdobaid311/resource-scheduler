@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { ColumnUtilizationLabel } from "./ColumnUtilization";
+import { useComponents } from "./components";
 import { useDensity } from "./density";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
@@ -54,6 +55,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
 }) => {
   const { labels } = useI18n();
   const classNames = useClassNames();
+  const { ResourceHeader } = useComponents();
   const density = useDensity();
   // Rows outside the range are not rendered; spacers keep the column tall.
   const heights = resources.map(getResourceRowHeight);
@@ -148,7 +150,9 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             )}
             style={{ height: rowHeight + "px" }}
           >
-            {renderResourceHeader ? (
+            {ResourceHeader ? (
+              <ResourceHeader resource={resource} />
+            ) : renderResourceHeader ? (
               renderResourceHeader(resource)
             ) : (
               <span className="w-full block break-words whitespace-pre-line">

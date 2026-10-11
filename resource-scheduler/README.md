@@ -190,6 +190,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
+| `components` | `SchedulerComponents` | `undefined` | Replace whole parts with your own components (hooks work): `Toolbar`, `Event` (card content), `EventPopover`, `ResourceHeader`, `DateHeader`, `EmptyCell`. Wins over the matching `render*` prop |
 | `renderTimeSlot` | `(event: SchedulerEvent, resources: Resource[]) => ReactNode` | `undefined` | Replace the event card. `resources` holds the single owning resource |
 | `renderEmptyCell` | `(date: Date, resource: Resource) => ReactNode` | `undefined` | Content rendered inside empty cells |
 

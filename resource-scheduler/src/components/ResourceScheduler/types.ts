@@ -4,7 +4,7 @@
 import type { Locale } from "date-fns";
 import type { SchedulerClassNames } from "./classNames";
 import type { Density } from "./density";
-import type { PartialLabels } from "./i18n";
+import type { PartialLabels, SchedulerLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
 import type { Utilization } from "./utils/utilization";
@@ -268,6 +268,14 @@ export interface ResourceSchedulerProps {
    */
   classNames?: SchedulerClassNames;
   /**
+   * Replace whole parts with your own components: `Toolbar`, `Event` (the
+   * content of the card), `EventPopover`, `ResourceHeader`, `DateHeader` and
+   * `EmptyCell`. They can use hooks. A part given here wins over the matching
+   * `render*` prop. With `timeZone`, dates they receive are wall-clock Dates
+   * in the zone, like the render props.
+   */
+  components?: SchedulerComponents;
+  /**
    * `"compact"` shrinks event lanes and cards (38 px a lane against 52) and
    * shows an event's title and time on one line, so more resources fit on
    * screen. A row that has a utilization bar is never shorter than 60 px.
@@ -303,6 +311,44 @@ export interface ResourceSchedulerProps {
   renderDateHeader?: (date: Date, view: ViewType) => React.ReactNode;
   renderTimeSlot?: (event: SchedulerEvent, resource: Resource[]) => React.ReactNode;
   renderEmptyCell?: (date: Date, resource: Resource) => React.ReactNode;
+}
+
+/** What a custom `Toolbar` gets: the state and callbacks of the default one, with the text ready. */
+export interface ToolbarProps extends SchedulerControlsProps {
+  /** The period shown, formatted for the locale: "Oct 5 – Oct 9, 2026". */
+  title: string;
+  /** The view in words, under the title: "Week View". */
+  viewTitle: string;
+  /** The views to offer: `availableViews`, or all of them. */
+  views: ViewType[];
+  /** Every label of the scheduler, in the language it was given. */
+  labels: SchedulerLabels;
+  /** `"rtl"` when the layout is mirrored: turn your arrows the other way. */
+  dir: "ltr" | "rtl";
+}
+
+/**
+ * Whole parts of the scheduler that you can replace with your own components
+ * (see `ResourceSchedulerProps.components`). Unlike the `render*` props they
+ * are components, so they can use hooks and keep state. Define them outside
+ * your render, or memoize them: a new component type each render remounts.
+ */
+export interface SchedulerComponents {
+  /** The toolbar: date, arrows, Today and the view select. You get the title and choices ready; navigation goes through the callbacks. */
+  Toolbar?: React.ComponentType<ToolbarProps>;
+  /**
+   * The content of an event card. The card itself stays: its size, dragging,
+   * resize handles, keyboard use and focus ring.
+   */
+  Event?: React.ComponentType<{ event: SchedulerEvent; resource: Resource }>;
+  /** The details that open from an event. Call `close` to dismiss them. */
+  EventPopover?: React.ComponentType<{ event: SchedulerEvent; resource: Resource; close: () => void }>;
+  /** The content of a resource's cell in the left column (not group headers). */
+  ResourceHeader?: React.ComponentType<{ resource: Resource }>;
+  /** The content of a column header: an hour in the day view, a day in the others. */
+  DateHeader?: React.ComponentType<{ date: Date; view: ViewType }>;
+  /** Drawn inside every empty slot. */
+  EmptyCell?: React.ComponentType<{ date: Date; resource: Resource }>;
 }
 
 export interface SchedulerControlsProps {

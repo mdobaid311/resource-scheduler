@@ -2,6 +2,7 @@
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useClock } from "./clock";
+import { useComponents } from "./components";
 import { useI18n } from "./i18n";
 import type { TimelineHeaderProps } from "./types";
 import { isToday } from "./utils/dateUtils";
@@ -16,6 +17,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 }) => {
   const { fmt } = useI18n();
   const classNames = useClassNames();
+  const { DateHeader } = useComponents();
   const now = useClock()();
   const slots = viewType === "day" ? getTimeSlots() : getDatesInView();
 
@@ -38,7 +40,9 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             classNames.dateHeader
           )}
         >
-          {renderDateHeader ? (
+          {DateHeader ? (
+            <DateHeader date={slot} view={viewType} />
+          ) : renderDateHeader ? (
             renderDateHeader(slot, viewType)
           ) : viewType === "day" ? (
             <>
