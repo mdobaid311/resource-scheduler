@@ -88,7 +88,7 @@ export default defineConfig({
             { label: "Business hours and availability", slug: "guides/availability" },
             { label: "Utilization", slug: "guides/utilization" },
             { label: "Resource groups", slug: "guides/resource-groups" },
-            { label: "Export to a calendar or spreadsheet", slug: "guides/export" },
+            { label: "Export and import calendar files", slug: "guides/export" },
             { label: "Large data and performance", slug: "guides/performance" },
             { label: "Languages and clocks", slug: "guides/internationalization" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },

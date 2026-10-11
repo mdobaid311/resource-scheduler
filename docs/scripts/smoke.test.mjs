@@ -169,6 +169,46 @@ describe("mouse", () => {
   });
 });
 
+describe("import", () => {
+  it("reads a calendar file into the board and says what it could not show", async () => {
+    const { page, context, errors } = await open("/guides/export/");
+    const frame = page.locator(".demo-frame").nth(1);
+    await frame.scrollIntoViewIfNeeded();
+
+    // The sample has three events; the monthly "second Tuesday" rule cannot be shown, so it is imported once.
+    assert.equal(await frame.locator(".demo-log").textContent(), "3 events imported");
+    assert.equal(await frame.locator("[data-rs-event]").count(), 3);
+    assert.match(await frame.getByLabel("Import warnings").textContent(), /retro@example\.com.*BYDAY=2TU/);
+
+    // Edit the file and import again: a floating 3 PM event in the room named by LOCATION.
+    await frame.getByLabel("Calendar file").fill(
+      [
+        "BEGIN:VCALENDAR",
+        "BEGIN:VEVENT",
+        "UID:custom",
+        "SUMMARY:Imported demo",
+        "DTSTART:20261007T150000",
+        "DTEND:20261007T160000",
+        "LOCATION:Atlas (8 seats)",
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ].join("\n")
+    );
+    await frame.getByRole("button", { name: "Import" }).click();
+
+    assert.equal(await frame.locator(".demo-log").textContent(), "1 event imported");
+    const cards = frame.locator("[data-rs-event]");
+    assert.equal(await cards.count(), 1);
+    const text = await cards.first().getAttribute("aria-label");
+    assert.match(text, /Imported demo/);
+    assert.match(text, /Atlas/);
+    assert.match(text, /3:00 PM/);
+    assert.equal(await frame.getByLabel("Import warnings").count(), 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("keyboard", () => {
   it("picks an event up, moves it to another resource and drops it", async () => {
     const { page, context, errors } = await open(KEYBOARD);

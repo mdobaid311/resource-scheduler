@@ -1,11 +1,12 @@
 ---
-title: Export to a calendar or spreadsheet
-description: Turn events into an iCalendar file for Google Calendar, Outlook and Apple Calendar, or a CSV file for a spreadsheet.
+title: Export and import calendar files
+description: Turn events into an iCalendar file for Google Calendar, Outlook and Apple Calendar, or a CSV file for a spreadsheet, and read an .ics file back into events.
 ---
 
 import ExportDemo from "../../../components/demos/ExportDemo";
+import ImportDemo from "../../../components/demos/ImportDemo";
 
-Two pure functions turn a list of events into text: `eventsToICS` for a calendar app and `eventsToCSV` for a spreadsheet. They return strings, so they work in the browser for a "Download" button and on a server for a feed. They live in their own entry point, `resource-scheduler/exchange`: no React, no `"use client"`, so a server component or a route handler can import them, and they stay out of the component bundle.
+Pure functions turn a list of events into text: `eventsToICS` for a calendar app and `eventsToCSV` for a spreadsheet; `icsToEvents` reads a calendar file back. The export functions return strings, so they work in the browser for a "Download" button and on a server for a feed. They live in their own entry point, `resource-scheduler/exchange`: no React, no `"use client"`, so a server component or a route handler can import them, and they stay out of the component bundle.
 
 <ExportDemo client:only="react" />
 
@@ -60,8 +61,42 @@ import { eventsToCSV } from "resource-scheduler/exchange";
 const csv = eventsToCSV(expandEvents(events, from, to), { resources });
 ```
 
+## Import
+
+`icsToEvents` reads the events of an `.ics` file, from Google Calendar, Outlook, Apple Calendar or `eventsToICS`, into the events the scheduler takes. It works on the text of a file the user picks, so a calendar can be imported without a server.
+
+<ImportDemo client:only="react" />
+
+```ts
+import { icsToEvents } from "resource-scheduler/exchange";
+
+const events = icsToEvents(await file.text(), {
+  resources, // match each LOCATION to a resource name
+  resourceId: "ann", // events that match none go to this row
+  onWarning: (message) => console.warn(message),
+});
+
+<ResourceScheduler resources={resources} events={events} />;
+```
+
+An event is drawn on the resource it names, so every imported event needs one. `LOCATION` is matched with the names in `resources` (ignoring case; a list such as `Room A, Room B` gives the event both), and `resourceId` catches the rest, for example a person's own calendar imported into their row. Without either, an event has no resource and is not drawn.
+
+What is read:
+
+- **Times.** UTC times (`Z`), times in a `TZID` zone and floating times become moments; dates become whole local days, with the exclusive end iCalendar uses. `DTEND` or `DURATION` gives the end; an event with neither lasts an hour, or a day when it has a date only. Zones are IANA names such as `Europe/Paris`, read with the browser's own time zone data.
+- **Repeats.** `RRULE` and `EXDATE` become `recurrence`: daily, weekly (with `BYDAY`), monthly and yearly rules, with `INTERVAL`, `COUNT` and `UNTIL`. An occurrence that was changed (`RECURRENCE-ID`) becomes its own event, with the id `<uid>#<yyyy-MM-dd>`, and its day is skipped in the series.
+- **Ids.** The `UID` becomes the `id`, without the `@resource-scheduler` that `eventsToICS` adds, so a round trip keeps your ids. Duplicates get a numeric suffix so ids stay unique.
+- **Text.** Titles and descriptions are unescaped and unfolded. They come from whoever wrote the file: render them as text, never as HTML.
+
+What is left out (each one except a cancelled event sends a message to `onWarning`):
+
+- **Cancelled events** and cancelled occurrences (`STATUS:CANCELLED`).
+- **A rule the scheduler cannot show**: the second Tuesday of the month, the last weekday, every hour, `BYMONTHDAY` on another day than the start. The event is imported once, on its first day.
+- **A zone that is not an IANA name**, such as Outlook's "Eastern Standard Time". Its times are read as local time. If your files come from Outlook, ask for UTC or convert the zone names first.
+- **An event with no readable start**, or one that ends before it starts, and the `RDATE` list.
+- Alarms, tasks, attendees and attachments are ignored without a message.
+
 ## Not included
 
-- **Reading** an `.ics` file (import). Only export is built.
-- **Time zones.** Dates are local `Date`s, so the UTC times in the calendar file are for the time zone of the machine that runs the function. A server in another zone writes different times for the same events.
+- **Time zones in export.** Dates are local `Date`s, so the UTC times in the calendar file are for the time zone of the machine that runs the function. A server in another zone writes different times for the same events.
 - **Print styles.** Use the browser's own print for now.

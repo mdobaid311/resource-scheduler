@@ -160,6 +160,11 @@
           "target": "@components/resource-scheduler/utils/groups.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/importEvents.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/importEvents.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/keyboard.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/keyboard.ts"

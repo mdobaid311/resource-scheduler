@@ -3,3 +3,5 @@
 // they are not part of the main bundle.
 export { eventsToCSV, eventsToICS } from "./components/ResourceScheduler/utils/exportEvents";
 export type { ExportOptions } from "./components/ResourceScheduler/utils/exportEvents";
+export { icsToEvents } from "./components/ResourceScheduler/utils/importEvents";
+export type { ImportOptions } from "./components/ResourceScheduler/utils/importEvents";

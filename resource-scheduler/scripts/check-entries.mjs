@@ -26,7 +26,7 @@ const ENTRIES = [
   {
     specifier: "resource-scheduler/exchange",
     files: ["dist/exchange.esm.js", "dist/exchange.cjs"],
-    exports: ["eventsToICS", "eventsToCSV"],
+    exports: ["eventsToICS", "eventsToCSV", "icsToEvents"],
     client: false,
   },
 ];
