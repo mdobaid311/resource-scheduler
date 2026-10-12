@@ -160,4 +160,112 @@ describe("useGridKeyboard", () => {
     press("Enter");
     expect(announce).toHaveBeenLastCalledWith(expect.stringContaining("Selected"));
   });
+
+  describe("paging", () => {
+    const pageSetup = (extra: Partial<GridKeyboardOptions> = {}) => {
+      const onPage = vi.fn();
+      const hook = renderHook(
+        (props: Partial<GridKeyboardOptions>) =>
+          useGridKeyboard({
+            rowCount: 3,
+            colCount: 5,
+            initialCol: 1,
+            idPrefix: "g",
+            slotAt: slot,
+            onSelect,
+            announce,
+            onPage,
+            cellLabel: (row, col) => `cell ${row}/${col}`,
+            ...props,
+          }),
+        { initialProps: extra }
+      );
+      const press = (k: string, init?: Partial<React.KeyboardEvent>) => {
+        const e = key(k, init);
+        act(() => hook.result.current.gridProps.onKeyDown(e));
+        return e;
+      };
+      const focus = () =>
+        act(() =>
+          hook.result.current.gridProps.onFocus({ target: grid, currentTarget: grid } as unknown as React.FocusEvent<HTMLElement>)
+        );
+      return { ...hook, onPage, press, focus };
+    };
+
+    it("asks for the previous and next period with PageUp and PageDown", () => {
+      const { focus, press, onPage } = pageSetup();
+      focus();
+
+      const down = press("PageDown");
+      expect(onPage).toHaveBeenLastCalledWith("next");
+      expect(down.preventDefault).toHaveBeenCalled(); // the page does not scroll as well
+
+      press("PageUp");
+      expect(onPage).toHaveBeenLastCalledWith("prev");
+      expect(onPage).toHaveBeenCalledTimes(2);
+    });
+
+    it("leaves the keys with a modifier to the browser", () => {
+      const { focus, press, onPage } = pageSetup();
+      focus();
+
+      for (const modifier of ["ctrlKey", "metaKey", "altKey", "shiftKey"] as const) {
+        const e = press("PageDown", { [modifier]: true });
+        expect(e.preventDefault).not.toHaveBeenCalled();
+      }
+      expect(onPage).not.toHaveBeenCalled();
+    });
+
+    it("ignores keys from elements inside the grid", () => {
+      const { focus, press, onPage } = pageSetup();
+      focus();
+      press("PageDown", { target: child });
+      expect(onPage).not.toHaveBeenCalled();
+    });
+
+    it("leaves the keys alone when there is nothing to page", () => {
+      const { focus, press } = pageSetup({ onPage: undefined });
+      focus();
+      expect(press("PageDown").preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("says where the cursor is once the new period is on screen", () => {
+      const { focus, press, rerender } = pageSetup({ periodKey: 1 });
+      focus();
+      press("ArrowRight");
+
+      press("PageDown");
+      expect(announce).not.toHaveBeenCalled(); // the old period is still drawn
+
+      rerender({ periodKey: 2 });
+      expect(announce).toHaveBeenCalledTimes(1);
+      expect(announce).toHaveBeenCalledWith("Moved to cell 0/2.");
+
+      rerender({ periodKey: 3 }); // a later change, from the toolbar, is not announced again
+      expect(announce).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not announce a period change the keyboard did not ask for", () => {
+      const { focus, press, rerender } = pageSetup({ periodKey: 1 });
+      focus();
+      rerender({ periodKey: 2 });
+      expect(announce).not.toHaveBeenCalled();
+
+      press("PageDown");
+      press("ArrowRight"); // the cursor moved on: the page is no longer news
+      rerender({ periodKey: 3 });
+      expect(announce).not.toHaveBeenCalled();
+    });
+
+    it("keeps the cursor in the grid when the new period has fewer columns", () => {
+      const { result, focus, press, rerender } = pageSetup();
+      focus();
+      press("End");
+      expect(result.current.cursor).toEqual({ row: 0, col: 4 });
+
+      rerender({ colCount: 3 });
+      expect(result.current.cursor).toEqual({ row: 0, col: 2 });
+      expect(result.current.activeId).toBe("g-r0-c2");
+    });
+  });
 });

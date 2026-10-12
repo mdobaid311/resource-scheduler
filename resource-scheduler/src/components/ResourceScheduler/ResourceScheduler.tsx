@@ -468,8 +468,19 @@ const SchedulerView = forwardRef<
     ]
   );
 
+  // Page Up and Page Down keep the keyboard cursor in view instead.
+  const pagedByKeyboard = useRef(false);
+  const handlePage = (direction: "prev" | "next") => {
+    pagedByKeyboard.current = true;
+    handleNavigate(direction);
+  };
+
   // Keep the displayed date in view whenever it, the view or column sizes change.
   useEffect(() => {
+    if (pagedByKeyboard.current) {
+      pagedByKeyboard.current = false;
+      return;
+    }
     scrollToDay(currentDate);
   }, [currentDate, scrollToDay]);
 
@@ -595,6 +606,7 @@ const SchedulerView = forwardRef<
               ariaLabel={ariaLabel}
               describedBy={helpId}
               announce={setAnnouncement}
+              onNavigate={handlePage}
               onSelectRange={commitRange}
               calculateEventPositions={calculateEventPositions}
               getGridTemplateRows={getGridTemplateRows}

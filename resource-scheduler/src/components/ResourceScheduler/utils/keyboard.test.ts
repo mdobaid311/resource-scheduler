@@ -89,6 +89,23 @@ describe("stepPlacement", () => {
     expect(stepPlacement(p, { resizeEnd: -1 }, dayView)).toEqual(placement("r1", d(10, 9), d(10, 9, 30)));
   });
 
+  it("moves the start edge by one slot and keeps the end", () => {
+    const p = placement("r1", d(10, 9), d(10, 10));
+    expect(stepPlacement(p, { resizeStart: -1 }, dayView)).toEqual(placement("r1", d(10, 8, 30), d(10, 10)));
+    expect(stepPlacement(p, { resizeStart: 1 }, dayView)).toEqual(placement("r1", d(10, 9, 30), d(10, 10)));
+  });
+
+  it("moves the start edge by whole days in date views", () => {
+    const p = placement("r1", d(10, 9, 30), d(12, 11));
+    expect(stepPlacement(p, { resizeStart: -1 }, week)).toEqual(placement("r1", d(9, 9, 30), d(12, 11)));
+    expect(stepPlacement(p, { resizeStart: 1 }, week)).toEqual(placement("r1", d(11, 9, 30), d(12, 11)));
+  });
+
+  it("refuses to move the start edge past the end, or before the visible range", () => {
+    expect(stepPlacement(placement("r1", d(10, 9), d(10, 9, 30)), { resizeStart: 1 }, dayView)).toBeNull();
+    expect(stepPlacement(placement("r1", d(10, 8), d(10, 9)), { resizeStart: -1 }, dayView)).toBeNull();
+  });
+
   it("refuses to shrink an event to nothing", () => {
     const p = placement("r1", d(10, 9), d(10, 9, 30));
     expect(stepPlacement(p, { resizeEnd: -1 }, dayView)).toBeNull();

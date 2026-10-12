@@ -50,6 +50,8 @@ export interface SchedulerLabels {
     selectionCancelled: string;
     /** After a group or resource was moved. `group` is the group a resource now sits in, or `null` for none. */
     reordered: (name: string, position: number, total: number, group: string | null) => string;
+    /** After Page Up or Page Down shows another period: where the cursor is now, the name of its cell ("Ann, Monday, March 16, 2026"). */
+    pagedTo: (cell: string) => string;
   };
 }
 
@@ -79,14 +81,15 @@ export const defaultLabels: SchedulerLabels = {
   dragToReorder: "Drag to reorder",
   reorderHelp: "Alt with the Up or Down arrow key moves a focused group or resource one place.",
   help: (canResize) =>
-    "Arrow keys move between slots. Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
+    "Arrow keys move between slots. Page Up and Page Down show the previous or next period. " +
+    "Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
     "Tab to an event: Enter opens its details, Space picks it up, arrow keys move it" +
-    (canResize ? ", Shift with Left or Right resizes it" : "") +
+    (canResize ? ", Shift with Left or Right moves its end and Shift with Alt moves its start" : "") +
     ", Space drops it and Escape cancels.",
   announce: {
     pickedUp: (title, canResize) =>
       `Picked up ${title}. Arrow keys move it, Space drops it, Escape cancels.${
-        canResize ? " Hold Shift with left or right arrow to resize." : ""
+        canResize ? " Shift with left or right arrow moves the end, Shift and Alt the start." : ""
       }`,
     moved: (title, place, allowed) =>
       `${title}: ${place}${allowed ? "" : ". Not allowed here"}`,
@@ -100,6 +103,7 @@ export const defaultLabels: SchedulerLabels = {
     selectionCancelled: "Selection cancelled.",
     reordered: (name, position, total, group) =>
       `${name} moved to ${group ? `${group}, ` : ""}position ${position} of ${total}.`,
+    pagedTo: (cell) => `Moved to ${cell}.`,
   },
 };
 

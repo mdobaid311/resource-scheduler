@@ -474,6 +474,8 @@ export interface TimelineGridProps {
   describedBy?: string;
   /** Screen reader announcements (rendered by the parent in a live region). */
   announce?: (message: string) => void;
+  /** Page Up and Page Down with the grid focused show the previous and next period. */
+  onNavigate?: (direction: "prev" | "next") => void;
   /** Keyboard selection of slots `from` to `to` of one resource. */
   onSelectRange?: (resourceId: string, from: Date, to: Date) => void;
   /** Whether an event may be placed there; rejected placements show in red and are not applied. */

@@ -61,6 +61,8 @@ export interface Step {
   rows?: number;
   /** Slots/days to add to the end (negative shrinks). */
   resizeEnd?: number;
+  /** Slots/days to move the start edge by (negative makes it earlier, so the event longer). */
+  resizeStart?: number;
 }
 
 /**
@@ -70,7 +72,7 @@ export interface Step {
  */
 export const stepPlacement = (
   placement: Placement,
-  { cols = 0, rows = 0, resizeEnd = 0 }: Step,
+  { cols = 0, rows = 0, resizeEnd = 0, resizeStart = 0 }: Step,
   { viewType, slotMinutes, resourceIds, range }: StepContext
 ): Placement | null => {
   const shift = (date: Date, n: number) =>
@@ -79,7 +81,7 @@ export const stepPlacement = (
   const index = resourceIds.indexOf(placement.resourceId) + rows;
   if (index < 0 || index >= resourceIds.length) return null;
 
-  const start = shift(placement.start, cols);
+  const start = shift(shift(placement.start, cols), resizeStart);
   const end = shift(shift(placement.end, cols), resizeEnd);
   if (end <= start || start < range.start || end > range.end) return null;
 
