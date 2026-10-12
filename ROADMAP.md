@@ -88,10 +88,10 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] Vitest tests (dates, layout, creation, drag, scroll); GitHub Actions CI incl. bundle sanity checks
 - [x] Truthful README, full prop table, CONTRIBUTING.md; false "Accessible" and "Timezone" claims removed; dead files deleted
 - [x] Playwright smoke test (done on branch `ci/e2e-smoke`): `npm run smoke` in `docs/` drives the live demos in Chrome with real mouse, keyboard and touch input (create, move, resize, rejection, keyboard pick-up, utilization) and runs in the CI docs job. Removing `touch-action: none` from the event card makes the touch test fail, as it should
-- [ ] Changesets + CI publish with npm provenance; stop 13-releases-a-day (S)
-- [ ] Issue templates, SECURITY.md, CODE_OF_CONDUCT (S)
+- [~] CI publish with npm provenance is done (`release.yml` publishes when a GitHub Release is published). Changesets, to stop 13-releases-a-day, are not set up (S)
+- [x] Issue templates, SECURITY.md, CODE_OF_CONDUCT. Still to do by the owner: enable private vulnerability reporting on GitHub
 - [ ] Verify touch drag on real devices (S)
-- [ ] Bundle-size budget check in CI (S)
+- [x] Bundle-size budget check in CI (`npm run check:size`: gzip budgets per entry, stray files in `dist/`)
 
 ### P1: Table-stakes features (the research-backed list)
 - [x] **Overlap/conflict control**: `eventOverlap`, `isValidDrop(event, placement)`, red footprint during drag, also enforced on resize and drag-create (done on branch `feat/overlap-resize`)
@@ -102,11 +102,11 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] **Slot selection callback** `onSlotSelect({ resourceId, start, end })` so apps open their own dialog (done on branch `feat/slot-select-duration`). The auto-create path (`onEventCreate`) still exists; deprecate it later
 - [~] **Resource grouping** with collapse (done on branch `feat/resource-groups`): `Resource.group`, `collapsedGroups` / `defaultCollapsedGroups` / `onCollapsedGroupsChange`, header buttons, keyboard, virtualization. Nested groups through a path (branch `feat/nested-groups`). Group totals: with `showUtilization` a header shows the utilization of everything below it (branch `feat/group-totals`). Still open: drag to reorder
 - [x] **Now indicator** in the day view (`nowIndicator`, done on branch `feat/availability`; the sticky header and resource column already exist). Still open: zoom
-- [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, i18n of announcements, start-edge resize and period paging by keyboard
+- [x] **Keyboard navigation + ARIA grid** (done on branch `feat/keyboard-aria`): slot cursor, range selection, pick up / move / resize / drop events, live announcements, axe-core test. The announcements are translatable through `labels`. Still open: try with NVDA/JAWS/VoiceOver and publish an accessibility statement, start-edge resize and period paging by keyboard
 - [x] **Touch** (done on branches `ci/e2e-smoke` and `feat/touch-select`): dragging and resizing events, tapping an empty slot, and press-and-hold then drag across empty slots to create all work with real touch events in Chrome, covered by the smoke test; a quick swipe still scrolls. Not yet tried on physical devices (that stays on the list under P0)
 - [x] **Row virtualization** with a published, reproducible benchmark (done on branch `feat/virtualization`; `docs/scripts/bench.mjs`). 1,000 resources: 31,458 DOM nodes down to 424, drag 68.9 ms down to 7.1 ms per pointer move. Column virtualization is done too (branch `feat/column-virtualization`), and row heights are cached, so 1,000 resources first draw in 0.2 s.
 - [x] **Column virtualization and a bigger benchmark** (done on branch `feat/column-virtualization`). `virtualizeColumns` (default on above 100 columns). Bryntum's public benchmark uses 2,500 resources x 50,000 events ([repo](https://github.com/bryntum/scheduler-performance)); ours at that size: 781 ms first grid, 71 ms next week, 5.5 ms per pointer move, 454 DOM nodes (we did not run theirs, so no comparison is claimed)
-- [~] **i18n**: `locale` (date-fns), `hour12`, `labels` for all UI and screen reader text, and `dir="rtl"` are done (branch `feat/i18n`). IANA `timeZone` prop is done too (branch `feat/time-zone`: `utcToZoned`, `zonedToUtc`, handlers receive instants). Still open:
+- [x] **i18n**: `locale` (date-fns), `hour12`, `labels` for all UI and screen reader text, and `dir="rtl"` are done (branch `feat/i18n`). IANA `timeZone` prop is done too (branch `feat/time-zone`: `utcToZoned`, `zonedToUtc`, handlers receive instants).
 - [x] **Lazy loading**: `onRangeChange({ start, end, view })` for fetching per visible window (done on branch `feat/view-controls`)
 
 ### P2: Customisability (your stated goal)
@@ -120,7 +120,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [~] **ICS export and CSV** (done on branch `feat/export-ics-csv`): `eventsToICS` (with `RRULE`/`EXDATE`) and `eventsToCSV` (with spreadsheet formula protection), checked against ical.js, in their own entry point `resource-scheduler/exchange`. Reading an `.ics` file is done too (`icsToEvents`, same entry point). Still open: a print stylesheet (M)
 - [x] **`findAvailableSlots(resources, { from, to, duration, step, businessHours, limit })`** helper, also for "everyone is free" with several resources (done on branch `feat/find-slots-and-hygiene`). Auto-assignment is still open
 - [x] **Recipes** with complete data models: room booking, shift roster, equipment rental, field service dispatch and project allocation, each with a live demo
-- [ ] Docs with `llms.txt` so AI coding assistants generate correct usage (S)
+- [x] Docs with `llms.txt` so AI coding assistants generate correct usage (`docs/public/llms.txt`, kept in step with every feature)
 
 ### P3: Later, decide by evidence
 - Vue/Svelte adapters on top of the headless core (Schedule-X ships React/Angular/Vue/Svelte/Preact adapters, so multi-framework demand exists)
