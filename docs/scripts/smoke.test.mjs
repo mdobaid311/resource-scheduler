@@ -333,6 +333,152 @@ describe("time zones", () => {
   });
 });
 
+describe("reorder", () => {
+  // The second demo on the resource groups page: three groups, Annex folded, onGroupReorder and
+  // onResourceReorder applied with reorderGroup and moveResource.
+  const openReorder = async ({ touch = false } = {}) => {
+    const opened = await open("/guides/resource-groups/", { touch });
+    const frame = opened.page.locator(".demo-frame").nth(1);
+    await frame.scrollIntoViewIfNeeded();
+    await opened.page.waitForTimeout(300);
+    return { ...opened, frame };
+  };
+  const header = (frame, name) => frame.getByRole("button", { name: new RegExp(`^${name}, \\d resource`) });
+  const room = (frame, name) => frame.locator("[data-rs-row]").filter({ hasText: new RegExp(`^${name}$`) }).first();
+  const grip = (row) => row.locator("[data-rs-handle]");
+  const rows = async (frame) =>
+    (
+      await frame
+        .locator("[data-rs-row]")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("aria-label")?.split(",")[0] ?? el.textContent.trim()))
+    ).join("|");
+  const dropLine = (frame) => frame.locator("[data-rs-drop-line]");
+  const demoLog = (frame) => frame.locator(".demo-log").textContent();
+  const announced = (frame) => frame.locator(".rs-root > [role=status]").textContent();
+  const START = "Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta|Annex";
+
+  it("drags a group, with its rooms, before another", async () => {
+    const { page, context, frame, errors } = await openReorder();
+    assert.equal(await rows(frame), START);
+
+    const from = await centerOf(grip(header(frame, "Floor 2")));
+    const top = await header(frame, "Floor 1").boundingBox();
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 }, { release: false });
+    assert.equal(await dropLine(frame).count(), 1, "a line shows where it will land");
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Floor 1|Atlas|Borealis|Annex");
+    assert.equal(await demoLog(frame), 'Moved "Floor 2" before "Floor 1"');
+    assert.equal(await dropLine(frame).count(), 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("drops a room on a group header, and before another room", async () => {
+    const { page, context, frame, errors } = await openReorder();
+
+    await mouseDrag(page, await centerOf(grip(room(frame, "Cirrus"))), await centerOf(header(frame, "Floor 1")));
+    assert.equal(await rows(frame), "Floor 1|Atlas|Borealis|Cirrus|Floor 2|Delta|Annex");
+    assert.equal(await demoLog(frame), 'Moved Cirrus to the end of "Floor 1"');
+
+    const atlas = await room(frame, "Atlas").boundingBox();
+    await mouseDrag(page, await centerOf(grip(room(frame, "Delta"))), { x: atlas.x + 90, y: atlas.y + 6 });
+    assert.equal(await rows(frame), "Floor 1|Delta|Atlas|Borealis|Cirrus|Annex"); // Floor 2 had only Delta
+    assert.equal(await demoLog(frame), 'Moved Delta before Atlas of "Floor 1"');
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("moves a folded group with its rooms, and Escape cancels a drag", async () => {
+    const { page, context, frame } = await openReorder();
+    const from = await centerOf(grip(header(frame, "Annex")));
+    const top = await header(frame, "Floor 1").boundingBox();
+
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 }, { release: false });
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), START);
+    assert.equal(await dropLine(frame).count(), 0);
+
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 });
+    assert.equal(await rows(frame), `Annex|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta`);
+    await header(frame, "Annex").click();
+    assert.equal(await rows(frame), "Annex|Echo|Foxtrot|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta");
+    await context.close();
+  });
+
+  it("does not fold a group when its grip is clicked", async () => {
+    const { page, context, frame } = await openReorder();
+    const { x, y } = await centerOf(grip(header(frame, "Floor 1")));
+    await page.mouse.click(x, y);
+    assert.equal(await header(frame, "Floor 1").getAttribute("aria-expanded"), "true");
+    assert.equal(await rows(frame), START);
+    await context.close();
+  });
+
+  it("moves a group or a room with Alt+Arrow, says so, and keeps the focus", async () => {
+    const { page, context, frame, errors } = await openReorder();
+
+    await header(frame, "Floor 2").focus();
+    await page.keyboard.press("Alt+ArrowUp");
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Floor 1|Atlas|Borealis|Annex");
+    assert.equal(await announced(frame), "Floor 2 moved to position 1 of 3.");
+    assert.ok(await header(frame, "Floor 2").evaluate((el) => el === document.activeElement));
+
+    await room(frame, "Borealis").focus();
+    await page.keyboard.press("Alt+ArrowUp");
+    await page.keyboard.press("Alt+ArrowUp"); // past the top of Floor 1: into the end of Floor 2
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Borealis|Floor 1|Atlas|Annex");
+    assert.equal(await announced(frame), "Borealis moved to Floor 2, position 3 of 3.");
+    assert.ok(await room(frame, "Borealis").evaluate((el) => el === document.activeElement));
+
+    await header(frame, "Floor 2").focus();
+    await page.keyboard.press("Alt+ArrowUp"); // already first
+    assert.equal(await announced(frame), "Can't go any further.");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("drags a group from its grip with touch", async () => {
+    const { page, context, frame, errors } = await openReorder({ touch: true });
+    const cdp = await context.newCDPSession(page);
+    const send = (type, p) =>
+      cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: p.x, y: p.y, id: 1 }] : [] });
+    const from = await centerOf(grip(header(frame, "Annex")));
+    const top = await header(frame, "Floor 1").boundingBox();
+
+    await send("touchStart", from);
+    for (let i = 1; i <= 12; i++) await send("touchMove", { x: from.x, y: from.y + ((top.y + 6 - from.y) * i) / 12 });
+    assert.equal(await dropLine(frame).count(), 1);
+    await send("touchEnd");
+    await page.waitForTimeout(250);
+
+    assert.equal(await rows(frame), "Annex|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("scrolls the column while a drag is held near its edge", async () => {
+    const { page, context, frame } = await openReorder();
+    await header(frame, "Annex").click(); // unfolded, the list is taller than the demo
+    const scroller = frame.locator(".overflow-x-auto").first();
+    const before = await scroller.evaluate((el) => el.scrollTop);
+    const box = await scroller.boundingBox();
+
+    await mouseDrag(page, await centerOf(grip(room(frame, "Atlas"))), { x: box.x + 60, y: box.y + box.height - 8 }, { release: false });
+    await page.waitForTimeout(600);
+    const after = await scroller.evaluate((el) => el.scrollTop);
+    await page.mouse.up();
+
+    assert.ok(after > before, `scrollTop went from ${before} to ${after}`);
+    await context.close();
+  });
+});
+
 describe("keyboard", () => {
   it("picks an event up, moves it to another resource and drops it", async () => {
     const { page, context, errors } = await open(KEYBOARD);

@@ -56,5 +56,5 @@ export const useSchedule = (initial: () => Resource[]) => {
     []
   );
 
-  return { resources, addEvent, move, resize, log, setLog };
+  return { resources, setResources, addEvent, move, resize, log, setLog };
 };

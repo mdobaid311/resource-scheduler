@@ -13,11 +13,14 @@
 // is 3.9 KB with the .ics import (1.4 KB before it). The main bundle
 // went to 24 KB for the timeZone prop (22.5 KB used). Then to 26 KB for the
 // column totals, the components map and column virtualization (24.2 KB used).
+// Then to 29 KB for dragging groups and resources to reorder them: the pure
+// helpers (reorderGroup, moveResource, the hit test and keyboard steps, 1.5 KB),
+// the pointer and keyboard hook (1.4 KB) and the grips (27.8 KB used).
 import fs from "node:fs";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 26_000,
+  "dist/index.esm.js": 29_000,
   "dist/exchange.esm.js": 5_000,
   "dist/resource-scheduler.css": 7_000,
 };

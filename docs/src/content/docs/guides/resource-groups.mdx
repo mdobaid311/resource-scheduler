@@ -1,9 +1,10 @@
 ---
 title: Resource groups
-description: List resources under collapsible group headers, such as rooms by floor or staff by team, and control which groups are folded.
+description: List resources under collapsible group headers, such as rooms by floor or staff by team, control which groups are folded, and let users drag them into a new order.
 ---
 
 import GroupsDemo from "../../../components/demos/GroupsDemo";
+import ReorderDemo from "../../../components/demos/ReorderDemo";
 
 Give resources a `group` and they are listed together under a header you can fold. It is for the tens or hundreds of rows that need some structure: rooms by floor, staff by team, vehicles by depot.
 
@@ -71,6 +72,43 @@ With `collapsedGroups` set, the list is yours: the scheduler calls `onCollapsedG
 - **Large lists.** Headers are rows like the others, so [row virtualization](/guides/performance/) works across them.
 - **Languages.** The header's spoken text is `labels.group(name, count)`.
 
-## Not included
+## Reordering
 
-- Moving a resource between groups by dragging its name. The group comes from your data.
+<ReorderDemo client:only="react" />
+
+Pass `onGroupReorder`, `onResourceReorder` or both, and the scheduler puts a grip on each group header and each resource that the user can drag, or move with the keyboard. Without them nothing is added. The scheduler never owns your data, so a drop is a request: it calls your callback, and you apply it to the `resources` array you keep with two helpers that return the new array.
+
+```tsx
+import { ResourceScheduler, moveResource, reorderGroup } from "resource-scheduler";
+
+const [rooms, setRooms] = useState(initialRooms);
+
+<ResourceScheduler
+  resources={rooms}
+  onGroupReorder={(key, before) => setRooms(reorderGroup(rooms, key, before))}
+  onResourceReorder={(id, before, group) => setRooms(moveResource(rooms, id, before, group))}
+/>
+```
+
+- `onGroupReorder(groupKey, beforeGroupKey)`: the group (its name, or its path joined with " / ") and the sibling group it goes before, or `null` for the end. A group moves among the groups beside it, the ones with the same parent, and takes its resources and its nested groups with it, folded or not.
+- `onResourceReorder(resourceId, beforeResourceId, group)`: the resource, the one it goes before (`null` for the end of the group), and the key of the group it lands in (`null` for none). The group differs from its own when it was dropped on another group.
+- `reorderGroup(resources, groupKey, beforeGroupKey)` and `moveResource(resources, resourceId, beforeResourceId, group?)` return the new array, written in the order it is shown. A resource that changes group is copied with its `group` set to the new path; every other resource is the same object. They return `resources` itself when nothing would change, so a `setState` with the result does not re-render, and the callbacks are never called for a drop that changes nothing. Leave `group` out of `moveResource` to keep the resource's own group. Both are pure, so they also run on a server.
+
+Because the order of your array is the order on screen, that is also what you save: persist the array, or the ids in it.
+
+### With the pointer
+
+Press a grip, drag, and drop: a line shows where it will land. Drop a resource on a group header to add it at the end of that group, and on a plain row to join the group of that row (or none). Escape cancels. The column scrolls when the pointer nears the top or bottom edge, and [row virtualization](/guides/performance/) does not get in the way: the position comes from the row heights, not from what is drawn, so rows that are not on screen can be dropped on. Touch works the same way, from the grip.
+
+### With the keyboard
+
+Tab to a group header (they are buttons), or to the resources: they are one tab stop, and the arrow keys move between them. Then <kbd>Alt</kbd> + <kbd>&uarr;</kbd> or <kbd>Alt</kbd> + <kbd>&darr;</kbd> moves it one place. A group swaps with the group beside it. A resource swaps with its neighbour in the group, and at the edge of the group it joins the next group at that end. When your list has changed, the scheduler says where it went through the live region ("Cy moved to Floor 1, position 2 of 3.") and keeps the focus on it; at the first or last place it says it can't go further. The keys are described to screen readers, and the words are `labels.dragToReorder`, `labels.reorderHelp` and `labels.announce.reordered`, which you can [translate](/guides/internationalization/).
+
+### Good to know
+
+- A folded group moves as one unit, members and all.
+- It works with `showUtilization`, `showColumnUtilization`, `components.ResourceHeader` (the grip sits beside your header), `timeZone` (the callbacks carry ids and keys, so there is nothing to convert) and `dir="rtl"` (the grip moves to the right, the drop line spans the column, the keys are the same).
+- The ungrouped rows of the first level keep their place when a group moves: a group lands just before the group you drop it on, or after the last one.
+- A resource leaves its groups by being dropped beside an ungrouped row, or with <kbd>Alt</kbd> + arrow past the edge of its group when the neighbour is ungrouped. With no ungrouped rows there is nowhere to leave to.
+- The announcement is made when your list actually changes. If you apply a move later than a second after the drop (after a server round trip), it is not spoken.
+- Touch is checked with synthetic touch input in Chrome, not yet on physical devices.

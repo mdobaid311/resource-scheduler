@@ -27,6 +27,7 @@ import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
 import {
   type ResourceSchedulerHandle,
+  type ReorderControl,
   type ResourceSchedulerProps,
   type SchedulerEvent,
   ViewType,
@@ -37,6 +38,7 @@ import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
 import { groupUtilization, isGroupRow, withGroups } from "./utils/groups";
+import { moveResource, reorderGroup } from "./utils/reorder";
 import { columnUtilization, getUtilization, type Utilization } from "./utils/utilization";
 import {
   isPlacementAllowed,
@@ -94,6 +96,8 @@ const SchedulerView = forwardRef<
   collapsedGroups,
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
+  onGroupReorder,
+  onResourceReorder,
   classNames,
   components,
   density,
@@ -156,7 +160,31 @@ const SchedulerView = forwardRef<
     () => withGroups(allResources, collapsed),
     [allResources, collapsed]
   );
+  // A drop reaches the app only when it would change something: the helpers return the list itself when not.
+  const reorder = useMemo<ReorderControl | undefined>(
+    () =>
+      onGroupReorder || onResourceReorder
+        ? {
+            groups: !!onGroupReorder,
+            resources: !!onResourceReorder,
+            commit: (drag, target) => {
+              if (drag.kind === "group") {
+                if (!onGroupReorder || reorderGroup(allResources, drag.key, target.before) === allResources) return false;
+                onGroupReorder(drag.key, target.before);
+              } else {
+                const group = target.group ?? null;
+                if (!onResourceReorder || moveResource(allResources, drag.id, target.before, group) === allResources)
+                  return false;
+                onResourceReorder(drag.id, target.before, group);
+              }
+              return true;
+            },
+          }
+        : undefined,
+    [onGroupReorder, onResourceReorder, allResources]
+  );
   const helpId = `rs-help${useId()}`;
+  const reorderHelpId = `rs-reorder-help${useId()}`;
   // Spoken by screen readers through the live region below.
   const [announcement, setAnnouncement] = useState("");
 
@@ -491,6 +519,11 @@ const SchedulerView = forwardRef<
         <p id={helpId} className="sr-only">
           {i18n.labels.help(!!onEventResize)}
         </p>
+        {reorder && (
+          <p id={reorderHelpId} className="sr-only">
+            {i18n.labels.reorderHelp}
+          </p>
+        )}
         <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {announcement}
         </div>
@@ -520,6 +553,9 @@ const SchedulerView = forwardRef<
             onToggleGroup={toggleGroup}
             rowRange={rowRange}
             showColumnUtilization={showColumnUtilization}
+            reorder={reorder}
+            announce={setAnnouncement}
+            reorderHelpId={reorderHelpId}
           />
 
           <div className="flex-1">

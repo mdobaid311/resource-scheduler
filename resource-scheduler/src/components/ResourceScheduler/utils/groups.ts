@@ -18,10 +18,10 @@ export const GROUP_ROW_HEIGHT = 36;
 
 export const isGroupRow = (row: Resource): row is GroupRow => "groupHeader" in row;
 
-const SEPARATOR = " / ";
+export const SEPARATOR = " / ";
 
 // The names a resource sits under, outermost first; empty names do not count.
-const pathOf = (r: Resource): string[] => ([] as string[]).concat(r.group ?? []).filter(Boolean);
+export const pathOf =(r: Resource): string[] => ([] as string[]).concat(r.group ?? []).filter(Boolean);
 
 /**
  * The utilization of each group over `range`: the booked and available time of

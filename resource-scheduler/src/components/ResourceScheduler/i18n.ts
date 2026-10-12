@@ -29,6 +29,10 @@ export interface SchedulerLabels {
   columnUtilization: string;
   /** A group header, read out with its open or closed state: "Ward A, 3 resources". */
   group: (name: string, count: number) => string;
+  /** Tooltip of the grip that drags a group or resource to a new place (`onGroupReorder`, `onResourceReorder`). */
+  dragToReorder: string;
+  /** Keyboard instructions for reordering, visually hidden: "Alt with the Up or Down arrow key moves it one place." */
+  reorderHelp: string;
   /** Keyboard instructions, visually hidden. */
   help: (canResize: boolean) => string;
   /** Spoken through the live region. */
@@ -43,6 +47,8 @@ export interface SchedulerLabels {
     selected: (slots: number) => string;
     selecting: (slots: number) => string;
     selectionCancelled: string;
+    /** After a group or resource was moved. `group` is the group a resource now sits in, or `null` for none. */
+    reordered: (name: string, position: number, total: number, group: string | null) => string;
   };
 }
 
@@ -69,6 +75,8 @@ export const defaultLabels: SchedulerLabels = {
   utilization: (booked, available) => `${booked} of ${available} hours booked`,
   columnUtilization: "Utilization",
   group: (name, count) => `${name}, ${count} resource${count === 1 ? "" : "s"}`,
+  dragToReorder: "Drag to reorder",
+  reorderHelp: "Alt with the Up or Down arrow key moves a focused group or resource one place.",
   help: (canResize) =>
     "Arrow keys move between slots. Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
     "Tab to an event: Enter opens its details, Space picks it up, arrow keys move it" +
@@ -89,6 +97,8 @@ export const defaultLabels: SchedulerLabels = {
     selected: (n) => `Selected ${slots(n)}.`,
     selecting: (n) => `Selecting ${slots(n)}. Enter to confirm, Escape to cancel.`,
     selectionCancelled: "Selection cancelled.",
+    reordered: (name, position, total, group) =>
+      `${name} moved to ${group ? `${group}, ` : ""}position ${position} of ${total}.`,
   },
 };
 

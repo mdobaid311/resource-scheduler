@@ -105,6 +105,11 @@
           "target": "@components/resource-scheduler/hooks/useNow.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useReorder.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useReorder.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useScheduler.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/useScheduler.ts"
@@ -198,6 +203,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/recurrence.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/recurrence.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/reorder.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/reorder.ts"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/rowWindow.ts",
