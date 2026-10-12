@@ -235,6 +235,11 @@
           "target": "@components/resource-scheduler/utils/scrollUtils.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/suggest.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/suggest.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/timeZone.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/timeZone.ts"

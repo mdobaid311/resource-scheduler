@@ -2,8 +2,8 @@ import { useRef, useState } from "react";
 import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { ResourceInput, ResourceSchedulerHandle, SchedulerEvent } from "@scheduler/types";
-import { findAvailableSlots } from "@scheduler/utils/availability";
 import { withEvents } from "@scheduler/utils/events";
+import { suggestResources } from "@scheduler/utils/suggest";
 import { Frame } from "./Frame";
 import { AMBER, ROSE, TEAL, at } from "./sample";
 
@@ -51,24 +51,22 @@ export default function FieldServiceDemo() {
   const ref = useRef<ResourceSchedulerHandle>(null);
 
   const assign = (job: (typeof queue)[number]) => {
-    // The earliest slot each technician has from now on, and the best of those.
-    const from = new Date();
-    const to = at(3, 19);
-    const best = withEvents(technicians, events)
-      .flatMap((tech) =>
-        findAvailableSlots(tech, { from, to, duration: job.minutes, step: 30, limit: 1 }).map((slot) => ({ tech, slot }))
-      )
-      .sort((a, b) => a.slot.start.getTime() - b.slot.start.getTime())[0];
+    // The technician with the earliest slot from now on.
+    const [best] = suggestResources(
+      withEvents(technicians, events),
+      { from: new Date(), to: at(3, 19), duration: job.minutes },
+      { limit: 1 }
+    );
     if (!best) return setLog(`Nobody can take "${job.title}" in the next three days`);
 
-    const { tech, slot } = best;
+    const tech = technicians.find((t) => t.id === best.resourceId);
     setEvents((all) => [
       ...all,
-      { id: `job-${job.id}`, title: job.title, resourceId: tech.id, startDate: slot.start, endDate: slot.end, color: job.color },
+      { id: `job-${job.id}`, title: job.title, resourceId: best.resourceId, startDate: best.start, endDate: best.end, color: job.color },
     ]);
     setQueue((q) => q.filter((j) => j.id !== job.id));
-    ref.current?.goTo(slot.start);
-    setLog(`Assigned "${job.title}" to ${tech.name}, ${when(slot.start)}`);
+    ref.current?.goTo(best.start);
+    setLog(`Assigned "${job.title}" to ${tech?.name}, ${when(best.start)}`);
   };
 
   const reassign = (job: SchedulerEvent, resourceId: string, start: Date, end: Date) => {

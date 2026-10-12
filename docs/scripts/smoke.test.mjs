@@ -271,6 +271,69 @@ describe("column utilization", () => {
   });
 });
 
+describe("suggest", () => {
+  it("ranks the crew for a job, re-ranks after booking, and only accepts drops the same call allows", async () => {
+    const { page, context, errors } = await open("/guides/availability/");
+    const frame = page.locator(".demo-frame").nth(1);
+    await frame.scrollIntoViewIfNeeded();
+    const ranking = () => frame.getByRole("list", { name: "Suggestions" }).getByRole("listitem").allTextContents();
+    const names = async () => (await ranking()).map((r) => r.split(",")[0]);
+
+    // A one hour job, soonest first: Ann and Cy are free at 7, the van crew has a seat from 9, Ben from 2 PM.
+    assert.deepEqual(await ranking(), [
+      "Ann Lee, 7:00 AM to 8:00 AM, 33% booked",
+      "Cy Ortiz, 7:00 AM to 8:00 AM, 39% booked",
+      "Van crew (2), 9:00 AM to 10:00 AM, 25% booked",
+      "Ben Ruiz, 2:00 PM to 3:00 PM, 31% booked",
+    ]);
+
+    // The same job ranked by how booked each is, and the other way round.
+    await frame.getByLabel("Rank by").selectOption("least-booked");
+    assert.deepEqual(await names(), ["Van crew (2)", "Ben Ruiz", "Ann Lee", "Cy Ortiz"]);
+    await frame.getByLabel("Rank by").selectOption("most-booked");
+    assert.deepEqual(await names(), ["Cy Ortiz", "Ann Lee", "Ben Ruiz", "Van crew (2)"]);
+
+    // Three hours: Ann has no gap that long, so she drops out of the list.
+    await frame.getByLabel("Job").selectOption("check");
+    await frame.getByLabel("Rank by").selectOption("earliest");
+    assert.deepEqual(await ranking(), [
+      "Van crew (2), 9:00 AM to 12:00 PM, 25% booked",
+      "Ben Ruiz, 2:00 PM to 5:00 PM, 31% booked",
+      "Cy Ortiz, 4:00 PM to 7:00 PM, 39% booked",
+    ]);
+
+    // Book the one hour job: Ann wins the tie with Cy by resource order, and the list moves on.
+    await frame.getByLabel("Job").selectOption("thermostat");
+    await frame.getByRole("button", { name: "Book the top pick" }).click();
+    assert.equal(await frame.locator(".demo-log").textContent(), 'Booked "Thermostat" with Ann Lee at 7:00 AM');
+    assert.match(await label(page, "new-8"), /Thermostat.*Ann Lee.*7:00 AM/s);
+    assert.deepEqual(await ranking(), [
+      "Cy Ortiz, 7:00 AM to 8:00 AM, 39% booked",
+      "Van crew (2), 9:00 AM to 10:00 AM, 25% booked",
+      "Ann Lee, 10:30 AM to 11:30 AM, 47% booked",
+      "Ben Ruiz, 2:00 PM to 3:00 PM, 31% booked",
+    ]);
+
+    // Ben's 1 PM job may not go to Cy, who is in training, but may go to Ann.
+    const before = await label(page, "j4");
+    await event(page, "j4").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowDown"); // Ben to Cy
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Escape");
+    assert.equal(await label(page, "j4"), before);
+
+    await event(page, "j4").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowUp"); // Ben to Ann
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(250);
+    assert.match(await label(page, "j4"), /Ann Lee.*1:00 PM/s);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("import", () => {
   it("reads a calendar file into the board and says what it could not show", async () => {
     const { page, context, errors } = await open("/guides/export/");

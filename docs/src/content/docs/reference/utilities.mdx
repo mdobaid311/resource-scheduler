@@ -29,6 +29,7 @@ All of these are exported from `resource-scheduler`. The pure functions among th
 - **`touchesUnavailable(resource, { start, end }, context)`** returns `boolean`. Whether a placement would touch a shaded cell. This is what `blockUnavailable` runs.
 - **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
 - **`findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })`** returns `{ start, end }[]`, the free slots earliest first. With several resources, only times when all are free. See [Business hours and availability](/guides/availability/).
+- **`suggestResources(resources, request, options?)`** returns `{ resourceId, start, end, score, utilization }[]`, the resources that can take a job, best first. `request` is a fixed time `{ start, end }` or a window to search `{ from, to, duration, step? }`, each with an optional `event` (the job). `options` are `businessHours`, `resourceIds`, `eventOverlap`, `isValidDrop`, `strategy` (`"earliest"`, `"least-booked"`, `"most-booked"` or a score function), `limit` and `perResource`. A placement is suggested only inside the resource's hours and outside its `unavailable` time, with fewer bookings at once than its `capacity`, and when the placement rules accept it. See [Suggest who takes a job](/guides/availability/#suggest-who-takes-a-job).
 
 ## Export
 

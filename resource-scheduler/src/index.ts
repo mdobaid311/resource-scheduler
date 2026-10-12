@@ -71,6 +71,14 @@ export {
   touchesUnavailable,
 } from "./components/ResourceScheduler/utils/availability";
 export type { FindSlotsOptions } from "./components/ResourceScheduler/utils/availability";
+export { suggestResources } from "./components/ResourceScheduler/utils/suggest";
+export type {
+  SuggestCandidate,
+  SuggestOptions,
+  SuggestRequest,
+  Suggestion,
+  SuggestStrategy,
+} from "./components/ResourceScheduler/utils/suggest";
 export { groupUtilization } from "./components/ResourceScheduler/utils/groups";
 export {
   columnUtilization,
