@@ -303,6 +303,176 @@ describe("ResourceScheduler", () => {
       );
     });
 
+    it("moves the start edge with Shift+Alt+Arrow when resizing is enabled", () => {
+      const onEventResize = vi.fn();
+      week({ onEventResize });
+      act(() => eventButton().focus());
+
+      press(eventButton(), " ");
+      press(eventButton(), "ArrowLeft", { shiftKey: true, altKey: true });
+      expect(screen.getByRole("status").textContent).toContain("Standup");
+      press(eventButton(), " ");
+
+      expect(onEventResize).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "standup" }),
+        "r1",
+        new Date(2026, 2, 9, 9),
+        new Date(2026, 2, 10, 10)
+      );
+    });
+
+    it("moves both edges, and refuses to move the start past the end", () => {
+      const onEventResize = vi.fn();
+      week({ onEventResize });
+      act(() => eventButton().focus());
+
+      press(eventButton(), " ");
+      press(eventButton(), "ArrowRight", { shiftKey: true, altKey: true }); // a one day event cannot shrink
+      expect(screen.getByRole("status").textContent).toContain("Can't go any further");
+      press(eventButton(), "ArrowRight", { shiftKey: true }); // end to the 11th
+      press(eventButton(), "ArrowRight", { shiftKey: true, altKey: true }); // start to the 11th
+      press(eventButton(), " ");
+
+      expect(onEventResize).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "standup" }),
+        "r1",
+        new Date(2026, 2, 11, 9),
+        new Date(2026, 2, 11, 10)
+      );
+    });
+
+    it("leaves the start edge alone when resizing is not enabled", () => {
+      const onEventDrop = vi.fn();
+      week({ onEventDrop });
+      act(() => eventButton().focus());
+
+      press(eventButton(), " ");
+      press(eventButton(), "ArrowLeft", { shiftKey: true, altKey: true });
+      press(eventButton(), " ");
+
+      expect(onEventDrop).not.toHaveBeenCalled();
+      expect(screen.getByRole("status").textContent).toContain("no change");
+    });
+
+    it("applies the overlap rules to the start edge too", () => {
+      const onEventResize = vi.fn();
+      const resources: Resource[] = [
+        {
+          id: "r1",
+          name: "Ann",
+          events: [
+            standup,
+            { id: "other", title: "Other", startDate: new Date(2026, 2, 9, 9), endDate: new Date(2026, 2, 9, 10) },
+          ],
+        },
+      ];
+      week({ resources, onEventResize, eventOverlap: false });
+      act(() => eventButton().focus());
+
+      press(eventButton(), " ");
+      press(eventButton(), "ArrowLeft", { shiftKey: true, altKey: true });
+      expect(screen.getByRole("status").textContent).toContain("Not allowed");
+      press(eventButton(), " ");
+
+      expect(onEventResize).not.toHaveBeenCalled();
+    });
+
+    it("describes the start edge keys in the help text and when an event is picked up", () => {
+      week({ onEventResize: vi.fn() });
+      expect(document.body.textContent).toContain("Page Up and Page Down");
+      expect(document.body.textContent).toContain("Shift with Alt moves its start");
+      act(() => eventButton().focus());
+      press(eventButton(), " ");
+      expect(screen.getByRole("status").textContent).toContain("Shift and Alt the start");
+    });
+
+    it("pages to the next and previous period with PageDown and PageUp", () => {
+      const onDateChange = vi.fn();
+      week({ onDateChange });
+      focusGrid();
+      expect(screen.queryByRole("button", { name: /Standup/ })).not.toBeNull();
+
+      press(grid(), "PageDown");
+      expect(onDateChange).toHaveBeenLastCalledWith(new Date(2026, 2, 17));
+      expect(screen.queryByRole("button", { name: /Standup/ })).toBeNull();
+
+      press(grid(), "PageUp");
+      expect(onDateChange).toHaveBeenLastCalledWith(new Date(2026, 2, 10));
+      expect(screen.queryByRole("button", { name: /Standup/ })).not.toBeNull();
+    });
+
+    it("keeps the cursor on the same column when paging, and says where it is", () => {
+      week();
+      focusGrid();
+      press(grid(), "ArrowRight"); // Monday the 9th
+      const before = grid().getAttribute("aria-activedescendant");
+
+      press(grid(), "PageDown");
+
+      const cell = screen.getByRole("gridcell", { name: "Ann, Monday, March 16, 2026" });
+      expect(grid().getAttribute("aria-activedescendant")).toBe(before);
+      expect(cell.getAttribute("id")).toBe(before);
+      expect(screen.getByRole("status").textContent).toBe("Moved to Ann, Monday, March 16, 2026.");
+    });
+
+    it("keeps the cursor cell in view after paging instead of scrolling to the new date", () => {
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      week();
+      focusGrid();
+      scrollTo.mockClear();
+      scrollIntoView.mockClear();
+
+      press(grid(), "PageDown");
+
+      expect(scrollTo).not.toHaveBeenCalled();
+      const active = document.getElementById(grid().getAttribute("aria-activedescendant")!);
+      const { contexts } = scrollIntoView.mock;
+      expect(contexts[contexts.length - 1]).toBe(active);
+
+      fireEvent.click(screen.getByRole("button", { name: "Next period" })); // the toolbar still follows the date
+      expect(scrollTo).toHaveBeenCalled();
+    });
+
+    it("pages a day at a time in the day view and keeps the time of day", () => {
+      week({ initialView: ViewType.Day });
+      focusGrid();
+      press(grid(), "ArrowRight");
+      const id = grid().getAttribute("aria-activedescendant")!;
+      const before = document.getElementById(id)!.getAttribute("aria-label");
+      expect(before).toContain("March 10");
+
+      press(grid(), "PageDown");
+
+      expect(document.getElementById(id)!.getAttribute("aria-label")).toBe(
+        before!.replace("March 10", "March 11").replace("Tuesday", "Wednesday")
+      );
+    });
+
+    it("keeps the cursor on a real cell when the next period is shorter", () => {
+      week({ initialView: ViewType.Month, initialDate: new Date(2026, 0, 31) });
+      focusGrid();
+      press(grid(), "End"); // January 31st
+
+      press(grid(), "PageDown"); // February has 28 days
+
+      const id = grid().getAttribute("aria-activedescendant")!;
+      expect(document.getElementById(id)?.getAttribute("aria-label")).toBe("Ann, Saturday, February 28, 2026");
+    });
+
+    it("does not page from a picked-up event, and leaves Ctrl+PageDown to the browser", () => {
+      const onDateChange = vi.fn();
+      week({ onDateChange });
+      act(() => eventButton().focus());
+      press(eventButton(), " ");
+      press(eventButton(), "PageDown");
+      press(eventButton(), "Escape");
+
+      focusGrid();
+      expect(fireEvent.keyDown(grid(), { key: "PageDown", ctrlKey: true })).toBe(true); // not prevented
+      expect(onDateChange).not.toHaveBeenCalled();
+    });
+
     it("blocks a keyboard move that the overlap rules reject", () => {
       const onEventDrop = vi.fn();
       const resources: Resource[] = [
@@ -838,6 +1008,20 @@ describe("ResourceScheduler", () => {
       expect(screen.getByRole("status").textContent).toBe("Termin aufgenommen.");
     });
 
+    it("translates the announcement of a new period", () => {
+      render(
+        <ResourceScheduler
+          resources={rows}
+          initialView={ViewType.Week}
+          labels={{ announce: { pagedTo: (cell) => `Gewechselt zu ${cell}.` } }}
+        />
+      );
+      const grid = screen.getByRole("grid");
+      fireEvent.focus(grid);
+      fireEvent.keyDown(grid, { key: "PageDown" });
+      expect(screen.getByRole("status").textContent).toMatch(/^Gewechselt zu .+\.$/);
+    });
+
     it("translates the all-day label on event cards", () => {
       const holiday = {
         id: "h",
@@ -890,6 +1074,37 @@ describe("ResourceScheduler", () => {
       };
       expect(carryLeft("ltr")).toEqual(new Date(2026, 9, 6, 9)); // Tuesday
       expect(carryLeft("rtl")).toEqual(new Date(2026, 9, 8, 9)); // Thursday
+    });
+
+    it("moves the start edge the way the arrows point", () => {
+      const startAfter = (dir: "ltr" | "rtl", key: string) => {
+        const onEventResize = vi.fn();
+        week({ dir, onEventResize });
+        const event = document.querySelector('[data-rs-event="e"]')!;
+        fireEvent.keyDown(event, { key: " " });
+        fireEvent.keyDown(event, { key, shiftKey: true, altKey: true });
+        fireEvent.keyDown(event, { key: " " });
+        cleanup();
+        return onEventResize.mock.calls[0]?.[2] as Date | undefined;
+      };
+      expect(startAfter("ltr", "ArrowLeft")).toEqual(new Date(2026, 9, 6, 9)); // earlier
+      expect(startAfter("rtl", "ArrowRight")).toEqual(new Date(2026, 9, 6, 9)); // earlier
+      expect(startAfter("rtl", "ArrowLeft")).toBeUndefined(); // later: a one day event cannot shrink
+    });
+
+    it("pages with PageDown and PageUp in either direction", () => {
+      for (const dir of ["ltr", "rtl"] as const) {
+        const onDateChange = vi.fn();
+        week({ dir, onDateChange });
+        const grid = screen.getByRole("grid");
+        fireEvent.focus(grid);
+        const day = () => (onDateChange.mock.lastCall![0] as Date).getDate();
+        fireEvent.keyDown(grid, { key: "PageDown" });
+        expect(day()).toBe(14); // the week after Wednesday the 7th
+        fireEvent.keyDown(grid, { key: "PageUp" });
+        expect(day()).toBe(7);
+        cleanup();
+      }
     });
 
     it("moves the slot cursor the way the arrows point too", () => {

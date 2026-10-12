@@ -353,13 +353,15 @@ The timeline is an ARIA `grid` (one tab stop, using `aria-activedescendant`) wit
 | Grid | Arrow keys, Home, End | Move the slot cursor |
 | Grid | Shift + Left/Right | Extend a selection; Escape drops it |
 | Grid | Enter or Space | Select the slot or range (calls `onSlotSelect`, or creates an event) |
+| Grid | Page Up / Page Down | Show the previous / next period; the cursor stays on the same column |
 | Event | Enter | Open its details |
 | Event | Space | Pick it up. Arrows move it, Space drops it, Escape cancels |
-| Picked-up event | Shift + Left/Right | Resize the end (needs `onEventResize`) |
+| Picked-up event | Shift + Left/Right | Move the end edge (needs `onEventResize`) |
+| Picked-up event | Shift + Alt + Left/Right | Move the start edge (needs `onEventResize`) |
 
 Keyboard moves use the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced ("Not allowed here") and shown in red, and moves stay inside the visible range. After a drop, focus returns to the moved event.
 
-Status: covered by automated keyboard tests and an axe-core check in CI. It has **not** yet been tried with NVDA, JAWS or VoiceOver, colour contrast of your event colours is up to you, announcements are English only, and resizing the start edge or paging between periods by keyboard is not available yet (use the toolbar buttons).
+Status: covered by automated keyboard tests and an axe-core check in CI. It has **not** yet been tried with NVDA, JAWS or VoiceOver, colour contrast of your event colours is up to you, and announcements and instructions come from `labels`, so they can be translated.
 
 ### Your own create dialog and finer slots
 

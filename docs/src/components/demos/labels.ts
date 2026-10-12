@@ -18,14 +18,14 @@ export const de: PartialLabels = {
   unavailable: "nicht verfügbar",
   to: "bis",
   help: (canResize) =>
-    "Die Pfeiltasten bewegen den Cursor zwischen den Feldern. Eingabe oder Leertaste wählt ein Feld; mit Umschalt plus Pfeil links oder rechts werden mehrere gewählt. " +
+    "Die Pfeiltasten bewegen den Cursor zwischen den Feldern. Bild auf und Bild ab zeigen den vorigen oder nächsten Zeitraum. Eingabe oder Leertaste wählt ein Feld; mit Umschalt plus Pfeil links oder rechts werden mehrere gewählt. " +
     "Mit Tab zu einem Termin: Eingabe öffnet die Details, Leertaste nimmt ihn auf, die Pfeiltasten verschieben ihn" +
-    (canResize ? ", Umschalt plus Pfeil links oder rechts ändert die Dauer" : "") +
+    (canResize ? ", Umschalt plus Pfeil links oder rechts verschiebt das Ende, Umschalt plus Alt den Anfang" : "") +
     ", Leertaste legt ihn ab und Escape bricht ab.",
   announce: {
     pickedUp: (title, canResize) =>
       `${title} aufgenommen. Die Pfeiltasten verschieben, Leertaste legt ab, Escape bricht ab.${
-        canResize ? " Mit Umschalt plus Pfeil links oder rechts ändern Sie die Dauer." : ""
+        canResize ? " Mit Umschalt plus Pfeil links oder rechts verschieben Sie das Ende, mit Umschalt plus Alt den Anfang." : ""
       }`,
     moved: (title, place, allowed) => `${title}: ${place}${allowed ? "" : ". Hier nicht erlaubt"}`,
     cantGoFurther: "Weiter geht es nicht.",
@@ -36,6 +36,7 @@ export const de: PartialLabels = {
     selected: (n) => `${plural(n, "Feld", "Felder")} ausgewählt.`,
     selecting: (n) => `${plural(n, "Feld", "Felder")} werden ausgewählt. Eingabe bestätigt, Escape bricht ab.`,
     selectionCancelled: "Auswahl abgebrochen.",
+    pagedTo: (cell) => `Gewechselt zu ${cell}.`,
   },
 };
 
@@ -52,14 +53,14 @@ export const es: PartialLabels = {
   unavailable: "no disponible",
   to: "a",
   help: (canResize) =>
-    "Las flechas mueven el cursor entre las casillas. Intro o espacio selecciona una casilla; con Mayús y la flecha izquierda o derecha se seleccionan varias. " +
+    "Las flechas mueven el cursor entre las casillas. Re Pág y Av Pág muestran el periodo anterior o siguiente. Intro o espacio selecciona una casilla; con Mayús y la flecha izquierda o derecha se seleccionan varias. " +
     "Con Tab llegas a un evento: Intro abre sus detalles, espacio lo recoge, las flechas lo mueven" +
-    (canResize ? ", Mayús con la flecha izquierda o derecha cambia su duración" : "") +
+    (canResize ? ", Mayús con la flecha izquierda o derecha mueve el final y Mayús con Alt el inicio" : "") +
     ", espacio lo suelta y Escape cancela.",
   announce: {
     pickedUp: (title, canResize) =>
       `${title} recogido. Las flechas lo mueven, espacio lo suelta, Escape cancela.${
-        canResize ? " Mayús con la flecha izquierda o derecha cambia la duración." : ""
+        canResize ? " Mayús con la flecha izquierda o derecha mueve el final, Mayús con Alt el inicio." : ""
       }`,
     moved: (title, place, allowed) => `${title}: ${place}${allowed ? "" : ". No permitido aquí"}`,
     cantGoFurther: "No se puede ir más lejos.",
@@ -70,6 +71,7 @@ export const es: PartialLabels = {
     selected: (n) => `${plural(n, "casilla seleccionada", "casillas seleccionadas")}.`,
     selecting: (n) => `${plural(n, "casilla", "casillas")} en la selección. Intro confirma, Escape cancela.`,
     selectionCancelled: "Selección cancelada.",
+    pagedTo: (cell) => `Ahora en ${cell}.`,
   },
 };
 
@@ -86,14 +88,14 @@ export const fr: PartialLabels = {
   unavailable: "indisponible",
   to: "à",
   help: (canResize) =>
-    "Les flèches déplacent le curseur entre les créneaux. Entrée ou espace sélectionne un créneau ; avec Maj et la flèche gauche ou droite, on en sélectionne plusieurs. " +
+    "Les flèches déplacent le curseur entre les créneaux. Page précédente et Page suivante affichent la période précédente ou suivante. Entrée ou espace sélectionne un créneau ; avec Maj et la flèche gauche ou droite, on en sélectionne plusieurs. " +
     "Avec Tab, allez sur un événement : Entrée ouvre ses détails, espace le saisit, les flèches le déplacent" +
-    (canResize ? ", Maj avec la flèche gauche ou droite change sa durée" : "") +
+    (canResize ? ", Maj avec la flèche gauche ou droite déplace la fin et Maj avec Alt le début" : "") +
     ", espace le dépose et Échap annule.",
   announce: {
     pickedUp: (title, canResize) =>
       `${title} saisi. Les flèches le déplacent, espace le dépose, Échap annule.${
-        canResize ? " Maj avec la flèche gauche ou droite change la durée." : ""
+        canResize ? " Maj avec la flèche gauche ou droite déplace la fin, Maj avec Alt le début." : ""
       }`,
     moved: (title, place, allowed) => `${title} : ${place}${allowed ? "" : ". Non autorisé ici"}`,
     cantGoFurther: "Impossible d'aller plus loin.",
@@ -104,6 +106,7 @@ export const fr: PartialLabels = {
     selected: (n) => `${plural(n, "créneau sélectionné", "créneaux sélectionnés")}.`,
     selecting: (n) => `${plural(n, "créneau", "créneaux")} dans la sélection. Entrée confirme, Échap annule.`,
     selectionCancelled: "Sélection annulée.",
+    pagedTo: (cell) => `Maintenant sur ${cell}.`,
   },
 };
 

@@ -92,5 +92,6 @@ describe("resolveI18n", () => {
     expect(labels.views.day).toBe("Day");
     expect(labels.announce.cantGoFurther).toBe("Weiter geht es nicht.");
     expect(labels.announce.cancelled("X")).toBe("Cancelled. X stays where it was.");
+    expect(labels.announce.pagedTo("Ann, Monday, March 16, 2026")).toBe("Moved to Ann, Monday, March 16, 2026.");
   });
 });

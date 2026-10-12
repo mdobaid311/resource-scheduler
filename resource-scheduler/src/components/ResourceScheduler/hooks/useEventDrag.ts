@@ -292,7 +292,8 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
     const g = grab.current;
     const { viewType, slotMinutes = 60, resources = [], visibleRange } = latest.current;
     if (!g || !visibleRange) return;
-    if (step.resizeEnd && !latest.current.onEventResize) return;
+    const resizing = !!(step.resizeEnd || step.resizeStart);
+    if (resizing && !latest.current.onEventResize) return;
 
     const next = stepPlacement(g.placement, step, {
       viewType,
@@ -305,7 +306,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
       return;
     }
     g.placement = next;
-    if (step.resizeEnd) g.resized = true;
+    if (resizing) g.resized = true;
     if (step.cols || step.rows) g.moved = true;
     const allowed = publish(g);
     say(said().moved(g.event.title, describe(g), allowed));

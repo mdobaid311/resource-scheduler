@@ -13,9 +13,10 @@ export default function KeyboardDemo() {
       log={log}
       caption={
         <>
-          Tab to the grid, then <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd>. Tab on to an
-          event: <kbd>Enter</kbd> details, <kbd>Space</kbd> pick up, arrows move, <kbd>Shift</kbd>+<kbd>→</kbd> resize,{" "}
-          <kbd>Space</kbd> drop, <kbd>Esc</kbd> cancel.
+          Tab to the grid, then <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd>;{" "}
+          <kbd>Page Up</kbd> and <kbd>Page Down</kbd> change the day. Tab on to an event: <kbd>Enter</kbd> details,{" "}
+          <kbd>Space</kbd> pick up, arrows move, <kbd>Shift</kbd>+<kbd>→</kbd> moves the end,{" "}
+          <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>←</kbd> the start, <kbd>Space</kbd> drop, <kbd>Esc</kbd> cancel.
         </>
       }
     >

@@ -43,6 +43,8 @@ export interface SchedulerLabels {
     selected: (slots: number) => string;
     selecting: (slots: number) => string;
     selectionCancelled: string;
+    /** After Page Up or Page Down shows another period: where the cursor is now, the name of its cell ("Ann, Monday, March 16, 2026"). */
+    pagedTo: (cell: string) => string;
   };
 }
 
@@ -70,14 +72,15 @@ export const defaultLabels: SchedulerLabels = {
   columnUtilization: "Utilization",
   group: (name, count) => `${name}, ${count} resource${count === 1 ? "" : "s"}`,
   help: (canResize) =>
-    "Arrow keys move between slots. Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
+    "Arrow keys move between slots. Page Up and Page Down show the previous or next period. " +
+    "Enter or Space selects a slot; hold Shift with Left or Right to select several. " +
     "Tab to an event: Enter opens its details, Space picks it up, arrow keys move it" +
-    (canResize ? ", Shift with Left or Right resizes it" : "") +
+    (canResize ? ", Shift with Left or Right moves its end and Shift with Alt moves its start" : "") +
     ", Space drops it and Escape cancels.",
   announce: {
     pickedUp: (title, canResize) =>
       `Picked up ${title}. Arrow keys move it, Space drops it, Escape cancels.${
-        canResize ? " Hold Shift with left or right arrow to resize." : ""
+        canResize ? " Shift with left or right arrow moves the end, Shift and Alt the start." : ""
       }`,
     moved: (title, place, allowed) =>
       `${title}: ${place}${allowed ? "" : ". Not allowed here"}`,
@@ -89,6 +92,7 @@ export const defaultLabels: SchedulerLabels = {
     selected: (n) => `Selected ${slots(n)}.`,
     selecting: (n) => `Selecting ${slots(n)}. Enter to confirm, Escape to cancel.`,
     selectionCancelled: "Selection cancelled.",
+    pagedTo: (cell) => `Moved to ${cell}.`,
   },
 };
 

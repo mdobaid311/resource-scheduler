@@ -18,11 +18,25 @@ The timeline is one tab stop. Events are tab stops of their own.
 | Grid | Arrow keys, <kbd>Home</kbd>, <kbd>End</kbd> | Move the slot cursor |
 | Grid | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Extend a selection. <kbd>Esc</kbd> drops it |
 | Grid | <kbd>Enter</kbd> or <kbd>Space</kbd> | Select the slot or range (calls `onSlotSelect`, or creates an event) |
+| Grid | <kbd>Page Up</kbd> / <kbd>Page Down</kbd> | Show the previous / next period, like the toolbar arrows. The cursor stays on the same column |
 | Event | <kbd>Enter</kbd> | Open its details |
 | Event | <kbd>Space</kbd> | Pick it up. Arrows move it, <kbd>Space</kbd> drops it, <kbd>Esc</kbd> cancels |
-| Picked-up event | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Resize the end (needs `onEventResize`) |
+| Picked-up event | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Move the end edge: longer or shorter (needs `onEventResize`) |
+| Picked-up event | <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Move the start edge: earlier or later (needs `onEventResize`) |
 
-Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced and shown in red, and an event cannot leave the visible range. After a drop, focus returns to the event that moved.
+Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced and shown in red, and an event cannot leave the visible range. After a drop, focus returns to the event that moved. Resizing from either edge reports through `onEventResize` with the new start and end, and an event cannot be made shorter than one slot (one day in the date views).
+
+## Paging
+
+<kbd>Page Up</kbd> and <kbd>Page Down</kbd> with the grid focused do what the toolbar arrows do: they show the previous or next day, week, month, quarter or year, and call `onDateChange` and `onRangeChange` as the buttons do. The cursor stays on the same column, so in the week view it moves from Tuesday to the next Tuesday and in the day view it keeps its time of day. When the new period has fewer columns (31 days to 28) it lands on the last one. It is scrolled into view, and a screen reader hears where it is: "Moved to Ann, Thursday, October 8, 11:00 AM." (`labels.announce.pagedTo`). The period title in the toolbar is a live region too.
+
+Keys with <kbd>Ctrl</kbd>, <kbd>Alt</kbd>, <kbd>Meta</kbd> or <kbd>Shift</kbd> are left to the browser (<kbd>Ctrl</kbd> + <kbd>Page Down</kbd> switches tabs). While an event is picked up the keys do nothing, because it may not leave the visible period: drop it, page, and pick it up again. Paging does not mirror in a right-to-left layout.
+
+## Why these keys
+
+- <kbd>Page Up</kbd> and <kbd>Page Down</kbd> are free in a grid that holds focus: they used to scroll the page, and are now the period keys. The arrows, <kbd>Home</kbd> and <kbd>End</kbd> keep scrolling the cursor into view.
+- <kbd>Shift</kbd> + <kbd>Alt</kbd> + arrow extends <kbd>Shift</kbd> + arrow, which already moved the end. Screen readers use their own modifier for their commands (<kbd>Insert</kbd> or <kbd>CapsLock</kbd> for NVDA and JAWS, <kbd>Control</kbd> + <kbd>Option</kbd> for VoiceOver), and the browser's <kbd>Alt</kbd> + <kbd>&larr;</kbd> (back) is only taken while an event is picked up.
+- In a right-to-left layout the arrows mean what they show: <kbd>&larr;</kbd> moves forward in time, so <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd> moves the start edge later.
 
 ## Semantics
 
@@ -36,7 +50,6 @@ Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDr
 - Keyboard flows are covered by automated tests, and the rendered scheduler is audited with axe-core in CI with no violations.
 - It has **not** been tried with NVDA, JAWS or VoiceOver. Treat it as built to the patterns, not as certified.
 - Colour contrast is up to you: event colors are your data, and axe cannot check contrast in a test environment.
-- Announcements are English only.
-- Resizing the start edge, and paging between periods, are not available by keyboard yet. Use the toolbar buttons to change period.
+- Announcements and the keyboard instructions come from `labels`, so they can be translated: see [Languages and clocks](/guides/internationalization/). The translations in these docs are examples, not reviewed by native speakers.
 
 If you hit a problem with a screen reader, please [open an issue](https://github.com/mdobaid311/resource-scheduler/issues) with the reader and browser you used.

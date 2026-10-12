@@ -349,6 +349,80 @@ describe("keyboard", () => {
     await context.close();
   });
 
+  it("moves the start edge of a picked-up event with Shift+Alt+Arrow", async () => {
+    const { page, context, errors } = await open(KEYBOARD);
+    assert.match(await label(page, "a1"), /9:00 AM to 9:30 AM/);
+    await event(page, "a1").focus();
+
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Shift+Alt+ArrowLeft"); // start half an hour earlier
+    await page.keyboard.press("Shift+Alt+ArrowLeft");
+    await page.keyboard.press("Shift+ArrowRight"); // end half an hour later
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(250);
+
+    assert.equal(await log(page), 'Resized "Standup"');
+    assert.match(await label(page, "a1"), /8:00 AM to 10:00 AM/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("pages with Page Down and Page Up, keeps the cursor, announces it and does not scroll the page", async () => {
+    const { page, context, errors } = await open(KEYBOARD);
+    const frame = page.locator(".demo-frame").first();
+    const title = () => frame.locator("[aria-live=polite] span").first().textContent();
+    const grid = frame.getByRole("grid");
+    const activeLabel = () =>
+      grid.evaluate((el) => document.getElementById(el.getAttribute("aria-activedescendant")).getAttribute("aria-label"));
+    await grid.focus();
+    await page.keyboard.press("ArrowRight");
+    const before = await activeLabel();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    assert.equal(await title(), "October 7, 2026");
+
+    await page.keyboard.press("PageDown");
+    await page.waitForTimeout(300);
+
+    assert.equal(await title(), "October 8, 2026");
+    assert.equal(await activeLabel(), before.replace("Wednesday, October 7", "Thursday, October 8"));
+    assert.equal(await frame.getByRole("status").first().textContent(), `Moved to ${await activeLabel()}.`);
+    assert.equal(await page.evaluate(() => window.scrollY), scrollY, "the page did not scroll");
+
+    await page.keyboard.press("PageUp");
+    await page.waitForTimeout(300);
+    assert.equal(await title(), "October 7, 2026");
+    assert.equal(await activeLabel(), before);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("keeps the cursor cell in view when paging to a shorter month", async () => {
+    const { page, context, errors } = await open("/guides/loading-and-control/", { fromStart: false });
+    const frame = page.locator(".demo-frame").first();
+    await frame.getByRole("button", { name: "setView(Month)" }).click();
+    await page.waitForTimeout(500);
+    const grid = frame.getByRole("grid");
+    await grid.focus();
+    const cursor = () =>
+      grid.evaluate((el) => {
+        const cell = document.getElementById(el.getAttribute("aria-activedescendant"));
+        const box = cell.getBoundingClientRect();
+        const scroller = document.querySelector(".rs-root .overflow-x-auto").getBoundingClientRect();
+        return { label: cell.getAttribute("aria-label"), inView: box.left >= scroller.left - 1 && box.right <= scroller.right + 1 };
+      });
+
+    await page.keyboard.press("End"); // October 31st
+    assert.match((await cursor()).label, /Saturday, October 31/);
+
+    await page.keyboard.press("PageDown"); // November has 30 days
+    await page.waitForTimeout(500);
+    const november = await cursor();
+    assert.match(november.label, /Monday, November 30/);
+    assert.ok(november.inView, "the cursor cell is on screen");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
   it("cancels a pick-up with Escape", async () => {
     const { page, context } = await open(KEYBOARD);
     const before = await label(page, "a1");

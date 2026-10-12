@@ -42,6 +42,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   ariaLabel,
   describedBy,
   announce,
+  onNavigate,
   onSelectRange,
   calculateEventPositions,
   getGridTemplateRows,
@@ -113,6 +114,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   // resources only, and `resourceRows[n]` is the grid row of the nth one.
   const resourceRows = resources.flatMap((r, row) => (isGroupRow(r) ? [] : [row]));
 
+  const periodKey = slots[0]?.getTime();
   const keyboard = useGridKeyboard({
     rowCount: resourceRows.length,
     colCount: slots.length,
@@ -121,6 +123,10 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     slotAt: (row, col) => ({ resourceId: resources[resourceRows[row]].id, date: slots[col] }),
     onSelect: (resourceId, from, to) => onSelectRange?.(resourceId, from, to),
     announce,
+    onPage: onNavigate,
+    periodKey,
+    cellLabel: (row, col) =>
+      `${resources[resourceRows[row]].name}, ${formatSlotLabel(slots[col], viewType, i18n)}`,
   });
 
   // With a row window, rows still in use stay mounted: the one holding the
@@ -184,13 +190,14 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     }
   });
 
-  // Browsers do not scroll an aria-activedescendant target into view.
+  // Browsers do not scroll an aria-activedescendant target into view. A new
+  // period keeps the cursor on the same cell id, so it counts as a move too.
   useEffect(() => {
     if (!keyboard.activeId) return;
     document
       .getElementById(keyboard.activeId)
       ?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
-  }, [keyboard.activeId]);
+  }, [keyboard.activeId, periodKey]);
 
   const getSelectionRange = () => {
     if (!isDragging || !dragStart || !dragEnd) return null;

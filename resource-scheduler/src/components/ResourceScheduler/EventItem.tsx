@@ -25,6 +25,10 @@ const RESIZE_STEPS: Record<string, { resizeEnd: number }> = {
   ArrowLeft: { resizeEnd: -1 },
   ArrowRight: { resizeEnd: 1 },
 };
+const RESIZE_START_STEPS: Record<string, { resizeStart: number }> = {
+  ArrowLeft: { resizeStart: -1 },
+  ArrowRight: { resizeStart: 1 },
+};
 
 export const EventItem: React.FC<EventItemProps> = ({
   event,
@@ -71,7 +75,8 @@ export const EventItem: React.FC<EventItemProps> = ({
   )}`;
 
   // Keyboard: Enter opens details, Space picks the event up; then arrows move
-  // it (Shift+Left/Right resizes the end), Space drops it, Escape cancels.
+  // it (Shift+Left/Right moves the end edge, Shift+Alt+Left/Right the start
+  // edge), Space drops it, Escape cancels.
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (!drag || !resource) return;
     const handled = () => {
@@ -80,7 +85,8 @@ export const EventItem: React.FC<EventItemProps> = ({
     };
     if (grabbed) {
       const key = flipHorizontal(e.key, i18n.dir === "rtl");
-      const step = e.shiftKey ? RESIZE_STEPS[key] : MOVE_STEPS[key];
+      const resize = e.altKey ? RESIZE_START_STEPS : RESIZE_STEPS;
+      const step = e.shiftKey ? resize[key] : MOVE_STEPS[key];
       if (step) {
         handled();
         drag.stepGrab(step);
