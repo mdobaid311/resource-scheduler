@@ -79,6 +79,18 @@ describe("registry.json", () => {
     expect(css["@utility ocrs-shadow-md"]["box-shadow"]).toBe("var(--rs-shadow-md)");
     expect(Object.keys(css["@layer base"])).toContain(".rs-root button");
   });
+
+  it("carries the print rules, which are what make a printout readable", () => {
+    const print = item().css["@media print"] as Record<string, Record<string, string>>;
+    expect(print).toBeTruthy();
+    expect(print[".rs-no-print"].display).toBe("none !important");
+    expect(print[".rs-root"]["print-color-adjust"]).toBe("exact");
+    expect(print[".rs-scroll"].overflow).toBe("visible");
+    // Every rule is scoped to the scheduler's own classes, except the one that
+    // lets the box around it grow.
+    for (const selector of Object.keys(print).flatMap((s) => s.split(",")))
+      expect(selector.trim(), selector).toMatch(/^(\.rs-|:has\(> \.rs-root\)$)/);
+  });
 });
 
 describe("parseTokens", () => {
@@ -97,6 +109,16 @@ describe("parseTokens", () => {
     expect(parsed.cssVars.theme).toEqual({ "color-x": "var(--a)" });
     expect(parsed.css["@utility foo"]).toEqual({ color: "red" });
     expect(parsed.css["@layer base"]).toEqual({ ".x, .x *": { margin: "0" } });
+  });
+
+  it("reads a print block like a base layer: selectors with declarations, !important kept", () => {
+    const parsed = parse(`
+      @media print { .a, .b .c { display: none !important; } .d { color: red; margin: 0 } }
+    `);
+    expect(parsed.css["@media print"]).toEqual({
+      ".a, .b .c": { display: "none !important" },
+      ".d": { color: "red", margin: "0" },
+    });
   });
 
   it("refuses rules it cannot carry into the registry", () => {

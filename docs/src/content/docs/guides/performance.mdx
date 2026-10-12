@@ -12,6 +12,7 @@ The grid renders resource rows and one cell per row and day (or slot). That is c
 - Rows in use stay mounted: the one holding the keyboard cursor, and the source and target of an event you are dragging. Moving an event by keyboard to a row far away scrolls it into view.
 - **It needs a box with a fixed height.** If the scheduler grows with its content and the page scrolls instead, there is no viewport to measure, so every row is drawn, exactly as without virtualization.
 - The browser's find-in-page only sees the rows that are mounted.
+- **Printing draws everything.** While the page is printed both windows are off, so the paper has every row and column; see [Printing](/guides/printing/) for what that costs on a big board.
 
 ```tsx
 <div style={{ height: 600 }}>

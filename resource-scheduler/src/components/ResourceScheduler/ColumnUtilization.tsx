@@ -13,7 +13,7 @@ export const ColumnUtilizationLabel: React.FC = () => {
   const { labels } = useI18n();
   return (
     <div
-      className="sticky bottom-0 z-10 flex items-center justify-center border-e border-t bg-ocrs-gray-50 px-2 text-sm font-medium text-ocrs-muted-foreground"
+      className="rs-totals-label sticky bottom-0 z-10 flex items-center justify-center border-e border-t bg-ocrs-gray-50 px-2 text-sm font-medium text-ocrs-muted-foreground"
       style={{ height: COLUMN_UTILIZATION_HEIGHT + "px" }}
     >
       {labels.columnUtilization}
@@ -41,7 +41,7 @@ export const ColumnUtilizationRow: React.FC<{
     <div
       role="group"
       aria-label={labels.columnUtilization}
-      className="sticky bottom-0 z-10 grid border-t bg-ocrs-white"
+      className="rs-totals sticky bottom-0 z-10 grid border-t bg-ocrs-white"
       style={{
         gridTemplateColumns: `repeat(${slots.length}, ${columnWidth})`,
         height: COLUMN_UTILIZATION_HEIGHT + "px",

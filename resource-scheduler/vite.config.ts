@@ -24,11 +24,14 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      // `exchange` is a second entry point (resource-scheduler/exchange): file
-      // format helpers that need no React, kept out of the main bundle.
+      // `exchange` and `headless` are more entry points (resource-scheduler/exchange,
+      // resource-scheduler/headless): functions that need no React. `exchange` (file
+      // formats) is kept out of the main bundle; `headless` (the scheduling logic)
+      // shares its code with it, as chunks.
       entry: {
         index: path.resolve(__dirname, "src/index.ts"),
         exchange: path.resolve(__dirname, "src/exchange.ts"),
+        headless: path.resolve(__dirname, "src/headless.ts"),
       },
       formats: ["es", "cjs"],
       // package.json has "type": "module", so Node reads every .js file as ESM
@@ -50,10 +53,12 @@ export default defineConfig({
       ],
       output: {
         // Next.js App Router: lets the package be imported from a server file.
-        // Not on `exchange`: a "use client" module's functions cannot be called
-        // from a server component, and those are plain functions. Code both entries share goes into
-        // a chunk that the exchange entry imports, so that has no banner either.
-        banner: (chunk) => (chunk.isEntry && chunk.name !== "exchange" ? '"use client";' : ""),
+        // Not on `exchange` or `headless`: a "use client" module's functions cannot
+        // be called from a server component, and those are plain functions. Code
+        // the entries share goes into chunks that they import, so those have no
+        // banner either (only an entry chunk gets one).
+        banner: (chunk) =>
+          chunk.isEntry && chunk.name !== "exchange" && chunk.name !== "headless" ? '"use client";' : "",
         // Fix CSS file naming
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {

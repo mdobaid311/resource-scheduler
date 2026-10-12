@@ -23,6 +23,7 @@ The timeline is one tab stop. Events are tab stops of their own.
 | Event | <kbd>Space</kbd> | Pick it up. Arrows move it, <kbd>Space</kbd> drops it, <kbd>Esc</kbd> cancels |
 | Picked-up event | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Move the end edge: longer or shorter (needs `onEventResize`) |
 | Picked-up event | <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Move the start edge: earlier or later (needs `onEventResize`) |
+| Group header, resource | <kbd>Alt</kbd> + <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> | Move it one place (needs `onGroupReorder` or `onResourceReorder`; see [Reordering](/guides/resource-groups/#reordering)) |
 
 Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced and shown in red, and an event cannot leave the visible range. After a drop, focus returns to the event that moved. Resizing from either edge reports through `onEventResize` with the new start and end, and an event cannot be made shorter than one slot (one day in the date views).
 

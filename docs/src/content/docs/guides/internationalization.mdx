@@ -70,10 +70,11 @@ Messages that need a number or a name are functions, so each language can word a
 | `viewTitle(view)` | The small line under the period title |
 | `allDay`, `unavailable`, `to` | Event and slot text. `to` joins a range read aloud: "9:00 AM to 10:00 AM" |
 | `group(name, count)` | The spoken text of a [group header](/guides/resource-groups/): "Floor 1, 2 resources" |
+| `dragToReorder`, `reorderHelp` | The tooltip of the grip that [reorders](/guides/resource-groups/#reordering) groups and resources, and the hidden keyboard instructions for it: "Drag to reorder" |
 | `columnUtilization` | The name of the [totals row](/guides/utilization/#totals-per-column) under the grid: "Utilization" |
 | `utilization(bookedHours, availableHours)` | The hover and screen reader text of the [utilization](/guides/utilization/) bar: "6.5 of 8 hours booked" |
 | `help(canResize)` | The hidden keyboard instructions |
-| `announce.*` | What the live region says: `pickedUp`, `moved`, `cantGoFurther`, `notAllowedHere`, `droppedNoChange`, `dropped`, `cancelled`, `selected`, `selecting`, `selectionCancelled`, `pagedTo(cell)` (where the cursor is after Page Up or Page Down: "Moved to Ann, Monday, March 16, 2026.") |
+| `announce.*` | What the live region says: `pickedUp`, `moved`, `cantGoFurther`, `notAllowedHere`, `droppedNoChange`, `dropped`, `cancelled`, `selected`, `selecting`, `selectionCancelled`, `pagedTo(cell)` (where the cursor is after Page Up or Page Down: "Moved to Ann, Monday, March 16, 2026."), and `reordered(name, position, total, group)` for a group or resource that was moved: "Cy moved to Floor 1, position 2 of 3." |
 
 `ariaLabel` still overrides `gridName`. The translations in the demo above are examples written for these docs: have a native speaker review a language before you ship it.
 

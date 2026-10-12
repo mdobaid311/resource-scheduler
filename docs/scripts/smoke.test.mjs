@@ -36,7 +36,7 @@ after(() => browser?.close());
 
 // A fresh page on a docs route, scrolled to its first demo. Console errors are
 // collected so a test can assert there were none.
-async function open(route, { touch = false, fromStart = true } = {}) {
+async function open(route, { touch = false, fromStart = true, ready = "[data-rs-slot]" } = {}) {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 1100 },
     hasTouch: touch,
@@ -47,7 +47,7 @@ async function open(route, { touch = false, fromStart = true } = {}) {
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.clock.setFixedTime(NOW);
   await page.goto(BASE + route);
-  await page.waitForSelector("[data-rs-slot]");
+  await page.waitForSelector(ready);
   await page.locator(".demo-frame").first().scrollIntoViewIfNeeded();
   await page.waitForTimeout(600); // the grid scrolls itself to "now" first
   if (fromStart) {
@@ -271,6 +271,69 @@ describe("column utilization", () => {
   });
 });
 
+describe("suggest", () => {
+  it("ranks the crew for a job, re-ranks after booking, and only accepts drops the same call allows", async () => {
+    const { page, context, errors } = await open("/guides/availability/");
+    const frame = page.locator(".demo-frame").nth(1);
+    await frame.scrollIntoViewIfNeeded();
+    const ranking = () => frame.getByRole("list", { name: "Suggestions" }).getByRole("listitem").allTextContents();
+    const names = async () => (await ranking()).map((r) => r.split(",")[0]);
+
+    // A one hour job, soonest first: Ann and Cy are free at 7, the van crew has a seat from 9, Ben from 2 PM.
+    assert.deepEqual(await ranking(), [
+      "Ann Lee, 7:00 AM to 8:00 AM, 33% booked",
+      "Cy Ortiz, 7:00 AM to 8:00 AM, 39% booked",
+      "Van crew (2), 9:00 AM to 10:00 AM, 25% booked",
+      "Ben Ruiz, 2:00 PM to 3:00 PM, 31% booked",
+    ]);
+
+    // The same job ranked by how booked each is, and the other way round.
+    await frame.getByLabel("Rank by").selectOption("least-booked");
+    assert.deepEqual(await names(), ["Van crew (2)", "Ben Ruiz", "Ann Lee", "Cy Ortiz"]);
+    await frame.getByLabel("Rank by").selectOption("most-booked");
+    assert.deepEqual(await names(), ["Cy Ortiz", "Ann Lee", "Ben Ruiz", "Van crew (2)"]);
+
+    // Three hours: Ann has no gap that long, so she drops out of the list.
+    await frame.getByLabel("Job").selectOption("check");
+    await frame.getByLabel("Rank by").selectOption("earliest");
+    assert.deepEqual(await ranking(), [
+      "Van crew (2), 9:00 AM to 12:00 PM, 25% booked",
+      "Ben Ruiz, 2:00 PM to 5:00 PM, 31% booked",
+      "Cy Ortiz, 4:00 PM to 7:00 PM, 39% booked",
+    ]);
+
+    // Book the one hour job: Ann wins the tie with Cy by resource order, and the list moves on.
+    await frame.getByLabel("Job").selectOption("thermostat");
+    await frame.getByRole("button", { name: "Book the top pick" }).click();
+    assert.equal(await frame.locator(".demo-log").textContent(), 'Booked "Thermostat" with Ann Lee at 7:00 AM');
+    assert.match(await label(page, "new-8"), /Thermostat.*Ann Lee.*7:00 AM/s);
+    assert.deepEqual(await ranking(), [
+      "Cy Ortiz, 7:00 AM to 8:00 AM, 39% booked",
+      "Van crew (2), 9:00 AM to 10:00 AM, 25% booked",
+      "Ann Lee, 10:30 AM to 11:30 AM, 47% booked",
+      "Ben Ruiz, 2:00 PM to 3:00 PM, 31% booked",
+    ]);
+
+    // Ben's 1 PM job may not go to Cy, who is in training, but may go to Ann.
+    const before = await label(page, "j4");
+    await event(page, "j4").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowDown"); // Ben to Cy
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Escape");
+    assert.equal(await label(page, "j4"), before);
+
+    await event(page, "j4").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowUp"); // Ben to Ann
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(250);
+    assert.match(await label(page, "j4"), /Ann Lee.*1:00 PM/s);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("import", () => {
   it("reads a calendar file into the board and says what it could not show", async () => {
     const { page, context, errors } = await open("/guides/export/");
@@ -329,6 +392,330 @@ describe("time zones", () => {
     assert.match(await log(page), /^Moved "Sprint planning": store \d{4}-\d{2}-\d{2}T09:00:00\.000Z$/);
     assert.match(await label(page, "t1"), /5:00 AM to 6:30 AM/);
     assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
+// Chrome writes the page count into the page tree as "/Count n".
+const pdfPages = (pdf) => Math.max(...[...pdf.toString("latin1").matchAll(/\/Count (\d+)/g)].map((m) => Number(m[1])));
+
+describe("printing", () => {
+  const rows = (page) => page.evaluate(() => document.querySelectorAll('.rs-grid [role="row"]').length);
+
+  it("draws every row for paper, without the controls, fitted to the page width, and goes back", async () => {
+    const { page, context, errors } = await open("/guides/printing/");
+    assert.ok((await rows(page)) < 24, "the demo draws only a window on screen");
+    assert.equal(await page.locator(".rs-toolbar button").first().isVisible(), true);
+
+    await page.emulateMedia({ media: "print" });
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length === 24);
+    const paper = await page.evaluate(() => {
+      const style = (selector) => getComputedStyle(document.querySelector(selector));
+      return {
+        controls: [...document.querySelectorAll(".rs-toolbar button, .rs-toolbar [role=combobox]")].map((el) => getComputedStyle(el).display),
+        title: document.querySelector(".rs-toolbar").innerText,
+        scroll: style(".rs-scroll").overflowX,
+        header: style(".rs-header").position,
+        resources: style(".rs-resources").position,
+        columns: style(".rs-grid").gridTemplateColumns.split(" ").length,
+        right: document.querySelector(".rs-grid").getBoundingClientRect().right,
+        page: document.documentElement.clientWidth,
+      };
+    });
+    assert.ok(paper.controls.length >= 4 && paper.controls.every((d) => d === "none"), "arrows, Today and the view select are gone");
+    assert.match(paper.title, /Oct 4 – Oct 10, 2026/); // the title stays
+    assert.equal(paper.scroll, "visible");
+    assert.equal(paper.header, "static");
+    assert.equal(paper.resources, "static");
+    assert.equal(paper.columns, 7);
+    assert.ok(paper.right <= paper.page, "the columns fit the page width");
+
+    await page.emulateMedia({ media: "screen" });
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length < 24);
+    assert.equal(await page.locator(".rs-toolbar button").first().isVisible(), true);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("prints every page of a board of 300 resources, not the window", async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await context.newPage();
+    await page.clock.setFixedTime(NOW);
+    await page.goto(`${BASE}/bench/?rows=300&events=5`);
+    await page.waitForSelector("[data-rs-slot]");
+    await page.waitForTimeout(600);
+    assert.ok((await rows(page)) < 40, "a window on screen");
+
+    // page.pdf prints like Ctrl+P: beforeprint, print layout, afterprint. Printing only the window gave 1 page.
+    const pdf = await page.pdf({ landscape: true, format: "A4" });
+    assert.ok(pdfPages(pdf) > 20, `300 rows are many pages, got ${pdfPages(pdf)}`);
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length < 40);
+    await context.close();
+  });
+});
+
+describe("headless", () => {
+  it("draws a timeline from the headless functions alone: header, lanes, recurrence and navigation", async () => {
+    const { page, context, errors } = await open("/guides/build-your-own-ui/", {
+      fromStart: false,
+      ready: '[data-demo="headless"]',
+    });
+    const demo = page.locator('[data-demo="headless"]');
+    const title = demo.locator("[data-demo-title]");
+    const tile = (id) => demo.locator(`[data-demo-event="${id}"]`);
+
+    // No class of the component, no stylesheet of the package: inline styles only.
+    assert.equal(await demo.locator("[class]").count(), 0);
+    assert.equal(await page.locator('[data-demo="headless"] .rs-root').count(), 0);
+
+    // The week (Monday first) with the series expanded, one occurrence a weekday.
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+    assert.equal(await demo.locator('[data-demo-event^="stand::"]').count(), 5);
+    assert.equal(await demo.locator("[data-demo-event]").count(), 14);
+
+    // On Monday the standup overlaps the other event of the row, so they sit in different lanes.
+    const [a, b] = await Promise.all([tile("a1").boundingBox(), tile("stand::2026-10-05").boundingBox()]);
+    assert.ok(a.y + a.height <= b.y || b.y + b.height <= a.y, "overlapping events share a lane");
+    assert.equal(a.x, b.x); // the same first column
+
+    // Next week: the single events are gone, the series goes on.
+    await demo.getByRole("button", { name: "Next period" }).click();
+    assert.equal(await title.textContent(), "Oct 12 – Oct 18, 2026");
+    assert.equal(await tile("a1").count(), 0);
+    assert.equal(await tile("stand::2026-10-14").count(), 1);
+    await demo.getByRole("button", { name: "Today" }).click();
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+
+    // Clicking an event reads it out; the day view shows the visible hours of one day.
+    await tile("stand::2026-10-07").click();
+    assert.equal(await demo.getByRole("status").textContent(), "Standup, Ann Lee: 9:00 AM - 9:30 AM");
+    await demo.getByRole("button", { name: "Day", exact: true }).click();
+    assert.equal(await title.textContent(), "October 7, 2026");
+    assert.ok(await demo.getByText("9AM", { exact: true }).isVisible());
+    assert.equal(await tile("a1").count(), 0); // Monday's event is not on Wednesday
+    assert.equal(await tile("a3").count(), 1); // the three-day event is
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
+describe("custom timeline", () => {
+  // The demo under "Drag, resize and create": useSchedulerState plus pointer handling written in the demo.
+  const openCustom = async () => {
+    const opened = await open("/guides/build-your-own-ui/", { fromStart: false, ready: '[data-demo="custom"]' });
+    const demo = opened.page.locator('[data-demo="custom"]');
+    const tile = (id) => demo.locator(`[data-demo-event="${id}"]`);
+    const cellOf = (resource, column) => demo.locator(`[data-resource="${resource}"][data-slot]`).nth(column); // 0 = Monday
+    // Where a tile sits inside the demo: the page scrolls while dragging, so viewport coordinates would not do.
+    const top = async (id) => (await tile(id).boundingBox()).y - (await demo.boundingBox()).y;
+    return { ...opened, demo, tile, cellOf, top };
+  };
+
+  it("moves an event to another resource and keeps its time of day", async () => {
+    const { page, context, errors, demo, tile, cellOf, top } = await openCustom();
+    const before = await top("a2");
+    await mouseDrag(page, await centerOf(tile("a2")), await centerOf(cellOf("chen", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Moved "Design review" to Chen Wu, 11:00 AM - 1:00 PM');
+    assert.ok((await top("a2")) > before, "the event is now in a lower row");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("refuses a move that would double book, and leaves the event where it was", async () => {
+    const { page, context, errors, demo, tile, cellOf, top } = await openCustom();
+    const before = await top("d1");
+    // Dana's Monday roadmap onto Bob's Tuesday, which his three-day API work covers.
+    await mouseDrag(page, await centerOf(tile("d1")), await centerOf(cellOf("bob", 1)), { release: false });
+    await page.waitForTimeout(100);
+    // The footprint is red while the pointer is over it.
+    const tinted = await cellOf("bob", 1).evaluate((el) => getComputedStyle(el).backgroundColor);
+    assert.match(tinted, /rgba\(239, 68, 68/);
+    await page.mouse.up();
+    await page.waitForTimeout(250);
+    assert.equal(await demo.getByRole("status").textContent(), "Not allowed: that overlaps another event");
+    assert.equal(await top("d1"), before);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("resizes an event from its edge", async () => {
+    const { page, context, errors, demo, tile, cellOf } = await openCustom();
+    const before = await tile("c1").boundingBox();
+    await mouseDrag(page, await centerOf(tile("c1").locator('[data-demo-resize="end"]')), await centerOf(cellOf("chen", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Resized "User tests", 10:00 AM - 3:00 PM');
+    const after = await tile("c1").boundingBox();
+    assert.ok(after.width > before.width * 1.7, "it now spans two days");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("creates an event by dragging across free cells", async () => {
+    const { page, context, errors, demo, cellOf } = await openCustom();
+    await mouseDrag(page, await centerOf(cellOf("dana", 1)), await centerOf(cellOf("dana", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Created "New event" for Dana Fox, All day');
+    assert.equal(await demo.locator('[data-demo-event^="new-"]').count(), 1);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("navigates and changes the view through the hook", async () => {
+    const { context, errors, demo, tile } = await openCustom();
+    const title = demo.locator("[data-demo-title]");
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+    await demo.getByRole("button", { name: "Next period" }).click();
+    assert.equal(await title.textContent(), "Oct 12 – Oct 18, 2026");
+    assert.equal(await tile("a1").count(), 0);
+    await demo.getByRole("button", { name: "Today" }).click();
+    assert.equal(await tile("a1").count(), 1);
+    await demo.getByRole("button", { name: "Month", exact: true }).click();
+    assert.equal(await title.textContent(), "October 2026");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
+describe("reorder", () => {
+  // The second demo on the resource groups page: three groups, Annex folded, onGroupReorder and
+  // onResourceReorder applied with reorderGroup and moveResource.
+  const openReorder = async ({ touch = false } = {}) => {
+    const opened = await open("/guides/resource-groups/", { touch });
+    const frame = opened.page.locator(".demo-frame").nth(1);
+    await frame.scrollIntoViewIfNeeded();
+    await opened.page.waitForTimeout(300);
+    return { ...opened, frame };
+  };
+  const header = (frame, name) => frame.getByRole("button", { name: new RegExp(`^${name}, \\d resource`) });
+  const room = (frame, name) => frame.locator("[data-rs-row]").filter({ hasText: new RegExp(`^${name}$`) }).first();
+  const grip = (row) => row.locator("[data-rs-handle]");
+  const rows = async (frame) =>
+    (
+      await frame
+        .locator("[data-rs-row]")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("aria-label")?.split(",")[0] ?? el.textContent.trim()))
+    ).join("|");
+  const dropLine = (frame) => frame.locator("[data-rs-drop-line]");
+  const demoLog = (frame) => frame.locator(".demo-log").textContent();
+  const announced = (frame) => frame.locator(".rs-root > [role=status]").textContent();
+  const START = "Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta|Annex";
+
+  it("drags a group, with its rooms, before another", async () => {
+    const { page, context, frame, errors } = await openReorder();
+    assert.equal(await rows(frame), START);
+
+    const from = await centerOf(grip(header(frame, "Floor 2")));
+    const top = await header(frame, "Floor 1").boundingBox();
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 }, { release: false });
+    assert.equal(await dropLine(frame).count(), 1, "a line shows where it will land");
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Floor 1|Atlas|Borealis|Annex");
+    assert.equal(await demoLog(frame), 'Moved "Floor 2" before "Floor 1"');
+    assert.equal(await dropLine(frame).count(), 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("drops a room on a group header, and before another room", async () => {
+    const { page, context, frame, errors } = await openReorder();
+
+    await mouseDrag(page, await centerOf(grip(room(frame, "Cirrus"))), await centerOf(header(frame, "Floor 1")));
+    assert.equal(await rows(frame), "Floor 1|Atlas|Borealis|Cirrus|Floor 2|Delta|Annex");
+    assert.equal(await demoLog(frame), 'Moved Cirrus to the end of "Floor 1"');
+
+    const atlas = await room(frame, "Atlas").boundingBox();
+    await mouseDrag(page, await centerOf(grip(room(frame, "Delta"))), { x: atlas.x + 90, y: atlas.y + 6 });
+    assert.equal(await rows(frame), "Floor 1|Delta|Atlas|Borealis|Cirrus|Annex"); // Floor 2 had only Delta
+    assert.equal(await demoLog(frame), 'Moved Delta before Atlas of "Floor 1"');
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("moves a folded group with its rooms, and Escape cancels a drag", async () => {
+    const { page, context, frame } = await openReorder();
+    const from = await centerOf(grip(header(frame, "Annex")));
+    const top = await header(frame, "Floor 1").boundingBox();
+
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 }, { release: false });
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), START);
+    assert.equal(await dropLine(frame).count(), 0);
+
+    await mouseDrag(page, from, { x: top.x + 100, y: top.y + 6 });
+    assert.equal(await rows(frame), `Annex|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta`);
+    await header(frame, "Annex").click();
+    assert.equal(await rows(frame), "Annex|Echo|Foxtrot|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta");
+    await context.close();
+  });
+
+  it("does not fold a group when its grip is clicked", async () => {
+    const { page, context, frame } = await openReorder();
+    const { x, y } = await centerOf(grip(header(frame, "Floor 1")));
+    await page.mouse.click(x, y);
+    assert.equal(await header(frame, "Floor 1").getAttribute("aria-expanded"), "true");
+    assert.equal(await rows(frame), START);
+    await context.close();
+  });
+
+  it("moves a group or a room with Alt+Arrow, says so, and keeps the focus", async () => {
+    const { page, context, frame, errors } = await openReorder();
+
+    await header(frame, "Floor 2").focus();
+    await page.keyboard.press("Alt+ArrowUp");
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Floor 1|Atlas|Borealis|Annex");
+    assert.equal(await announced(frame), "Floor 2 moved to position 1 of 3.");
+    assert.ok(await header(frame, "Floor 2").evaluate((el) => el === document.activeElement));
+
+    await room(frame, "Borealis").focus();
+    await page.keyboard.press("Alt+ArrowUp");
+    await page.keyboard.press("Alt+ArrowUp"); // past the top of Floor 1: into the end of Floor 2
+    await page.waitForTimeout(150);
+    assert.equal(await rows(frame), "Floor 2|Cirrus|Delta|Borealis|Floor 1|Atlas|Annex");
+    assert.equal(await announced(frame), "Borealis moved to Floor 2, position 3 of 3.");
+    assert.ok(await room(frame, "Borealis").evaluate((el) => el === document.activeElement));
+
+    await header(frame, "Floor 2").focus();
+    await page.keyboard.press("Alt+ArrowUp"); // already first
+    assert.equal(await announced(frame), "Can't go any further.");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("drags a group from its grip with touch", async () => {
+    const { page, context, frame, errors } = await openReorder({ touch: true });
+    const cdp = await context.newCDPSession(page);
+    const send = (type, p) =>
+      cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: p.x, y: p.y, id: 1 }] : [] });
+    const from = await centerOf(grip(header(frame, "Annex")));
+    const top = await header(frame, "Floor 1").boundingBox();
+
+    await send("touchStart", from);
+    for (let i = 1; i <= 12; i++) await send("touchMove", { x: from.x, y: from.y + ((top.y + 6 - from.y) * i) / 12 });
+    assert.equal(await dropLine(frame).count(), 1);
+    await send("touchEnd");
+    await page.waitForTimeout(250);
+
+    assert.equal(await rows(frame), "Annex|Floor 1|Atlas|Borealis|Floor 2|Cirrus|Delta");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("scrolls the column while a drag is held near its edge", async () => {
+    const { page, context, frame } = await openReorder();
+    await header(frame, "Annex").click(); // unfolded, the list is taller than the demo
+    const scroller = frame.locator(".overflow-x-auto").first();
+    const before = await scroller.evaluate((el) => el.scrollTop);
+    const box = await scroller.boundingBox();
+
+    await mouseDrag(page, await centerOf(grip(room(frame, "Atlas"))), { x: box.x + 60, y: box.y + box.height - 8 }, { release: false });
+    await page.waitForTimeout(600);
+    const after = await scroller.evaluate((el) => el.scrollTop);
+    await page.mouse.up();
+
+    assert.ok(after > before, `scrollTop went from ${before} to ${after}`);
     await context.close();
   });
 });

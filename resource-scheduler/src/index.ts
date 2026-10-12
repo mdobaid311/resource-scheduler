@@ -30,6 +30,12 @@ export { EmptySlotItem } from "./components/ResourceScheduler/EmptySlotItem";
 
 // Hook exports
 export { useScheduler } from "./components/ResourceScheduler/hooks/useScheduler";
+export { useSchedulerState } from "./components/ResourceScheduler/hooks/useSchedulerState";
+export type { SchedulerStateResult } from "./components/ResourceScheduler/hooks/useSchedulerState";
+export type {
+  SchedulerState,
+  SchedulerStoreInput,
+} from "./components/ResourceScheduler/utils/schedulerStore";
 export { useEventCreation } from "./components/ResourceScheduler/hooks/useEventCreation";
 
 // Utility exports
@@ -65,7 +71,19 @@ export {
   touchesUnavailable,
 } from "./components/ResourceScheduler/utils/availability";
 export type { FindSlotsOptions } from "./components/ResourceScheduler/utils/availability";
+export { suggestResources } from "./components/ResourceScheduler/utils/suggest";
+export type {
+  SuggestCandidate,
+  SuggestOptions,
+  SuggestRequest,
+  Suggestion,
+  SuggestStrategy,
+} from "./components/ResourceScheduler/utils/suggest";
 export { groupUtilization } from "./components/ResourceScheduler/utils/groups";
+export {
+  moveResource,
+  reorderGroup,
+} from "./components/ResourceScheduler/utils/reorder";
 export {
   columnUtilization,
   getUtilization,

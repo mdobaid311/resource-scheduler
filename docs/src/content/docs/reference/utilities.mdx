@@ -3,7 +3,7 @@ title: Utilities and hooks
 description: The helper functions and hooks exported by Resource Scheduler, including the conflict check you can reuse on a server.
 ---
 
-All of these are exported from `resource-scheduler`.
+All of these are exported from `resource-scheduler`. The pure functions among them (and the layout ones that are not on this page, such as `layoutEvents` and `getRowHeights`) are also exported without React from `resource-scheduler/headless`: see the [Headless API](/reference/headless/).
 
 ## Conflict rules
 
@@ -29,6 +29,7 @@ All of these are exported from `resource-scheduler`.
 - **`touchesUnavailable(resource, { start, end }, context)`** returns `boolean`. Whether a placement would touch a shaded cell. This is what `blockUnavailable` runs.
 - **`resolveBusinessHours(hours)`** returns the hours with the defaults filled in.
 - **`findAvailableSlots(resource | resources, { from, to, duration, step?, businessHours?, limit? })`** returns `{ start, end }[]`, the free slots earliest first. With several resources, only times when all are free. See [Business hours and availability](/guides/availability/).
+- **`suggestResources(resources, request, options?)`** returns `{ resourceId, start, end, score, utilization }[]`, the resources that can take a job, best first. `request` is a fixed time `{ start, end }` or a window to search `{ from, to, duration, step? }`, each with an optional `event` (the job). `options` are `businessHours`, `resourceIds`, `eventOverlap`, `isValidDrop`, `strategy` (`"earliest"`, `"least-booked"`, `"most-booked"` or a score function), `limit` and `perResource`. A placement is suggested only inside the resource's hours and outside its `unavailable` time, with fewer bookings at once than its `capacity`, and when the placement rules accept it. See [Suggest who takes a job](/guides/availability/#suggest-who-takes-a-job).
 
 ## Export
 
@@ -43,6 +44,13 @@ Imported from `resource-scheduler/exchange`, not from the main entry point.
 - **`getUtilization(resource, { start, end }, { businessHours? })`** returns `{ bookedMinutes, availableMinutes, ratio }`. Booked time inside the available time (business hours minus `unavailable`, times `capacity`) over a range (`end` exclusive); `ratio` is `null` when nothing is available. What `showUtilization` draws. See [Utilization](/guides/utilization/).
 - **`columnUtilization(resources, columns, { businessHours? })`** adds up the utilization of several resources for each of `columns` (ranges in order, `end` exclusive) and returns one `{ bookedMinutes, availableMinutes, ratio }` per column. What `showColumnUtilization` draws.
 - **`groupUtilization(resources, { start, end }, { businessHours? })`** returns a `Map` from a group header's id (`"rs-group:" + the group's key`) to the same `{ bookedMinutes, availableMinutes, ratio }`, summed over every resource below the group, nested ones included. What a group header shows. See [Resource groups](/guides/resource-groups/).
+
+## Reordering
+
+What you apply the [reorder callbacks](/guides/resource-groups/#reordering) with. Both are pure, return a new array in the order it is shown, and return the array you passed in when nothing would change or a key or id is unknown.
+
+- **`reorderGroup(resources, groupKey, beforeGroupKey)`** moves a group, with all its resources and nested groups, to just before the sibling group `beforeGroupKey`, or to the end of its siblings when that is `null`. A group only moves among the groups with the same parent. Keys are a group's name, or its path joined with " / ".
+- **`moveResource(resources, resourceId, beforeResourceId, group?)`** moves a resource to just before `beforeResourceId`, or to the end of its group when that is `null`. `group` is the key of the group it lands in: leave it out to keep its own, pass `null` for none. A resource that changes group is copied with its `group` set to that group's path; passing its own id as `beforeResourceId` changes only the group.
 
 ## Time zones
 

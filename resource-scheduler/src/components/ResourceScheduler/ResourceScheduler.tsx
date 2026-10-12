@@ -8,7 +8,6 @@ import { DensityContext, LANES, UTILIZATION_ROW_HEIGHT } from "./density";
 import { buildI18n, I18nContext } from "./i18n";
 
 const NO_CLASS_NAMES: SchedulerClassNames = {};
-import { addDays, addMinutes, startOfDay } from "date-fns";
 import React, {
   forwardRef,
   useCallback,
@@ -20,6 +19,7 @@ import React, {
   useState,
 } from "react";
 import { useEventCreation } from "./hooks/useEventCreation";
+import { usePrinting } from "./hooks/usePrinting";
 import { useScheduler } from "./hooks/useScheduler";
 import { ResourceColumn } from "./ResourceColumn";
 import { SchedulerControls } from "./SchedulerControls";
@@ -27,6 +27,7 @@ import { TimelineGrid } from "./TimelineGrid";
 import { TimelineHeader } from "./TimelineHeader";
 import {
   type ResourceSchedulerHandle,
+  type ReorderControl,
   type ResourceSchedulerProps,
   type SchedulerEvent,
   ViewType,
@@ -37,6 +38,8 @@ import { getVisibleRange, resolveSlotOptions } from "./utils/dateUtils";
 import { touchesUnavailable } from "./utils/availability";
 import { withEvents } from "./utils/events";
 import { groupUtilization, isGroupRow, withGroups } from "./utils/groups";
+import { getColumnRange } from "./utils/layout";
+import { moveResource, reorderGroup } from "./utils/reorder";
 import { columnUtilization, getUtilization, type Utilization } from "./utils/utilization";
 import {
   isPlacementAllowed,
@@ -94,6 +97,8 @@ const SchedulerView = forwardRef<
   collapsedGroups,
   defaultCollapsedGroups,
   onCollapsedGroupsChange,
+  onGroupReorder,
+  onResourceReorder,
   classNames,
   components,
   density,
@@ -156,7 +161,31 @@ const SchedulerView = forwardRef<
     () => withGroups(allResources, collapsed),
     [allResources, collapsed]
   );
+  // A drop reaches the app only when it would change something: the helpers return the list itself when not.
+  const reorder = useMemo<ReorderControl | undefined>(
+    () =>
+      onGroupReorder || onResourceReorder
+        ? {
+            groups: !!onGroupReorder,
+            resources: !!onResourceReorder,
+            commit: (drag, target) => {
+              if (drag.kind === "group") {
+                if (!onGroupReorder || reorderGroup(allResources, drag.key, target.before) === allResources) return false;
+                onGroupReorder(drag.key, target.before);
+              } else {
+                const group = target.group ?? null;
+                if (!onResourceReorder || moveResource(allResources, drag.id, target.before, group) === allResources)
+                  return false;
+                onResourceReorder(drag.id, target.before, group);
+              }
+              return true;
+            },
+          }
+        : undefined,
+    [onGroupReorder, onResourceReorder, allResources]
+  );
   const helpId = `rs-help${useId()}`;
+  const reorderHelpId = `rs-reorder-help${useId()}`;
   // Spoken by screen readers through the live region below.
   const [announcement, setAnnouncement] = useState("");
 
@@ -188,7 +217,9 @@ const SchedulerView = forwardRef<
 
   // Only the rows near the viewport are rendered when there are many. The
   // scroll position is rounded, so the state only changes every QUANTUM px.
-  const virtualized = virtualize ?? initialResources.length > VIRTUALIZE_ABOVE;
+  // Not while printing: paper has no viewport, so a window would print blank.
+  const printing = usePrinting();
+  const virtualized = !printing && (virtualize ?? initialResources.length > VIRTUALIZE_ABOVE);
   const [viewport, setViewport] = useState({ top: 0, height: 800 });
   useEffect(() => {
     const scroller = scrollRef.current;
@@ -258,11 +289,7 @@ const SchedulerView = forwardRef<
       showColumnUtilization
         ? columnUtilization(
             allResources,
-            columnSlots.map((slot) =>
-              viewType === ViewType.Day
-                ? { start: slot, end: addMinutes(slot, slotMinutes) }
-                : { start: startOfDay(slot), end: addDays(startOfDay(slot), 1) }
-            ),
+            columnSlots.map((slot) => getColumnRange(slot, viewType, slotMinutes)),
             { businessHours }
           )
         : undefined,
@@ -357,13 +384,13 @@ const SchedulerView = forwardRef<
   // Only the columns near the viewport are rendered when there are many (the
   // year view). The scroll position is rounded, so the state only changes every
   // COLUMN_STEP px. Without a column width in px, or a box to measure, every
-  // column is drawn.
+  // column is drawn. Not while printing, for the same reason as the rows.
   const columnCount = useMemo(
     () => (viewType === ViewType.Day ? getTimeSlots().length : getDatesInView().length),
     [viewType, getTimeSlots, getDatesInView]
   );
   const columnPx = parsePx(viewType === ViewType.Day ? timeColumnWidth : dateColumnWidth);
-  const virtualCols = (virtualizeColumns ?? columnCount > VIRTUALIZE_COLUMNS_ABOVE) && columnPx !== undefined;
+  const virtualCols = !printing && (virtualizeColumns ?? columnCount > VIRTUALIZE_COLUMNS_ABOVE) && columnPx !== undefined;
   const [columnView, setColumnView] = useState({ left: 0, width: 1280 });
   useEffect(() => {
     const scroller = scrollRef.current;
@@ -496,12 +523,18 @@ const SchedulerView = forwardRef<
           {
             "--rs-sticky-left": resourceColumnWidth,
             "--rs-sticky-top": "3.5rem", // the sticky date header (h-14)
+            "--rs-cols": columnCount, // read by the print rules to fit the columns to the page
           } as React.CSSProperties
         }
       >
         <p id={helpId} className="sr-only">
           {i18n.labels.help(!!onEventResize)}
         </p>
+        {reorder && (
+          <p id={reorderHelpId} className="sr-only">
+            {i18n.labels.reorderHelp}
+          </p>
+        )}
         <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {announcement}
         </div>
@@ -519,7 +552,7 @@ const SchedulerView = forwardRef<
 
         <div
           ref={scrollRef}
-          className="flex flex-1 bg-ocrs-white rounded-b-lg ocrs-shadow-sm overflow-x-auto"
+          className="rs-scroll flex flex-1 bg-ocrs-white rounded-b-lg ocrs-shadow-sm overflow-x-auto"
         >
           <ResourceColumn
             resources={resources}
@@ -531,9 +564,12 @@ const SchedulerView = forwardRef<
             onToggleGroup={toggleGroup}
             rowRange={rowRange}
             showColumnUtilization={showColumnUtilization}
+            reorder={reorder}
+            announce={setAnnouncement}
+            reorderHelpId={reorderHelpId}
           />
 
-          <div className="flex-1">
+          <div className="rs-timeline flex-1">
             <TimelineHeader
               viewType={viewType}
               timeColumnWidth={timeColumnWidth}
