@@ -7,14 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useComponents } from "./components";
 import { useI18n } from "./i18n";
 import { type SchedulerControlsProps, ViewType } from "./types";
-import { getDatesInView } from "./utils/dateUtils";
+import { formatPeriodTitle } from "./utils/dateUtils";
 
 export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   currentDate,
@@ -33,29 +32,8 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   // Previous and next point the other way when time runs right to left.
   const arrow = `h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`;
 
-  const getDateTitle = () => {
-    switch (viewType) {
-      case ViewType.Day:
-        return fmt.titleDay(currentDate);
-      case ViewType.Week: {
-        const days = getDatesInView(currentDate, viewType, {
-          weekStartsOn,
-          hideWeekends,
-        });
-        return `${fmt.titleDateStart(days[0])} – ${fmt.titleDateEnd(
-          days[days.length - 1]
-        )}`;
-      }
-      case ViewType.Month:
-        return fmt.monthYear(currentDate);
-      case ViewType.Quarter:
-        return fmt.quarterYear(currentDate);
-      case ViewType.Year:
-        return format(currentDate, "yyyy", { locale });
-      default:
-        return fmt.titleDay(currentDate);
-    }
-  };
+  const getDateTitle = () =>
+    formatPeriodTitle(currentDate, viewType, { weekStartsOn, hideWeekends }, { fmt, locale });
 
   const views = availableViews ?? [
     ViewType.Day,
@@ -89,7 +67,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   return (
     <div
       className={withClass(
-        "flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
+        "rs-toolbar flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
         classNames.toolbar
       )}
     >
@@ -98,7 +76,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-ocrs-gray-100 rounded-lg"
+            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
             aria-label={labels.previousPeriod}
             onClick={() => onNavigate("prev")}
           >
@@ -121,7 +99,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-ocrs-gray-100 rounded-lg"
+            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
             aria-label={labels.nextPeriod}
             onClick={() => onNavigate("next")}
           >
@@ -132,7 +110,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
+          className="rs-no-print flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
           aria-label={labels.today}
           onClick={onGoToToday}
         >
@@ -144,12 +122,12 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
       {allowViewChange && (
         <Select value={viewType} onValueChange={onViewChange} dir={dir}>
           <SelectTrigger
-            className="lg:w-[140px] w-full bg-ocrs-white"
+            className="rs-no-print lg:w-[140px] w-full bg-ocrs-white"
             aria-label={labels.view}
           >
             <SelectValue placeholder={labels.view} />
           </SelectTrigger>
-          <SelectContent style={{ zIndex: 99 }}>
+          <SelectContent className="rs-no-print" style={{ zIndex: 99 }}>
             {views.map((view) => (
               <SelectItem key={view} value={view}>
                 {labels.views[view]}

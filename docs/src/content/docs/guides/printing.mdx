@@ -1,0 +1,102 @@
+---
+title: Printing
+description: What the scheduler prints, how it draws every row and column for paper, how to set landscape and margins, how to print a chosen range, and where a printout runs out of room.
+---
+
+import PrintDemo from "../../../components/demos/PrintDemo";
+
+Press Ctrl+P, or call `window.print()`, on a page with a scheduler and you get a board you can read on paper. It needs nothing beyond the stylesheet you already load.
+
+<PrintDemo client:only="react" />
+
+## What prints
+
+- **The title and the board.** The toolbar's arrows, Today button and view select are left out; the period title stays. A [custom `Toolbar`](/guides/components/) prints as you wrote it: put the class `rs-no-print` on whatever should not.
+- **Every row and every column.** [Row and column virtualization](/guides/performance/) draw only what is near the viewport, so printing the window would give a page that is mostly empty. While the page is printed, from `beforeprint` to `afterprint` or while the `print` media query matches, the scheduler turns both off, `virtualize` and `virtualizeColumns` included, and turns them back on afterwards. The grid is drawn before the browser lays the page out, so Ctrl+P, the browser menu and `window.print()` all work, and the scroll position on screen is where you left it.
+- **The board at full height and fitted to the page width.** The scroll box, the sticky header and resource column, and the box of fixed height around the scheduler (see [Limits](#limits)) all let go, and the columns share the page width instead of their px widths. A week fills a landscape page, and nothing is cut off at the right.
+- **Colors as they are.** Event colors, today's column and the shaded unavailable hours print with `print-color-adjust: exact`, so nobody has to tick "Background graphics".
+- **The resource names on every page, and rows in one piece.** A row is not split across two pages where it can be helped. The resource column runs down the left of each page, so a board that needs several pages still says whose row each one is.
+
+## What does not print
+
+Popovers, the now line, event resize handles, the keyboard cursor and focus rings, and the tooltips that show on hover.
+
+## Landscape and margins
+
+A timeline is wide, so print it in landscape. `@page` sets the paper, and CSS cannot scope it to a component, so it goes in your own stylesheet (or a `<style media="print">`) and applies to the whole printout:
+
+```css
+@page {
+  size: landscape;
+  margin: 10mm;
+}
+```
+
+The scheduler does not set it, because it cannot know what else is on your page. Without it the browser's dialog decides: portrait by default, and the user can switch under "Layout" there. The demo above sets it with its Landscape checkbox.
+
+## Print a chosen range
+
+The printout shows what the screen shows. To print something else, put it on screen, let React draw it, print, and put the screen back. `flushSync` finishes the render before `print()` runs:
+
+```tsx
+import { flushSync } from "react-dom";
+
+const ref = useRef<ResourceSchedulerHandle>(null);
+const view = useRef<ViewType>(ViewType.Week); // kept current by onViewChange
+
+function printView(next: ViewType, date: Date) {
+  const back = view.current;
+  flushSync(() => {
+    ref.current?.setView(next);
+    ref.current?.goTo(date);
+  });
+  window.addEventListener("afterprint", () => ref.current?.setView(back), { once: true });
+  window.print();
+}
+
+<ResourceScheduler ref={ref} onViewChange={(v) => (view.current = v)} resources={resources} />;
+```
+
+Call it from a click handler, not from an effect: React cannot flush synchronously inside one. `setView` and `goTo` tell your `onViewChange` and `onDateChange`, like the toolbar does. The "Print" menu in the demo above takes the same steps with `setView`.
+
+To print fewer rows or hours, pass fewer: filter `resources` (one team, one group) or narrow `dayStartHour` and `dayEndHour`. What you pass is what prints.
+
+## Large boards
+
+With virtualization off, the printout draws every resource and column, and costs what an unvirtualized grid costs. The DOM sizes are the ones from the [benchmark](/guides/performance/#measured-numbers) again. The times are a production build printed to PDF by Chrome (A4 landscape, 10 mm margins) on one Windows machine, October 2026, week view unless stated. Compare the rows with each other, not with your machine.
+
+| Resources | Events | DOM nodes on paper | Grid drawn before the dialog | Print to PDF | Pages |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 50 | 393 | 18 ms | 0.3 s | 2 |
+| 100 | 500 | 3,178 | 68 ms | 0.8 s | 15 |
+| 300 | 1,500 | 9,463 | 0.5 s | 2 s | 51 |
+| 1,000 | 5,000 | 31,458 | 1.1 s | 13 s | 167 |
+| 2,500 | 50,000 | 239,673 | 11.5 s | 6 min | 1,200 |
+| 50 (year view) | 250 | 21,534 | 0.4 s | 6.9 s | 9 |
+
+Up to a few hundred resources it is quick. At 1,000 the page freezes for about a second when printing starts and the dialog needs seconds to prepare 167 pages. At 2,500 the tab is stuck for 11 s and the PDF is 22 MB. Nobody wants that on paper: **print a [chosen range](#print-a-chosen-range)** (a team, a week) rather than everything.
+
+## Limits
+
+- **The dates print once.** The date header is at the top of the first page. Later pages repeat the resource names but not the columns, because CSS can repeat a table header on each page and cannot do it for a grid. Fit the board on fewer pages instead: fewer rows, [`density="compact"`](/guides/theming/), or the browser's Scale setting in the print dialog.
+- **Dense views are overviews.** Each column gets the page width divided by the number of columns. A week, or a month of 31 columns, reads well. A day in 30-minute slots (48 columns), a quarter or a year does not have room: column labels shrink and then drop out instead of printing over each other, and events print as bars without titles. Print a coarser view, or a chosen range.
+- **Dark themes print dark.** The exact colors are what make a dark board readable on paper, but it uses a lot of ink. To print on white, put the light values of the `--rs-*` tokens (the `:root` block of `tokens.css`) inside `@media print { .dark .rs-root { ... } }`, with the selector your app uses for dark mode.
+- **Boxes around the scheduler.** The scheduler lets its direct parent grow in print (the `height: 600px` box it usually sits in would otherwise clip it, or let what follows print over it). Boxes further up are yours: an app shell with `h-screen overflow-hidden` still cuts the page, so release it in your own `@media print` rule.
+- **Not in an effect.** A `window.print()` called while React is rendering or running effects cannot wait for the grid to be drawn. Call it from an event handler, or after a frame.
+- **Browsers.** Checked in Chrome, including the PDF output, by the docs smoke test. Firefox and Safari print the same way (`beforeprint`, `afterprint` and `@media print` are standard) but are not tested. Letting the direct parent grow uses `:has()`: Chrome 105, Safari 15.4, Firefox 121 and later; before that the rule is skipped and only the fixed-height box is left as it was.
+
+## How it is built
+
+The rules are one `@media print` block in `tokens.css`, aimed at the `rs-*` classes the markup carries rather than at Tailwind utilities, so a change to the classes that style the grid cannot silently break printing. A test fails if a rule names a class the component no longer renders. The block is in the npm stylesheet and in the shadcn registry item, which adds it to your CSS file.
+
+| Class | Where |
+| --- | --- |
+| `rs-no-print` | Hidden on paper. Yours to use too, for instance in a custom toolbar |
+| `rs-toolbar` | The default toolbar |
+| `rs-scroll` | The scroll box around the resource column and the grid |
+| `rs-resources` | The resource column |
+| `rs-header` | The row of column headers |
+| `rs-grid` | The grid of slots and events |
+| `rs-totals` | The totals row of [`showColumnUtilization`](/guides/utilization/) |
+
+The scheduler sets `--rs-cols` (the number of columns) on its root; the print rules use it to share the page width. Your own `@media print` rules can target any of these.

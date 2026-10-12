@@ -14,6 +14,7 @@ import type { TimelineGridProps } from "./types";
 import { isCellUnavailable } from "./utils/availability";
 import { formatSlotLabel, isSlotInRange, isToday } from "./utils/dateUtils";
 import { isGroupRow } from "./utils/groups";
+import { getSelectedColumns, getTimePosition } from "./utils/layout";
 
 export const TimelineGrid: React.FC<TimelineGridProps> = ({
   resources,
@@ -69,14 +70,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
   // A line at the current time in today's day view, moved every minute.
   const clock = useNow(nowIndicator ? 60_000 : undefined);
   const nowPercent =
-    nowIndicator &&
-    viewType === "day" &&
-    visibleRange &&
-    clock >= visibleRange.start &&
-    clock < visibleRange.end
-      ? ((clock.getTime() - visibleRange.start.getTime()) * 100) /
-        (visibleRange.end.getTime() - visibleRange.start.getTime())
-      : null;
+    nowIndicator && viewType === "day" && visibleRange ? getTimePosition(clock, visibleRange) : null;
 
   const drag = useEventDrag({
     viewType,
@@ -194,23 +188,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
 
   const getSelectionRange = () => {
     if (!isDragging || !dragStart || !dragEnd) return null;
-    // Day view slots are exact Dates, so compare timestamps.
-    const startIdx = slots.findIndex((d) =>
-      viewType === "day"
-        ? d.getTime() === dragStart.date.getTime()
-        : isSameDay(d, dragStart.date)
-    );
-    const endIdx = slots.findIndex((d) =>
-      viewType === "day"
-        ? d.getTime() === dragEnd.date.getTime()
-        : isSameDay(d, dragEnd.date)
-    );
-    if (startIdx === -1 || endIdx === -1) return null;
-    return {
-      start: Math.min(startIdx, endIdx),
-      end: Math.max(startIdx, endIdx),
-      resourceId: dragStart.resourceId,
-    };
+    const columns = getSelectedColumns(slots, dragStart.date, dragEnd.date, viewType);
+    return columns && { ...columns, resourceId: dragStart.resourceId };
   };
 
   const selectionRange = getSelectionRange();
@@ -240,7 +219,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
         aria-activedescendant={keyboard.activeId}
         tabIndex={0}
         {...keyboard.gridProps}
-        className="grid relative outline-none"
+        className="rs-grid grid relative outline-none"
         style={{
           gridTemplateColumns: `repeat(${slots.length}, ${
             viewType === "day" ? timeColumnWidth : dateColumnWidth
@@ -380,7 +359,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           <div
             aria-hidden="true"
             data-rs-now=""
-            className={`absolute top-0 bottom-0 w-0.5 ${
+            className={`rs-no-print absolute top-0 bottom-0 w-0.5 ${
               i18n.dir === "rtl" ? "-mr-px" : "-ml-px"
             } bg-ocrs-destructive pointer-events-none z-10`}
             style={

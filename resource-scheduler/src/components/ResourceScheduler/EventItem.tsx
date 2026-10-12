@@ -50,7 +50,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             key={edge}
             aria-hidden="true"
             data-rs-resize={edge}
-            className={`absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
+            className={`rs-no-print absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
               edge === "start" ? "start-0" : "end-0"
             }`}
             style={{ touchAction: "none" }}
@@ -189,7 +189,7 @@ export const EventItem: React.FC<EventItemProps> = ({
           </div>
         )}
       </PopoverTrigger>
-      <PopoverContent side="top" dir={i18n.dir} className="z-[2000] w-fit p-3">
+      <PopoverContent side="top" dir={i18n.dir} className="rs-no-print z-[2000] w-fit p-3">
         {EventPopover ? (
           <EventPopover event={event} resource={resource!} close={onClose} />
         ) : renderEventPopover ? (

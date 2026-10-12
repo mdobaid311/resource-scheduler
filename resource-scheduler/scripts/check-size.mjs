@@ -13,20 +13,36 @@
 // is 3.9 KB with the .ics import (1.4 KB before it). The main bundle
 // went to 24 KB for the timeZone prop (22.5 KB used). Then to 26 KB for the
 // column totals, the components map and column virtualization (24.2 KB used).
-// Then to 29 KB for dragging groups and resources to reorder them: the pure
-// helpers (reorderGroup, moveResource, the hit test and keyboard steps, 1.5 KB),
-// the pointer and keyboard hook (1.4 KB) and the grips (27.8 KB used).
+//
+// An entry is measured with everything it loads: its own file plus the chunks it
+// imports (code the entries share, `name-<hash>.js`), gzipped as one. The main
+// entry and the headless entry (resource-scheduler/headless) share most of the
+// scheduling logic, so that sits in a chunk that both load, and counting the
+// entry file alone would stop seeing it. The budget of the headless entry is
+// what a server or another framework pays for the whole scheduling logic
+// (8.7 KB when it was set at 10 KB). The state store and the useSchedulerState
+// hook then added 0.9 KB to both: the main bundle went from 26 KB to 28 KB
+// (26.2 KB used) and the headless entry from 10 KB to 11 KB (9.6 KB used).
+//
+// Then to 33 KB for the features merged together after that: dragging groups
+// and resources to reorder them (3.6 KB: the helpers 1.5 KB, the pointer and
+// keyboard hook 1.4 KB, the grips and labels the rest), suggestResources
+// (0.9 KB), print support and keyboard paging with start-edge resize (0.4 KB
+// each). 31.0 KB was used before keyboard paging, so about 5% of headroom is
+// left; the next feature should look for what to take out before it raises
+// this again.
 import fs from "node:fs";
+import path from "node:path";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 29_000,
+  "dist/index.esm.js": 33_000,
   "dist/exchange.esm.js": 5_000,
+  "dist/headless.esm.js": 11_000,
   "dist/resource-scheduler.css": 7_000,
 };
-// Code both entries use is split into one chunk, `name-<hash>.js` (and `.cjs`).
+// Code the entries share is split into chunks, `name-<hash>.js` (and `.cjs`).
 const SHARED_CHUNK = /^[A-Za-z0-9_]+-[A-Za-z0-9_-]{8}[.]c?js$/;
-const CHUNKS_BUDGET = 1_500;
 const EXPECTED_FILES = new Set([
   "index.cjs",
   "index.esm.js",
@@ -34,6 +50,9 @@ const EXPECTED_FILES = new Set([
   "exchange.cjs",
   "exchange.esm.js",
   "exchange.d.ts",
+  "headless.cjs",
+  "headless.esm.js",
+  "headless.d.ts",
   "resource-scheduler.css",
 ]);
 
@@ -46,18 +65,30 @@ for (const name of fs.readdirSync("dist")) {
   }
 }
 
+// The file and the chunks it imports, however deep.
+const closure = (entry) => {
+  const files = new Set();
+  const visit = (file) => {
+    if (files.has(file)) return;
+    files.add(file);
+    const source = fs.readFileSync(file, "utf8");
+    for (const [, spec] of source.matchAll(/\bfrom\s*["'](\.[^"']+)["']/g)) {
+      visit(path.posix.join(path.posix.dirname(file), spec));
+    }
+  };
+  visit(entry);
+  return [...files];
+};
+
 for (const [file, max] of Object.entries(BUDGET)) {
-  const size = zlib.gzipSync(fs.readFileSync(file), { level: 9 }).length;
+  const files = file.endsWith(".js") ? closure(file) : [file];
+  const size = zlib.gzipSync(Buffer.concat(files.map((f) => fs.readFileSync(f))), { level: 9 }).length;
   const ok = size <= max;
-  console.log(`${ok ? "ok  " : "FAIL"} ${file}: ${size} bytes gzip (budget ${max})`);
+  const chunks = files.length - 1;
+  console.log(
+    `${ok ? "ok  " : "FAIL"} ${file}${chunks ? ` + ${chunks} shared chunk${chunks === 1 ? "" : "s"}` : ""}: ${size} bytes gzip (budget ${max})`
+  );
   if (!ok) failed = true;
 }
-
-// The chunk is loaded by whichever entry is used, so its ESM size counts once.
-const chunks = fs.readdirSync("dist").filter((name) => SHARED_CHUNK.test(name) && name.endsWith(".js"));
-const chunkSize = chunks.reduce((sum, name) => sum + zlib.gzipSync(fs.readFileSync(`dist/${name}`), { level: 9 }).length, 0);
-const chunksOk = chunkSize <= CHUNKS_BUDGET;
-console.log(`${chunksOk ? "ok  " : "FAIL"} shared chunks: ${chunkSize} bytes gzip (budget ${CHUNKS_BUDGET})`);
-if (!chunksOk) failed = true;
 
 process.exit(failed ? 1 : 0);

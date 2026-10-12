@@ -45,44 +45,42 @@ A job leaves the queue and becomes an event when somebody is chosen. In a databa
 | A technician's shift | `businessHours`, per technician, so shifts can differ |
 | Lunch, training, a van in the garage | `unavailable` ranges, shaded in the day view |
 | Jobs that cannot overlap or touch the grey | `eventOverlap={false}` and `blockUnavailable` |
-| The earliest technician who can take a job | `findAvailableSlots` over each technician |
+| The technician who should take a job | `suggestResources`: earliest slot, or the least booked |
 | How full each technician's shift is | `showUtilization` (7.5 of 8 hours, minus lunch) |
 | Where "now" is on the board | `nowIndicator` |
 | Jump to the booked slot | the `goTo` method of the ref |
 
 ## Assigning a job
 
-`findAvailableSlots` applies the same rules the grid shows: the technician's jobs, their `unavailable` time and their shift. Ask it per technician and take the earliest:
+`suggestResources` applies the same rules the grid shows: the technician's jobs, their `unavailable` time and their shift. It asks every technician and ranks the answers. The default is the earliest slot, and `limit: 1` keeps the winner:
 
 ```tsx
 import { addDays } from "date-fns";
-import { findAvailableSlots, withEvents } from "resource-scheduler";
+import { suggestResources, withEvents } from "resource-scheduler";
 
 const assign = (job: { id: string; title: string; minutes: number }) => {
-  const best = withEvents(technicians, jobs)
-    .flatMap((tech) =>
-      findAvailableSlots(tech, {
-        from: new Date(),                       // never in the past
-        to: addDays(new Date(), 3),             // a slot must end by then
-        duration: job.minutes,
-        step: 30,                               // starts on the half hour
-        limit: 1,
-      }).map((slot) => ({ tech, slot }))
-    )
-    .sort((a, b) => a.slot.start.getTime() - b.slot.start.getTime())[0];
+  const [best] = suggestResources(
+    withEvents(technicians, jobs),
+    {
+      from: new Date(),                         // never in the past
+      to: addDays(new Date(), 3),               // a slot must end by then
+      duration: job.minutes,                    // starts on the half hour (the default step)
+    },
+    { limit: 1 }
+  );
 
   if (!best) return alert("Nobody can take it in the next three days");
-  setJobs((all) => [...all, { id: crypto.randomUUID(), title: job.title, resourceId: best.tech.id, startDate: best.slot.start, endDate: best.slot.end }]);
-  ref.current?.goTo(best.slot.start);           // show the day it landed on
+  setJobs((all) => [...all, { id: crypto.randomUUID(), title: job.title, resourceId: best.resourceId, startDate: best.start, endDate: best.end }]);
+  ref.current?.goTo(best.start);                // show the day it landed on
 };
 ```
 
-Results are free slots only: the candidate's whole length has to fit inside one shift and miss every other job and break.
+Suggestions are free slots only: the candidate's whole length has to fit inside one shift and miss every other job and break. See [Suggest who takes a job](/guides/availability/#suggest-who-takes-a-job) for the strategies and the other options.
 
 ## Make it real
 
 - **Travel time.** Book `job.minutes + travel` in the search, and draw the event for the on-site part only, or keep the travel as its own event so it shows on the board.
-- **Skills and territories.** Keep them in your own data and filter the technicians before searching: `technicians.filter((t) => skills[t.id].includes(job.skill))`.
-- **Fairness.** To spread work out, break ties between similar start times with `getUtilization` and prefer the technician with the lower ratio.
-- **Check on the server.** Two dispatchers can book the same technician at once. Run `findAvailableSlots`, or `isPlacementAllowed`, in your API against the saved jobs before committing, and tell the second dispatcher to pick again.
+- **Skills and territories.** Keep them in your own data and pass the technicians who qualify: `{ resourceIds: technicians.filter((t) => skills[t.id].includes(job.skill)).map((t) => t.id) }`.
+- **Fairness.** To spread work out, use `strategy: "least-booked"`, which ranks by the share of each technician's shift that is already booked, or a function that mixes start time and utilization.
+- **Check on the server.** Two dispatchers can book the same technician at once. Run `suggestResources` with the fixed time `{ start, end }`, or `isPlacementAllowed`, in your API against the saved jobs before committing, and tell the second dispatcher to pick again.
 - **Load only the day on screen.** Use `onRangeChange` to fetch the jobs and breaks for the visible range, and `withEvents` to merge them when you search.

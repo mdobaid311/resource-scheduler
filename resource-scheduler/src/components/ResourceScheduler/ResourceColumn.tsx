@@ -104,10 +104,10 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   return (
     <div
       ref={rootRef}
-      className="bg-ocrs-white z-20 sticky start-0 shrink-0"
+      className="rs-resources bg-ocrs-white z-20 sticky start-0 shrink-0"
       style={{ width: resourceColumnWidth }}
     >
-      <div className="border-e bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
+      <div className="rs-resources-head border-e bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
         <span className="text-sm font-medium text-ocrs-muted-foreground">{labels.resources}</span>
       </div>
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}

@@ -70,10 +70,11 @@ The `render*` props (`renderTimeSlot`, `renderEventPopover`, `renderResourceHead
 - **Define components outside your render**, or memoize them. A component created inside your component is a new type on every render, and React throws away and recreates it (and its state) each time. Passing a fresh `components={{ Event }}` object each render is fine as long as `Event` itself is the same function.
 - **Dates are wall-clock Dates with `timeZone`**, like the render props: `format(event.startDate, "p")` shows the zone's time. See [Time zones](/guides/time-zones/).
 - **Clicks inside an `Event` also reach the card**: a click opens the popover and a press starts a drag. For a button inside the card, call `event.stopPropagation()` on its `pointerdown` and `click`, or keep the card for interaction and use the popover for controls.
+- **A custom `Toolbar` prints as you wrote it.** Put the class `rs-no-print` on its controls to leave them off the page; see [Printing](/guides/printing/).
 - **Group headers** are not `ResourceHeader`: they are the scheduler's own bands, styled through `classNames.groupHeader`.
 - **`ResourceHeader` gets the resource only.** With [`showUtilization`](/guides/utilization/) the bar under the name stays.
 
 ## Not included
 
 - Replacing the grid, a slot, the resource column or the group headers as a whole. Those carry the layout, the keyboard grid and the drag logic; use [`classNames`](/guides/theming/) and the tokens for them.
-- A headless version of the logic without the markup. The pure functions (`getUtilization`, `findAvailableSlots`, `expandEvents`, ...) are exported and work without the component.
+- Replacing the markup of the grid altogether. For that, build on the logic without the component: [Build your own UI](/guides/build-your-own-ui/) draws a timeline from the functions of `resource-scheduler/headless` (layout, lanes, row heights, recurrence, rules).

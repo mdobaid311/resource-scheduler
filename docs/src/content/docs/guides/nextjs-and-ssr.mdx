@@ -21,6 +21,10 @@ export function Board({ initial }: { initial: Resource[] }) {
 }
 ```
 
+## Logic on the server
+
+The functions that need no UI (`isPlacementAllowed`, `findAvailableSlots`, `getUtilization`, `expandEvents`, the layout, ...) are also in `resource-scheduler/headless`, an entry without React or `"use client"` that you can call from a server component or a route handler. See [Build your own UI](/guides/build-your-own-ui/#on-a-server).
+
 ## Dates cross the server boundary as strings
 
 A server component cannot pass `Date` objects to a client component the way you might expect: after JSON they arrive as strings. Convert them when you build state:

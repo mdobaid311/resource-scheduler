@@ -1,7 +1,10 @@
+import { de } from "date-fns/locale";
 import { describe, expect, it } from "vitest";
+import { buildI18n } from "../i18n";
 import { type SchedulerEvent, ViewType } from "../types";
 import {
   formatEventTime,
+  formatPeriodTitle,
   formatRangeLabel,
   formatSlotLabel,
   getDatesInView,
@@ -348,5 +351,30 @@ describe("screen reader labels", () => {
     expect(formatRangeLabel(d(3, 10), d(3, 13), ViewType.Week)).toBe(
       "Tuesday, March 10 to Thursday, March 12, 2026"
     );
+  });
+});
+
+describe("formatPeriodTitle", () => {
+  const date = d(10, 7); // a Wednesday
+
+  it("names the period of every view", () => {
+    expect(formatPeriodTitle(date, ViewType.Day)).toBe("October 7, 2026");
+    expect(formatPeriodTitle(date, ViewType.Week)).toBe("Oct 4 – Oct 10, 2026");
+    expect(formatPeriodTitle(date, ViewType.Month)).toBe("October 2026");
+    expect(formatPeriodTitle(date, ViewType.Quarter)).toBe("Q4 2026");
+    expect(formatPeriodTitle(date, ViewType.Year)).toBe("2026");
+  });
+
+  it("follows the first day of the week and hidden weekends", () => {
+    expect(formatPeriodTitle(date, ViewType.Week, { weekStartsOn: 1 })).toBe("Oct 5 – Oct 11, 2026");
+    expect(formatPeriodTitle(date, ViewType.Week, { weekStartsOn: 1, hideWeekends: true })).toBe(
+      "Oct 5 – Oct 9, 2026"
+    );
+  });
+
+  it("is written in the language it is given", () => {
+    const german = buildI18n({ locale: de });
+    expect(formatPeriodTitle(date, ViewType.Month, {}, german)).toBe("Oktober 2026");
+    expect(formatPeriodTitle(date, ViewType.Year, {}, german)).toBe("2026");
   });
 });
