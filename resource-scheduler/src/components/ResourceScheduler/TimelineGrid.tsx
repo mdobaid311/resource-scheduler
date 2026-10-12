@@ -219,7 +219,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
         aria-activedescendant={keyboard.activeId}
         tabIndex={0}
         {...keyboard.gridProps}
-        className="grid relative outline-none"
+        className="rs-grid grid relative outline-none"
         style={{
           gridTemplateColumns: `repeat(${slots.length}, ${
             viewType === "day" ? timeColumnWidth : dateColumnWidth
@@ -359,7 +359,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
           <div
             aria-hidden="true"
             data-rs-now=""
-            className={`absolute top-0 bottom-0 w-0.5 ${
+            className={`rs-no-print absolute top-0 bottom-0 w-0.5 ${
               i18n.dir === "rtl" ? "-mr-px" : "-ml-px"
             } bg-ocrs-destructive pointer-events-none z-10`}
             style={

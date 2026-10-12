@@ -42,6 +42,7 @@ Prices checked October 2026; see the [full comparison](https://resource-schedule
 - 🚫 **Conflict rules**: `eventOverlap` and `isValidDrop`, a red footprint before you drop, and the same check available for your server
 - 🧩 **Your own dialogs**: `onSlotSelect` hands you the range instead of a hard-coded "New Event"
 - ⌨️ **Keyboard and screen readers**: ARIA grid, keyboard move, resize and create, live announcements
+- 🖨️ **Prints**: toolbar controls dropped, every row and column drawn (virtualization is off on paper), colors kept, landscape ready
 - 🎨 **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app
 - 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/)
 - 📦 **Two ways to install**: npm, or copy the source into your project with the shadcn CLI
@@ -188,8 +189,8 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `timeZone` | `string` | the browser's | An IANA zone such as `"Europe/Paris"`: events, business hours, today and the now line are shown in it, and handlers receive instants. An unknown name warns and the local zone is used |
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | `"rtl"` mirrors the layout for Arabic, Hebrew and other right-to-left languages and flips the left and right arrow keys |
 | `labels` | `PartialLabels` | English | Text of the toolbar, headers, view names and screen reader messages. Any subset; see `defaultLabels` for the full set |
-| `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn |
-| `virtualizeColumns` | `boolean` | on above 100 columns | Render only the columns near the viewport (the year view, a day in 5-minute slots). Needs column widths in px, the default; with another unit every column is drawn |
+| `virtualize` | `boolean` | on above 100 resources | Render only the rows near the viewport. Needs the scheduler in a box with a fixed height; without one every row is drawn. Always off while printing |
+| `virtualizeColumns` | `boolean` | on above 100 columns | Render only the columns near the viewport (the year view, a day in 5-minute slots). Needs column widths in px, the default; with another unit every column is drawn. Always off while printing |
 | `renderResourceHeader` | `(resource: Resource) => ReactNode` | `undefined` | Custom resource cell in the left column |
 | `renderDateHeader` | `(date: Date, view: ViewType) => ReactNode` | `undefined` | Custom column header |
 | `components` | `SchedulerComponents` | `undefined` | Replace whole parts with your own components (hooks work): `Toolbar`, `Event` (card content), `EventPopover`, `ResourceHeader`, `DateHeader`, `EmptyCell`. Wins over the matching `render*` prop |
@@ -454,6 +455,18 @@ See [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-
 ### Isolated by design
 
 `resource-scheduler/dist/resource-scheduler.css` contains Tailwind utilities only. It has no global reset and no `body`/`*` rules; base styles are scoped to the `.rs-root` class. Importing it will not restyle the rest of your app.
+
+### Printing
+
+Ctrl+P (or `window.print()`) prints a readable board with no setup: the toolbar controls are left out and the title stays, the scroll box and sticky headers let go, the columns share the page width, event colors and shaded hours print as they are, rows are kept whole and the resource names repeat on every page. Row and column virtualization are turned off while the page is printed (from `beforeprint` to `afterprint`, or while the `print` media query matches), so the paper has every row and column; a board of 1,000 resources is 167 landscape pages, so print a chosen range (filter `resources`, or `ref.setView` and `ref.goTo` before `window.print()`) for large ones.
+
+`@page` cannot be scoped to a component, so set landscape and margins in your own CSS:
+
+```css
+@page { size: landscape; margin: 10mm; }
+```
+
+Put the class `rs-no-print` on anything of your own (a custom `Toolbar`) that should stay off the paper. The rules are one `@media print` block aimed at `rs-*` classes; see the [printing guide](https://resource-scheduler-demo.vercel.app/guides/printing/) for the limits (the date header prints once, dense views are overviews, dark themes print dark).
 
 ### Theming
 

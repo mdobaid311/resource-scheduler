@@ -105,6 +105,11 @@
           "target": "@components/resource-scheduler/hooks/useNow.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/usePrinting.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/usePrinting.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useScheduler.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/useScheduler.ts"
@@ -360,6 +365,58 @@
           },
           ".rs-root svg": {
             "display": "block"
+          }
+        },
+        "@media print": {
+          ".rs-root": {
+            "height": "auto",
+            "overflow": "visible",
+            "border-radius": "0",
+            "print-color-adjust": "exact",
+            "-webkit-print-color-adjust": "exact"
+          },
+          ":has(> .rs-root)": {
+            "height": "auto !important",
+            "max-height": "none !important",
+            "overflow": "visible !important"
+          },
+          ".rs-no-print": {
+            "display": "none !important"
+          },
+          ".rs-toolbar, .rs-resources, .rs-resources-head, .rs-header, .rs-totals, .rs-totals-label": {
+            "position": "static"
+          },
+          ".rs-scroll": {
+            "overflow": "visible",
+            "box-shadow": "none"
+          },
+          ".rs-resources": {
+            "max-width": "22%"
+          },
+          ".rs-timeline": {
+            "min-width": "0"
+          },
+          ".rs-header, .rs-grid, .rs-totals": {
+            "grid-template-columns": "repeat(var(--rs-cols), minmax(0, 1fr)) !important"
+          },
+          ".rs-header": {
+            "container-type": "inline-size"
+          },
+          ".rs-header > *": {
+            "min-width": "0",
+            "overflow": "hidden",
+            "padding-inline": "1px",
+            "font-size": "min(0.75rem, max(0px, calc(100cqw / var(--rs-cols) * 0.45 - 4px)))"
+          },
+          ".rs-header > * *": {
+            "font-size": "inherit"
+          },
+          ".rs-resources > *, .rs-grid [role=\"gridcell\"]": {
+            "break-inside": "avoid"
+          },
+          ".rs-grid [data-rs-slot], .rs-grid [data-rs-event]": {
+            "box-shadow": "none",
+            "outline": "none"
           }
         }
       },

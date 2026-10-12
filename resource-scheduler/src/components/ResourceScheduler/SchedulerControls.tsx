@@ -67,7 +67,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   return (
     <div
       className={withClass(
-        "flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
+        "rs-toolbar flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
         classNames.toolbar
       )}
     >
@@ -76,7 +76,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-ocrs-gray-100 rounded-lg"
+            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
             aria-label={labels.previousPeriod}
             onClick={() => onNavigate("prev")}
           >
@@ -99,7 +99,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-ocrs-gray-100 rounded-lg"
+            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
             aria-label={labels.nextPeriod}
             onClick={() => onNavigate("next")}
           >
@@ -110,7 +110,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
+          className="rs-no-print flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
           aria-label={labels.today}
           onClick={onGoToToday}
         >
@@ -122,12 +122,12 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
       {allowViewChange && (
         <Select value={viewType} onValueChange={onViewChange} dir={dir}>
           <SelectTrigger
-            className="lg:w-[140px] w-full bg-ocrs-white"
+            className="rs-no-print lg:w-[140px] w-full bg-ocrs-white"
             aria-label={labels.view}
           >
             <SelectValue placeholder={labels.view} />
           </SelectTrigger>
-          <SelectContent style={{ zIndex: 99 }}>
+          <SelectContent className="rs-no-print" style={{ zIndex: 99 }}>
             {views.map((view) => (
               <SelectItem key={view} value={view}>
                 {labels.views[view]}

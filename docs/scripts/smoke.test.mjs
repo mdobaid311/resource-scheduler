@@ -396,6 +396,64 @@ describe("time zones", () => {
   });
 });
 
+// Chrome writes the page count into the page tree as "/Count n".
+const pdfPages = (pdf) => Math.max(...[...pdf.toString("latin1").matchAll(/\/Count (\d+)/g)].map((m) => Number(m[1])));
+
+describe("printing", () => {
+  const rows = (page) => page.evaluate(() => document.querySelectorAll('.rs-grid [role="row"]').length);
+
+  it("draws every row for paper, without the controls, fitted to the page width, and goes back", async () => {
+    const { page, context, errors } = await open("/guides/printing/");
+    assert.ok((await rows(page)) < 24, "the demo draws only a window on screen");
+    assert.equal(await page.locator(".rs-toolbar button").first().isVisible(), true);
+
+    await page.emulateMedia({ media: "print" });
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length === 24);
+    const paper = await page.evaluate(() => {
+      const style = (selector) => getComputedStyle(document.querySelector(selector));
+      return {
+        controls: [...document.querySelectorAll(".rs-toolbar button, .rs-toolbar [role=combobox]")].map((el) => getComputedStyle(el).display),
+        title: document.querySelector(".rs-toolbar").innerText,
+        scroll: style(".rs-scroll").overflowX,
+        header: style(".rs-header").position,
+        resources: style(".rs-resources").position,
+        columns: style(".rs-grid").gridTemplateColumns.split(" ").length,
+        right: document.querySelector(".rs-grid").getBoundingClientRect().right,
+        page: document.documentElement.clientWidth,
+      };
+    });
+    assert.ok(paper.controls.length >= 4 && paper.controls.every((d) => d === "none"), "arrows, Today and the view select are gone");
+    assert.match(paper.title, /Oct 4 – Oct 10, 2026/); // the title stays
+    assert.equal(paper.scroll, "visible");
+    assert.equal(paper.header, "static");
+    assert.equal(paper.resources, "static");
+    assert.equal(paper.columns, 7);
+    assert.ok(paper.right <= paper.page, "the columns fit the page width");
+
+    await page.emulateMedia({ media: "screen" });
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length < 24);
+    assert.equal(await page.locator(".rs-toolbar button").first().isVisible(), true);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("prints every page of a board of 300 resources, not the window", async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await context.newPage();
+    await page.clock.setFixedTime(NOW);
+    await page.goto(`${BASE}/bench/?rows=300&events=5`);
+    await page.waitForSelector("[data-rs-slot]");
+    await page.waitForTimeout(600);
+    assert.ok((await rows(page)) < 40, "a window on screen");
+
+    // page.pdf prints like Ctrl+P: beforeprint, print layout, afterprint. Printing only the window gave 1 page.
+    const pdf = await page.pdf({ landscape: true, format: "A4" });
+    assert.ok(pdfPages(pdf) > 20, `300 rows are many pages, got ${pdfPages(pdf)}`);
+    await page.waitForFunction(() => document.querySelectorAll('.rs-grid [role="row"]').length < 40);
+    await context.close();
+  });
+});
+
 describe("headless", () => {
   it("draws a timeline from the headless functions alone: header, lanes, recurrence and navigation", async () => {
     const { page, context, errors } = await open("/guides/build-your-own-ui/", {

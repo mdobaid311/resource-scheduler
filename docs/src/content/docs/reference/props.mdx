@@ -69,8 +69,8 @@ Only `resources` is required.
 
 ## Performance
 
-- **`virtualize`**: `boolean`, default on above 100 resources. Renders only the rows near the viewport. Needs a fixed-height box. See [Large data and performance](/guides/performance/).
-- **`virtualizeColumns`**: `boolean`, default on above 100 columns (the year view, a day with `slotDuration={5}`). Renders only the columns near the viewport; the keyboard cursor cell, a carried event and its drop slots stay mounted. Needs the column widths in px, as the defaults are. See [Large data and performance](/guides/performance/#wide-views-column-virtualization).
+- **`virtualize`**: `boolean`, default on above 100 resources. Renders only the rows near the viewport. Needs a fixed-height box. Always off while printing. See [Large data and performance](/guides/performance/).
+- **`virtualizeColumns`**: `boolean`, default on above 100 columns (the year view, a day with `slotDuration={5}`). Renders only the columns near the viewport; the keyboard cursor cell, a carried event and its drop slots stay mounted. Needs the column widths in px, as the defaults are. Always off while printing. See [Large data and performance](/guides/performance/#wide-views-column-virtualization).
 
 ## Rendering
 

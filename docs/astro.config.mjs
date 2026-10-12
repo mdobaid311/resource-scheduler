@@ -92,6 +92,7 @@ export default defineConfig({
             { label: "Resource groups", slug: "guides/resource-groups" },
             { label: "Export and import calendar files", slug: "guides/export" },
             { label: "Large data and performance", slug: "guides/performance" },
+            { label: "Printing", slug: "guides/printing" },
             { label: "Languages and clocks", slug: "guides/internationalization" },
             { label: "Time zones", slug: "guides/time-zones" },
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },

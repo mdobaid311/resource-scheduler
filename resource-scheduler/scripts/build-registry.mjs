@@ -75,7 +75,7 @@ export const parseTokens = (cssText) => {
     else if (selector === ".dark") cssVars.dark = withoutDashes(parseDeclarations(body));
     else if (selector === "@theme inline") cssVars.theme = withoutDashes(parseDeclarations(body));
     else if (selector.startsWith("@utility ")) rules[selector] = parseDeclarations(body);
-    else if (selector === "@layer base") {
+    else if (selector === "@layer base" || selector === "@media print") {
       rules[selector] = Object.fromEntries(
         parseBlocks(body).map((b) => [b.selector.replace(/\s+/g, " "), parseDeclarations(b.body)])
       );

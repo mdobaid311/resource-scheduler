@@ -24,7 +24,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 
   return (
     <div
-      className="grid sticky top-0 z-10 bg-ocrs-background"
+      className="rs-header grid sticky top-0 z-10 bg-ocrs-background"
       style={{
         gridTemplateColumns: `repeat(${slots.length}, ${
           viewType === "day" ? timeColumnWidth : dateColumnWidth
@@ -89,7 +89,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                   {fmt.monthShort(slot)}
                 </span>
               )}
-              <span className="absolute mt-8 px-2 py-1 rounded bg-ocrs-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              <span className="rs-no-print absolute mt-8 px-2 py-1 rounded bg-ocrs-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 {fmt.monthYear(slot)}
               </span>
             </div>
