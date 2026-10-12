@@ -6,6 +6,7 @@ import {
   getColumns,
   getGridTemplateRows,
   getRowHeight,
+  getRowHeightFromLayout,
   getRowHeights,
   getSelectedColumns,
   getTimePosition,
@@ -96,6 +97,22 @@ describe("row heights", () => {
 
   it("writes the heights as grid rows under an auto header", () => {
     expect(getGridTemplateRows([108, 58])).toBe("auto 108px 58px");
+  });
+});
+
+describe("getRowHeightFromLayout", () => {
+  const day = getColumns(d(10, 7), ViewType.Day);
+  const row = res("a", [ev("1", d(10, 7, 9), d(10, 7, 11)), ev("2", d(10, 7, 10), d(10, 7, 12))]);
+  const placed = layoutEvents(row.events, day, ViewType.Day);
+
+  it("is getRowHeight for events that are already laid out", () => {
+    expect(getRowHeightFromLayout(row, placed, { lane: 50 })).toBe(getRowHeight(row, day, ViewType.Day, { lane: 50 }));
+    expect(getRowHeightFromLayout(res("b"), [], { lane: 50, minRowHeight: 70 })).toBe(70);
+  });
+
+  it("gives a group header its own height", () => {
+    const [header] = withGroups([{ ...res("a"), group: "Ward" }]);
+    expect(getRowHeightFromLayout(header, [])).toBe(GROUP_ROW_HEIGHT);
   });
 });
 

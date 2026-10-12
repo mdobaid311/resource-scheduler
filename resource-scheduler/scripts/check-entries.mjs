@@ -25,7 +25,7 @@ const ENTRIES = [
   {
     specifier: "resource-scheduler",
     files: ["dist/index.esm.js", "dist/index.cjs"],
-    exports: ["ResourceScheduler", "ViewType", "defaultLabels", "expandRecurrence", "findAvailableSlots", "utcToZoned", "zonedToUtc"],
+    exports: ["ResourceScheduler", "ViewType", "defaultLabels", "expandRecurrence", "findAvailableSlots", "useSchedulerState", "utcToZoned", "zonedToUtc"],
     component: "ResourceScheduler",
     client: true,
   },
@@ -39,7 +39,7 @@ const ENTRIES = [
   {
     specifier: "resource-scheduler/headless",
     files: ["dist/headless.esm.js", "dist/headless.cjs"],
-    exports: ["ViewType", "getColumns", "getVisibleResources", "layoutEvents", "getRowHeights", "getMovePlacement", "buildI18n"],
+    exports: ["ViewType", "getColumns", "getVisibleResources", "layoutEvents", "getRowHeights", "getMovePlacement", "buildI18n", "createSchedulerStore"],
     client: false,
     packages: ["date-fns"],
     // Runs in this plain Node process: no window, no document, no React.
@@ -47,9 +47,12 @@ const ENTRIES = [
       const week = m.getColumns(new Date(2026, 9, 7), m.ViewType.Week);
       const event = { id: "e", title: "e", startDate: new Date(2026, 9, 7, 9), endDate: new Date(2026, 9, 7, 10) };
       const [placed] = m.layoutEvents([event], week, m.ViewType.Week);
-      return week.length === 7 && placed?.startPosition === 3 && placed.lane === 0
+      const store = m.createSchedulerStore({ resources: [{ id: "a", name: "A", events: [event] }], initialDate: new Date(2026, 9, 7), initialView: m.ViewType.Week });
+      const before = store.getState();
+      store.navigate("next");
+      return week.length === 7 && placed?.startPosition === 3 && placed.lane === 0 && before.layout[0][0].startPosition === 3 && store.getState().rows[0].events.length === 0
         ? []
-        : ["getColumns and layoutEvents give the wrong answer"];
+        : ["getColumns, layoutEvents and createSchedulerStore give the wrong answer"];
     },
   },
 ];

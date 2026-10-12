@@ -63,6 +63,11 @@ describe("package entries", () => {
     expect(missing).toEqual([]);
   });
 
+  it("adds the state hook next to the headless store it is made from", () => {
+    expect(typeof main.useSchedulerState).toBe("function");
+    expect(typeof headless.createSchedulerStore).toBe("function");
+  });
+
   it("shares one implementation between the main and the headless entry", () => {
     const shared = Object.keys(headless).filter((name) => name in main);
     expect(shared.length).toBeGreaterThan(30);

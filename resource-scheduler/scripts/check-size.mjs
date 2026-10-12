@@ -19,15 +19,18 @@
 // entry and the headless entry (resource-scheduler/headless) share most of the
 // scheduling logic, so that sits in a chunk that both load, and counting the
 // entry file alone would stop seeing it. The budget of the headless entry is
-// what a server or another framework pays for the whole scheduling logic.
+// what a server or another framework pays for the whole scheduling logic
+// (8.7 KB when it was set at 10 KB). The state store and the useSchedulerState
+// hook then added 0.9 KB to both: the main bundle went from 26 KB to 28 KB
+// (26.2 KB used) and the headless entry from 10 KB to 11 KB (9.6 KB used).
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 26_000,
+  "dist/index.esm.js": 28_000,
   "dist/exchange.esm.js": 5_000,
-  "dist/headless.esm.js": 10_000,
+  "dist/headless.esm.js": 11_000,
   "dist/resource-scheduler.css": 7_000,
 };
 // Code the entries share is split into chunks, `name-<hash>.js` (and `.cjs`).

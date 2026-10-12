@@ -48,6 +48,7 @@ Conventions: a `Date` is a local wall-clock time (for another zone, convert firs
 | `getEventSpan` | `getEventSpan(event, columns, viewType)` | How many columns one event covers, clamped to the columns shown (at least 1). |
 | `getEventStartPosition` | `getEventStartPosition(event, columns, viewType)` | The index of the first column of one event, clamped to the columns shown. |
 | `getRowHeight` | `getRowHeight(row, columns, viewType, options?)` | The height of a row in px: a lane for each level of overlap plus `ROW_PADDING`, never below `minRowHeight`; a group header gets `GROUP_ROW_HEIGHT`. `options` is `RowHeightOptions`: `lane` (default 52) and `minRowHeight` (default 0). |
+| `getRowHeightFromLayout` | `getRowHeightFromLayout(row, positions, options?)` | `getRowHeight` for a row whose events you have already laid out with `layoutEvents`, so they are not laid out twice. |
 | `getRowHeights` | `getRowHeights(rows, columns, viewType, options?)` | `getRowHeight` for every row, as `number[]`. |
 | `getGridTemplateRows` | `getGridTemplateRows(heights)` | The CSS `grid-template-rows` for a header (`auto`) above rows of those heights: `"auto 60px 112px"`. |
 | `getTimePosition` | `getTimePosition(date, range)` | How far `date` is into `range`, as a percentage; `null` outside (the end is exclusive). For a "now" line. |
@@ -91,6 +92,23 @@ The pointer handling is yours. These turn "the slot under the pointer" into a ra
 | `columnUtilization` | `columnUtilization(resources, columns, { businessHours? })` | One `Utilization` per column range, over all the resources together. |
 | `groupUtilization` | `groupUtilization(resources, range, { businessHours? })` | A `Map` from a group header's id to the `Utilization` of everything below it. |
 
+## State
+
+The four steps of [Build your own UI](/guides/build-your-own-ui/), kept up to date as a store that no framework is part of. In React, [`useSchedulerState`](/guides/build-your-own-ui/#state-and-navigation) is this store read through `useSyncExternalStore`.
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `createSchedulerStore` | `createSchedulerStore({ resources, events?, initialDate?, initialView?, ...options })` | Returns a `SchedulerStore`. The input is `SchedulerStoreInput`: the data (`resources`, flat `events`, `collapsedGroups`), the day and week options (`slotDuration`, `dayStartHour`, `dayEndHour`, `weekStartsOn`, `hideWeekends`), `businessHours`, `density` and `showUtilization`. Starts on `initialDate` (default now) in `initialView` (default the day view). |
+
+A `SchedulerStore` has:
+
+- `getState()`: the current `SchedulerState`, the same object until something changes. It holds `date`, `view`, `range` (`end` exclusive), `columns`, `slotMinutes`, `rows` (group headers and resources, recurring events expanded, only the events in view), `layout` (the `EventPosition[]` of each row, same index as `rows`), `rowHeights` (px) and `utilization` (a `Map` by row id, with `showUtilization`).
+- `subscribe(listener)`: calls `listener` after each change and returns the function that stops it. With `getState` this is all an adapter needs: React's `useSyncExternalStore`, a Vue `shallowRef`, a Svelte `readable`.
+- `setDate(date)`, `setView(view)`, `navigate("prev" | "next")` (returns the new date) and `goToToday(now?)`.
+- `setInput(input, { silent? })`: takes new data or options, only the ones you pass. Nothing happens when they are what they were; `silent` skips the notification for a host that is already rendering.
+
+Every part of the state is kept until the parts it depends on change: a new date keeps the resources, new `resources` keep the columns.
+
 ## Time zones
 
 | Name | Call | What it does |
@@ -128,6 +146,10 @@ The pointer handling is yours. These turn "the slot under the pointer" into a ra
 | `PlacementRules` | `eventOverlap` and `isValidDrop`. |
 | `DragTarget` | `{ resourceId, slot }`: the slot under the pointer. |
 | `Utilization` | `{ bookedMinutes, availableMinutes, ratio }`. |
+| `SchedulerStoreInput` | What `createSchedulerStore` takes: a `SchedulerInput` plus `initialDate` and `initialView`. |
+| `SchedulerInput` | The data and options of a view: `resources`, `events`, `collapsedGroups`, `slotDuration`, `dayStartHour`, `dayEndHour`, `weekStartsOn`, `hideWeekends`, `businessHours`, `density`, `showUtilization`. What `setInput` takes (any of them). |
+| `SchedulerState` | A snapshot of the view: `date`, `view`, `range`, `columns`, `slotMinutes`, `rows`, `layout`, `rowHeights`, `utilization`. |
+| `SchedulerStore` | The store: `getState`, `subscribe`, `setInput`, `setDate`, `setView`, `navigate`, `goToToday`. |
 | `GroupRow` | A group header row from `withGroups`. |
 | `EventPosition` | `{ event, startPosition, span, lane }` from `layoutEvents`. |
 | `RowHeightOptions` | `lane` and `minRowHeight` for `getRowHeight`. |

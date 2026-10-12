@@ -439,7 +439,15 @@ const placed = rows.map((row) => layoutEvents(row.events, columns, ViewType.Week
 const heights = getRowHeights(rows, columns, ViewType.Week); // px per row
 ```
 
-See [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/) and the [Headless API](https://resource-scheduler-demo.vercel.app/reference/headless/).
+In React, `useSchedulerState` keeps the date, view and all of the above for you (and `navigate`, `setView`, `goToToday`); it is a hook over `createSchedulerStore` from the same headless entry, a store with no framework in it that another framework can subscribe to.
+
+```tsx
+import { useSchedulerState } from "resource-scheduler";
+
+const { columns, rows, layout, rowHeights, navigate } = useSchedulerState({ resources, initialView: "week" });
+```
+
+See [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/) (with a timeline whose drag, resize and create are written in the demo) and the [Headless API](https://resource-scheduler-demo.vercel.app/reference/headless/).
 
 ## Styling
 
