@@ -1,7 +1,8 @@
 // src/components/ResourceScheduler/hooks/useEventDrag.ts
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { type Resource, type ResourceSchedulerProps, type SchedulerEvent, ViewType } from "../types";
-import { formatRangeLabel, getDropRange, getResizeRange } from "../utils/dateUtils";
+import { formatRangeLabel } from "../utils/dateUtils";
+import { getMovePlacement, getResizePlacement, isSamePlacement } from "../utils/drag";
 import { useI18n } from "../i18n";
 import { type Step, stepPlacement } from "../utils/keyboard";
 import type { Placement } from "../utils/placement";
@@ -90,14 +91,6 @@ const findTarget = (x: number, y: number): SlotTarget | null => {
     : null;
 };
 
-const samePlacement = (a: Placement | null, b: Placement | null) =>
-  a === b ||
-  (!!a &&
-    !!b &&
-    a.resourceId === b.resourceId &&
-    a.start.getTime() === b.start.getTime() &&
-    a.end.getTime() === b.end.getTime());
-
 /**
  * Pointer-events based drag & drop for moving and resizing events. Works for
  * mouse, pen and touch and never touches a host app's DnD setup.
@@ -138,16 +131,11 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
 
       const resolve = (target: SlotTarget | null): Placement | null => {
         if (!target) return null;
-        const slot = new Date(target.slot);
+        const at = { resourceId: target.resourceId, slot: new Date(target.slot) };
         const { viewType, slotMinutes = 60 } = latest.current;
-        if (mode === "move") {
-          const { start, end } = getDropRange(event, slot, viewType);
-          return { resourceId: target.resourceId, start, end };
-        }
-        // Resizing stays on the event's own resource row.
-        if (target.resourceId !== resource.id) return null;
-        const range = getResizeRange(event, edge!, slot, viewType, slotMinutes);
-        return range && { resourceId: resource.id, ...range };
+        return mode === "move"
+          ? getMovePlacement(event, at, viewType)
+          : getResizePlacement(event, resource.id, edge!, at, viewType, slotMinutes);
       };
 
       const finish = (commit: boolean) => {
@@ -196,7 +184,7 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
           first ||
           !current ||
           current.allowed !== allowed ||
-          !samePlacement(current.placement, placement)
+          !isSamePlacement(current.placement, placement)
         ) {
           current = { eventId: event.id, mode, placement, allowed };
           setActiveDrag(current);
@@ -320,10 +308,11 @@ export const useEventDrag = (options: EventDragOptions): EventDragApi => {
       return;
     }
     const { event, resource, placement } = g;
-    const unchanged =
-      placement.resourceId === resource.id &&
-      placement.start.getTime() === event.startDate.getTime() &&
-      placement.end.getTime() === event.endDate.getTime();
+    const unchanged = isSamePlacement(placement, {
+      resourceId: resource.id,
+      start: event.startDate,
+      end: event.endDate,
+    });
 
     endGrab();
     pendingFocus.current = event.id;

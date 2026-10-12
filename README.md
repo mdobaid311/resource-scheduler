@@ -44,6 +44,7 @@ Prices checked October 2026; see the [full comparison](https://resource-schedule
 - ⌨️ **Keyboard and screen readers**: ARIA grid, keyboard move, resize and create, live announcements
 - 🖨️ **Prints**: toolbar controls dropped, every row and column drawn (virtualization is off on paper), colors kept, landscape ready
 - 🎨 **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app
+- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/)
 - 📦 **Two ways to install**: npm, or copy the source into your project with the shadcn CLI
 - 🔷 **TypeScript** types included; React 18 and 19; Next.js ready
 

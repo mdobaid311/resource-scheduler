@@ -44,6 +44,7 @@ Prices checked October 2026; see the [full comparison](https://resource-schedule
 - ⌨️ **Keyboard and screen readers**: ARIA grid, keyboard move, resize and create, live announcements
 - 🖨️ **Prints**: toolbar controls dropped, every row and column drawn (virtualization is off on paper), colors kept, landscape ready
 - 🎨 **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app
+- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/)
 - 📦 **Two ways to install**: npm, or copy the source into your project with the shadcn CLI
 - 🔷 **TypeScript** types included; React 18 and 19; Next.js ready
 
@@ -425,6 +426,29 @@ function CustomPopoverExample() {
   );
 }
 ```
+
+### Your own UI (headless)
+
+`resource-scheduler/headless` has no React, no CSS and no `"use client"`: the layout, recurrence, rules and date math the component is made of, as functions, for your own markup, another framework or a server.
+
+```ts
+import { ViewType, getColumns, getRowHeights, getVisibleResources, layoutEvents } from "resource-scheduler/headless";
+
+const columns = getColumns(date, ViewType.Week); // the days across
+const rows = getVisibleResources(resources, date, ViewType.Week); // recurrence expanded, events in view
+const placed = rows.map((row) => layoutEvents(row.events, columns, ViewType.Week)); // { event, startPosition, span, lane }
+const heights = getRowHeights(rows, columns, ViewType.Week); // px per row
+```
+
+In React, `useSchedulerState` keeps the date, view and all of the above for you (and `navigate`, `setView`, `goToToday`); it is a hook over `createSchedulerStore` from the same headless entry, a store with no framework in it that another framework can subscribe to.
+
+```tsx
+import { useSchedulerState } from "resource-scheduler";
+
+const { columns, rows, layout, rowHeights, navigate } = useSchedulerState({ resources, initialView: "week" });
+```
+
+See [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/) (with a timeline whose drag, resize and create are written in the demo) and the [Headless API](https://resource-scheduler-demo.vercel.app/reference/headless/).
 
 ## Styling
 

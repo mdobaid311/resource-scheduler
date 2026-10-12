@@ -1,9 +1,10 @@
 ---
 title: Business hours and availability
-description: Shade closed hours and time off per resource, optionally block bookings there, and show a line at the current time.
+description: Shade closed hours and time off per resource, optionally block bookings there, show a line at the current time, and suggest which resource can take a job.
 ---
 
 import AvailabilityDemo from "../../../components/demos/AvailabilityDemo";
+import SuggestDemo from "../../../components/demos/SuggestDemo";
 
 Shade the time a resource cannot be booked, and choose whether the grid also stops people booking it.
 
@@ -87,6 +88,66 @@ const common = findAvailableSlots([ann, bob, room], { from, to, duration: 30 });
 ```
 
 Results start on the `step` grid and can overlap each other (9:00 and 9:30 are both offered for a one hour slot). If your events live in a flat list, merge them first with `withEvents(resources, events)`.
+
+## Suggest who takes a job
+
+`findAvailableSlots` finds when a resource is free. `suggestResources` answers the dispatcher's question: **who should get this job?** It asks every resource, applies the rules the grid enforces, and returns the placements that work, best first.
+
+<SuggestDemo client:only="react" />
+
+```ts
+import { suggestResources, withEvents } from "resource-scheduler";
+
+const [best, ...others] = suggestResources(
+  withEvents(technicians, jobs),
+  { from: new Date(2026, 9, 7, 7), to: new Date(2026, 9, 7, 19), duration: 90 },
+  { strategy: "least-booked", limit: 3 }
+);
+// best: { resourceId: "van", start, end, score: 0.25, utilization: 0.25 }
+```
+
+Give it a window to search and each resource gets its free slots (`step` works as in `findAvailableSlots`, 30 by default), one per resource unless you raise `perResource`. Give it a fixed time instead, `{ start, end }`, and it lists the resources that can take exactly that. The fixed form is also the check to run when somebody drops a job, as the demo does:
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  isValidDrop={(job, { resourceId, start, end }) =>
+    suggestResources(resources, { start, end, event: job }, { resourceIds: [resourceId] }).length > 0
+  }
+/>
+```
+
+`event` is the job being placed. The rules receive it, and a copy of it already on a resource does not count against that resource, so the same call works for moving a job that is booked.
+
+A placement is suggested only when the resource:
+
+- is inside its hours (its own `businessHours`, else the shared `businessHours` option) and misses its `unavailable` ranges;
+- has fewer bookings running at once than its `capacity` (default 1), recurring events included. With a capacity of 2, one booking leaves a seat and two do not. Bookings that only touch, 9 to 10 and 10 to 11, never run at once. The grid does not enforce `capacity` on its own, so this is where it counts. A capacity of 0 is never suggested;
+- passes `eventOverlap` and `isValidDrop`, called as the props are (this is `isPlacementAllowed`), so it never suggests what the board would refuse.
+
+## Ranking
+
+| `strategy` | Ranks by | Use it to |
+|---|---|---|
+| `"earliest"` (default) | the soonest start | get the job done first |
+| `"least-booked"` | the lowest utilization | spread work out |
+| `"most-booked"` | the highest utilization | fill the busiest resource first |
+| a function | the number you return for `{ resource, start, end, utilization }` | rank by skills, distance or cost |
+
+Lowest `score` comes first. `utilization` is what `getUtilization` gives for the window you searched (the day of a fixed time) before the job, the same share `showUtilization` draws. Ties keep the order of `resources`, then the earlier start, so the same data always gives the same answer. A function that returns `NaN` or `Infinity` drops the candidate:
+
+```ts
+suggestResources(resources, request, {
+  // Only technicians certified for gas work, soonest first.
+  strategy: ({ resource, start }) => (skills[resource.id].includes("gas") ? start.getTime() : Infinity),
+});
+```
+
+The other options are `businessHours`, `resourceIds` (look at these resources only), `limit` and `perResource` (`Infinity` lists every free slot instead of the best one).
+
+**Time zones.** Like `findAvailableSlots`, it reads hours and days on the clock of the Dates you pass. With the `timeZone` prop your stored events and `unavailable` ranges are instants, and `isValidDrop` receives instants. To search inside a zone's working hours, convert the events and ranges with `utcToZoned`, search, and convert the `start` and `end` of the answers back with `zonedToUtc`.
+
+**Limits.** With a built-in strategy and no `eventOverlap` or `isValidDrop` rule it stops at the first free slots of each resource: 1,000 resources over a week take about 60 ms. With a score function or a rule it checks every candidate slot in the window, about 1.5 s for the same 1,000 resources, so keep the window short and use `resourceIds` for long lists. It does not move other events to make room, and it does not split a job across resources.
 
 ## The helpers
 

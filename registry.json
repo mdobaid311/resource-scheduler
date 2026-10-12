@@ -115,6 +115,11 @@
           "target": "@components/resource-scheduler/hooks/useScheduler.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useSchedulerState.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/hooks/useSchedulerState.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/hooks/useTouchSelect.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/hooks/useTouchSelect.ts"
@@ -123,6 +128,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/i18n.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/i18n.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/i18nCore.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/i18nCore.ts"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/index.ts",
@@ -170,6 +180,11 @@
           "target": "@components/resource-scheduler/utils/dateUtils.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/drag.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/drag.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/events.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/events.ts"
@@ -195,6 +210,11 @@
           "target": "@components/resource-scheduler/utils/keyboard.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/layout.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/layout.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/placement.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/placement.ts"
@@ -210,9 +230,19 @@
           "target": "@components/resource-scheduler/utils/rowWindow.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/schedulerStore.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/schedulerStore.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/scrollUtils.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/scrollUtils.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/suggest.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/suggest.ts"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/timeZone.ts",

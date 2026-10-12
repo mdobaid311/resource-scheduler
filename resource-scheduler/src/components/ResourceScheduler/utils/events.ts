@@ -1,5 +1,7 @@
 // src/components/ResourceScheduler/utils/events.ts
-import type { Resource, ResourceInput, SchedulerEvent } from "../types";
+import type { Resource, ResourceInput, SchedulerEvent, ViewType } from "../types";
+import { getVisibleEvents, getVisibleRange, type SlotOptions, type ViewOptions } from "./dateUtils";
+import { expandEvents } from "./recurrence";
 
 /**
  * Adds a flat list of events to the resources they name, through `resourceId`
@@ -32,4 +34,30 @@ export const withEvents = (
       ? { ...resource, events: [...(resource.events ?? []), ...(added ?? [])] }
       : (resource as Resource);
   });
+};
+
+/**
+ * The resources as the grid draws them for the period that contains
+ * `currentDate`: recurring events become one event per occurrence, and the
+ * events outside what the view shows (the visible hours in the day view, the
+ * visible days in the others) are left out. The rest of each resource is kept.
+ * Returns new objects; `resources` is not changed.
+ */
+export const getVisibleResources = (
+  resources: Resource[],
+  currentDate: Date,
+  viewType: ViewType,
+  options: SlotOptions & ViewOptions = {}
+): Resource[] => {
+  const range = getVisibleRange(currentDate, viewType, options);
+  return resources.map((resource) => ({
+    ...resource,
+    events: getVisibleEvents(
+      expandEvents(resource.events, range.start, range.end),
+      currentDate,
+      viewType,
+      options,
+      options
+    ),
+  }));
 };
