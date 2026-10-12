@@ -92,6 +92,23 @@
   border-top: 1px solid var(--sl-color-gray-5);
   min-height: 2.25rem;
 }
+/* The Print button of the printing guide marks <html> and its frame; the rest
+   of the page is dropped from the printout so only the board prints. Docs only:
+   the scheduler's own print rules live in its stylesheet. */
+@media print {
+  html[data-print-only] body *:not(:has(.print-target)):not(.print-target):not(.print-target *) {
+    display: none !important;
+  }
+  html[data-print-only] .print-target {
+    margin: 0;
+    border: 0;
+  }
+  html[data-print-only] .print-target .demo-controls,
+  html[data-print-only] .print-target .demo-log,
+  html[data-print-only] .print-target figcaption {
+    display: none;
+  }
+}
 .demo-form {
   display: flex;
   flex-wrap: wrap;

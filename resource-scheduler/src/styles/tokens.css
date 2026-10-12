@@ -5,7 +5,8 @@
  * both inside the npm stylesheet (global.css imports it) and as the source of
  * the shadcn registry item: scripts/build-registry.mjs turns this file into
  * the registry cssVars/css fields. Keep it to the shapes that script
- * understands: :root, .dark, @theme inline, @utility and @layer base.
+ * understands: :root, .dark, @theme inline, @utility, @layer base and
+ * @media print.
  */
 
 :root {
@@ -123,5 +124,85 @@
   }
   .rs-root svg {
     display: block;
+  }
+}
+
+/* Printing. Aimed at the `rs-*` hook classes the markup carries, not at Tailwind
+   utilities, so the rules survive a change of the classes that style the grid.
+   Unlayered on purpose: it wins over the utilities layer without raising
+   specificity. `!important` only where an inline style is in the way (the
+   columns) or the rule must not lose (`rs-no-print`). `@page` cannot be scoped
+   to a component, so paper size and margins are the host's to set. */
+@media print {
+  .rs-root {
+    height: auto;
+    overflow: visible;
+    border-radius: 0;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  /* The one rule that reaches outside: a box of fixed height around the
+     scheduler (`height: 600px` is the usual) would clip it or let what follows
+     print over it. Only the direct parent, and only on paper. */
+  :has(> .rs-root) {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  /* Controls, drag handles, the now line, popovers: anything with no use on paper. */
+  .rs-no-print {
+    display: none !important;
+  }
+  /* Nothing scrolls on paper, so nothing sticks. */
+  .rs-toolbar,
+  .rs-resources,
+  .rs-resources-head,
+  .rs-header,
+  .rs-totals,
+  .rs-totals-label {
+    position: static;
+  }
+  .rs-scroll {
+    overflow: visible;
+    box-shadow: none;
+  }
+  /* The resource column keeps its width on a wide page and gives way on a narrow one. */
+  .rs-resources {
+    max-width: 22%;
+  }
+  .rs-timeline {
+    min-width: 0;
+  }
+  /* Every column shares the page width, whatever the px widths on screen. */
+  .rs-header,
+  .rs-grid,
+  .rs-totals {
+    grid-template-columns: repeat(var(--rs-cols), minmax(0, 1fr)) !important;
+  }
+  /* A column label shrinks with its column (a column is the header's width over
+     --rs-cols) and drops out when there is no room, instead of printing slices
+     of text over its neighbours. */
+  .rs-header {
+    container-type: inline-size;
+  }
+  .rs-header > * {
+    min-width: 0;
+    overflow: hidden;
+    padding-inline: 1px;
+    font-size: min(0.75rem, max(0px, calc(100cqw / var(--rs-cols) * 0.45 - 4px)));
+  }
+  .rs-header > * * {
+    font-size: inherit;
+  }
+  /* A row is not split across pages where it can be helped. */
+  .rs-resources > *,
+  .rs-grid [role="gridcell"] {
+    break-inside: avoid;
+  }
+  /* No keyboard cursor, focus ring or drag footprint on paper. */
+  .rs-grid [data-rs-slot],
+  .rs-grid [data-rs-event] {
+    box-shadow: none;
+    outline: none;
   }
 }
