@@ -7,14 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { format } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useComponents } from "./components";
 import { useI18n } from "./i18n";
 import { type SchedulerControlsProps, ViewType } from "./types";
-import { getDatesInView } from "./utils/dateUtils";
+import { formatPeriodTitle } from "./utils/dateUtils";
 
 export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   currentDate,
@@ -33,29 +32,8 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
   // Previous and next point the other way when time runs right to left.
   const arrow = `h-4 w-4 ${dir === "rtl" ? "rotate-180" : ""}`;
 
-  const getDateTitle = () => {
-    switch (viewType) {
-      case ViewType.Day:
-        return fmt.titleDay(currentDate);
-      case ViewType.Week: {
-        const days = getDatesInView(currentDate, viewType, {
-          weekStartsOn,
-          hideWeekends,
-        });
-        return `${fmt.titleDateStart(days[0])} – ${fmt.titleDateEnd(
-          days[days.length - 1]
-        )}`;
-      }
-      case ViewType.Month:
-        return fmt.monthYear(currentDate);
-      case ViewType.Quarter:
-        return fmt.quarterYear(currentDate);
-      case ViewType.Year:
-        return format(currentDate, "yyyy", { locale });
-      default:
-        return fmt.titleDay(currentDate);
-    }
-  };
+  const getDateTitle = () =>
+    formatPeriodTitle(currentDate, viewType, { weekStartsOn, hideWeekends }, { fmt, locale });
 
   const views = availableViews ?? [
     ViewType.Day,

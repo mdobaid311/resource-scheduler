@@ -1,0 +1,143 @@
+---
+title: Headless API
+description: Every export of resource-scheduler/headless, the scheduling logic as plain functions with no React or CSS, for building your own timeline UI or running the rules on a server.
+---
+
+Everything here is imported from `resource-scheduler/headless`:
+
+```ts
+import { getColumns, getVisibleResources, layoutEvents, getRowHeights } from "resource-scheduler/headless";
+```
+
+The entry has no React, no CSS and no `"use client"`, and its only dependency is `date-fns`. It runs in a browser, a server component, a route handler, a worker or any other framework. These are the functions the `ResourceScheduler` component is made of, so a UI built on them agrees with it. The guide [Build your own UI](/guides/build-your-own-ui/) puts them together.
+
+Conventions: a `Date` is a local wall-clock time (for another zone, convert first with `utcToZoned`); an `end` is exclusive; a *column* is a slot of the day in the day view and a calendar day in the others.
+
+## Views, columns and navigation
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `ViewType` | `ViewType.Day`, `Week`, `Month`, `Quarter`, `Year` | The views, as a const object (`"day"`, `"week"`, ...). Also the type of one of them. |
+| `resolveSlotOptions` | `resolveSlotOptions(options?)` | Returns `{ slotMinutes, dayStartHour, dayEndHour }` with the defaults (60, 0, 24) filled in for anything missing or invalid. |
+| `getTimeSlots` | `getTimeSlots(date, viewType, options?)` | The slots of the day view as `Date[]`; empty in the other views. `options` is `SlotOptions`. |
+| `getDatesInView` | `getDatesInView(date, viewType, viewOptions?)` | The days of the period (`[date]` in the day view). `viewOptions` is `ViewOptions`: `weekStartsOn`, `hideWeekends`. |
+| `getColumns` | `getColumns(date, viewType, options?)` | The columns of the grid: `getTimeSlots` in the day view, `getDatesInView` in the others. Takes `SlotOptions` and `ViewOptions` together. |
+| `getColumnRange` | `getColumnRange(column, viewType, slotMinutes?)` | The `{ start, end }` one column covers: a slot in the day view, the calendar day in the others. |
+| `getVisibleRange` | `getVisibleRange(date, viewType, options?)` | The `{ start, end }` the grid covers (`end` exclusive): the visible hours of the day, or the first to the last day shown. |
+| `navigateDate` | `navigateDate(date, viewType, "prev" \| "next")` | A day, week, month, quarter or year earlier or later, by view. |
+| `isToday` | `isToday(date, now?)` | Whether `date` is on the same calendar day as `now` (default: the current time). |
+
+## Resources, events, recurrence and groups
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `withEvents` | `withEvents(resources, events?)` | Adds a flat event list to the resources named by `resourceId` / `resourceIds`. Returns `Resource[]`; a resource without `events` gets an empty array. |
+| `expandRecurrence` | `expandRecurrence(event, from, to)` | The occurrences of one event that touch `from` to `to` (`end` exclusive). Ids are `<id>::<yyyy-MM-dd>` with `seriesId`. |
+| `expandEvents` | `expandEvents(events, from, to)` | `expandRecurrence` over a list; events that do not recur pass through. |
+| `getVisibleEvents` | `getVisibleEvents(events, date, viewType, slotOptions?, viewOptions?)` | The events that touch what the view shows: the visible hours in the day view, the shown days in the others. |
+| `getVisibleResources` | `getVisibleResources(resources, date, viewType, options?)` | The resources as the grid draws them: recurring events expanded for the visible range and the events outside the view left out. New objects; the input is not changed. |
+| `withGroups` | `withGroups(resources, collapsed?)` | Lays resources out under group header rows (`Resource.group`, as a name or a path). Members of a collapsed group (by key) are left out. Returns `resources` itself when none has a group. |
+| `isGroupRow` | `isGroupRow(row)` | Whether a row from `withGroups` is a group header (a `GroupRow`, with `groupHeader: { name, key, depth, count, collapsed }`) and not a resource. |
+| `GROUP_ROW_HEIGHT` | `36` | The height of a group header row, in px. |
+
+## Layout
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `layoutEvents` | `layoutEvents(events, columns, viewType)` | Places events on the columns: returns `EventPosition[]` of `{ event, startPosition, span, lane }`, sorted by start. Overlapping events go to the first lane that is free, so a row needs one lane per level of overlap. |
+| `getEventSpan` | `getEventSpan(event, columns, viewType)` | How many columns one event covers, clamped to the columns shown (at least 1). |
+| `getEventStartPosition` | `getEventStartPosition(event, columns, viewType)` | The index of the first column of one event, clamped to the columns shown. |
+| `getRowHeight` | `getRowHeight(row, columns, viewType, options?)` | The height of a row in px: a lane for each level of overlap plus `ROW_PADDING`, never below `minRowHeight`; a group header gets `GROUP_ROW_HEIGHT`. `options` is `RowHeightOptions`: `lane` (default 52) and `minRowHeight` (default 0). |
+| `getRowHeights` | `getRowHeights(rows, columns, viewType, options?)` | `getRowHeight` for every row, as `number[]`. |
+| `getGridTemplateRows` | `getGridTemplateRows(heights)` | The CSS `grid-template-rows` for a header (`auto`) above rows of those heights: `"auto 60px 112px"`. |
+| `getTimePosition` | `getTimePosition(date, range)` | How far `date` is into `range`, as a percentage; `null` outside (the end is exclusive). For a "now" line. |
+| `LANES` | `LANES.comfortable`, `LANES.compact` | `{ lane, card }` in px: the height of a lane of events (52 or 38) and of the card inside it (48 or 34). The `Density` type names the keys. |
+| `ROW_PADDING` | `8` | The space below the lanes of a row, in px. |
+| `UTILIZATION_ROW_HEIGHT` | `60` | The least a row with a utilization bar may be, in px. |
+| `COLUMN_UTILIZATION_HEIGHT` | `44` | The height of the row of column totals, in px. |
+| `getRowWindow` | `getRowWindow(heights, top, height, overscan?, offset?)` | The rows worth drawing for a scroll position, as `{ start, end }` (`end` exclusive). `offset` is what sits above the first row. |
+| `getColumnWindow` | `getColumnWindow(count, columnWidth, left, width, overscan)` | The columns in a viewport that starts `left` px into a grid of equal columns, as `{ start, end }` (`end` exclusive). Returns every column when it cannot tell. |
+| `parsePx` | `parsePx(width)` | `"90px"` as `90`; `undefined` for any other unit. |
+
+## Drag, resize, selection and keyboard
+
+The pointer handling is yours. These turn "the slot under the pointer" into a range.
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `getMovePlacement` | `getMovePlacement(event, target, viewType)` | Where `event` lands when dropped on `target` (`DragTarget`: `{ resourceId, slot }`): that resource, the same length. The day view puts the start on the slot; the others keep the time of day. Returns a `Placement`. |
+| `getResizePlacement` | `getResizePlacement(event, resourceId, edge, target, viewType, slotMinutes?)` | The placement after dragging `"start"` or `"end"` to `target`, the slot under the pointer included. `null` on another resource's row, or when the edge would cross the other one. |
+| `isSamePlacement` | `isSamePlacement(a, b)` | Whether two placements (or two `null`s) are the same resource and times. |
+| `getDropRange` | `getDropRange(event, slot, viewType)` | The `{ start, end }` of a move without the resource: what `getMovePlacement` uses. |
+| `getResizeRange` | `getResizeRange(event, edge, slot, viewType, slotMinutes?)` | The `{ start, end }` of a resize, or `null` when the edge would cross. The day view snaps to slots; the others move whole days. |
+| `getSelectionBounds` | `getSelectionBounds(a, b, viewType, slotMinutes?)` | The range covered by dragging from slot `a` to slot `b`, last slot included, either direction. |
+| `isSlotInRange` | `isSlotInRange(slot, range, viewType, slotMinutes?)` | Whether the slot or day starting at `slot` is touched by `range`. For drawing the footprint of a drag. |
+| `getSelectedColumns` | `getSelectedColumns(columns, from, to, viewType)` | The first and last column index between two slots, as `{ start, end }`; `null` when either is not a column. |
+| `stepPlacement` | `stepPlacement(placement, step, { viewType, slotMinutes, resourceIds, range })` | The placement after a keyboard step (`Step`: `cols`, `rows`, `resizeEnd`), or `null` when it would leave the range or the rows, or end with no length. |
+| `moveCursor` | `moveCursor(cursor, key, rows, cols)` | The new `Cursor` (`{ row, col }`) for an arrow, Home or End key, clamped to the grid; `null` for other keys. |
+| `flipHorizontal` | `flipHorizontal(key, rtl)` | Swaps `ArrowLeft` and `ArrowRight` in a right-to-left layout. |
+
+## Rules, availability and utilization
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `isPlacementAllowed` | `isPlacementAllowed(event, placement, resources, rules)` | The check the component runs before a move, resize or create. `rules` is `PlacementRules`: `eventOverlap`, `isValidDrop`. Use it on a server too. |
+| `rangesOverlap` | `rangesOverlap(aStart, aEnd, bStart, bEnd)` | Whether two ranges overlap; ends are exclusive and a zero-length range is one instant. |
+| `isCellUnavailable` | `isCellUnavailable(resource, cell, { businessHours, viewType, slotMinutes? })` | Whether the slot or day starting at `cell` is shaded for that resource. |
+| `touchesUnavailable` | `touchesUnavailable(resource, { start, end }, context)` | Whether a placement touches a shaded cell. What `blockUnavailable` runs. |
+| `resolveBusinessHours` | `resolveBusinessHours(hours?)` | The `BusinessHours` with the defaults filled in (Monday to Friday, 9 to 17). |
+| `findAvailableSlots` | `findAvailableSlots(resource \| resources, { from, to, duration, step?, businessHours?, limit? })` | The free `{ start, end }` slots, earliest first; with several resources, the times when all are free. `FindSlotsOptions` is the options type. |
+| `getUtilization` | `getUtilization(resource, range, { businessHours? })` | `{ bookedMinutes, availableMinutes, ratio }` over a range (`end` exclusive); `ratio` is `null` when nothing is available. Returns a `Utilization`. |
+| `columnUtilization` | `columnUtilization(resources, columns, { businessHours? })` | One `Utilization` per column range, over all the resources together. |
+| `groupUtilization` | `groupUtilization(resources, range, { businessHours? })` | A `Map` from a group header's id to the `Utilization` of everything below it. |
+
+## Time zones
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `utcToZoned` | `utcToZoned(date, timeZone)` | A `Date` whose local fields are the wall-clock time in the IANA zone at that instant. Not an instant: convert back before storing. |
+| `zonedToUtc` | `zonedToUtc(date, timeZone)` | The instant at which a clock in the zone shows the local fields of `date`. |
+| `isValidTimeZone` | `isValidTimeZone(name)` | Whether the runtime knows the IANA name. |
+
+## Text and dates for people
+
+| Name | Call | What it does |
+| --- | --- | --- |
+| `buildI18n` | `buildI18n({ locale?, hour12?, labels?, dir? }?)` | The language and clock, resolved: `{ locale, hour12, dir, labels, fmt }`. `fmt` is a `Formatter` with `time`, `hourHeader`, `weekday`, `dayOfMonth`, `monthShort`, `monthYear`, `quarterYear`, `titleDay` and more. The result type is `ResolvedI18n`; the input is `I18nInput`. |
+| `defaultLabels` | `defaultLabels.today`, `.views.week`, ... | Every word and screen reader message, in English (`SchedulerLabels`). Override any subset through `buildI18n({ labels })` (`PartialLabels`). |
+| `formatPeriodTitle` | `formatPeriodTitle(date, viewType, viewOptions?, i18n?)` | The title of the period: `"October 7, 2026"`, `"Oct 5 – Oct 9, 2026"`, `"October 2026"`, `"Q4 2026"`, `"2026"`. |
+| `formatSlotLabel` | `formatSlotLabel(slot, viewType, i18n?)` | The screen reader label of a slot. |
+| `formatRangeLabel` | `formatRangeLabel(start, end, viewType, i18n?)` | The screen reader label of a range (`end` exclusive). |
+| `formatEventTime` | `formatEventTime(event, i18n?)` | `"9:30 AM - 11:00 AM"`, or the all-day label. |
+
+## Types
+
+| Name | What it is |
+| --- | --- |
+| `SchedulerEvent` | An event: `id`, `title`, `startDate`, `endDate`, and optionally `color`, `description`, `resourceId`, `resourceIds`, `recurrence`, `seriesId`. |
+| `Resource` | A row: `id`, `name`, `events`, and optionally `role`, `businessHours`, `unavailable`, `capacity`, `group`. |
+| `ResourceInput` | A `Resource` whose `events` may be left out (for `withEvents`). |
+| `Recurrence` | How an event repeats: `freq`, `interval`, `byWeekday`, `until`, `count`, `exceptions`. |
+| `BusinessHours` | Working time: `daysOfWeek`, `startHour`, `endHour`. |
+| `UnavailableRange` | `{ start, end }` a resource cannot be booked. |
+| `SlotSelection` | `{ resourceId, start, end }` of selected empty slots. |
+| `VisibleRange` | `{ start, end }` the grid covers; `end` is exclusive. |
+| `SlotOptions` | `slotDuration`, `dayStartHour`, `dayEndHour`. |
+| `ViewOptions` | `weekStartsOn`, `hideWeekends`. |
+| `Placement` | `{ resourceId, start, end }`: where an event would end up. |
+| `PlacementRules` | `eventOverlap` and `isValidDrop`. |
+| `DragTarget` | `{ resourceId, slot }`: the slot under the pointer. |
+| `Utilization` | `{ bookedMinutes, availableMinutes, ratio }`. |
+| `GroupRow` | A group header row from `withGroups`. |
+| `EventPosition` | `{ event, startPosition, span, lane }` from `layoutEvents`. |
+| `RowHeightOptions` | `lane` and `minRowHeight` for `getRowHeight`. |
+| `FindSlotsOptions` | The options of `findAvailableSlots`. |
+| `Step` | A keyboard step: `cols`, `rows`, `resizeEnd`. |
+| `StepContext` | What `stepPlacement` needs: `viewType`, `slotMinutes`, `resourceIds`, `range`. |
+| `Cursor` | `{ row, col }` of the keyboard cursor. |
+| `Density` | `"comfortable"` or `"compact"`, the keys of `LANES`. |
+| `SchedulerLabels` | Every label the scheduler shows or reads out. |
+| `PartialLabels` | Any subset of `SchedulerLabels`. |
+| `I18nInput` | What `buildI18n` takes. |
+| `Formatter` | The date and time formats of `buildI18n(...).fmt`. |
+| `ResolvedI18n` | What `buildI18n` returns. |

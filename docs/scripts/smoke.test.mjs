@@ -36,7 +36,7 @@ after(() => browser?.close());
 
 // A fresh page on a docs route, scrolled to its first demo. Console errors are
 // collected so a test can assert there were none.
-async function open(route, { touch = false, fromStart = true } = {}) {
+async function open(route, { touch = false, fromStart = true, ready = "[data-rs-slot]" } = {}) {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 1100 },
     hasTouch: touch,
@@ -47,7 +47,7 @@ async function open(route, { touch = false, fromStart = true } = {}) {
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.clock.setFixedTime(NOW);
   await page.goto(BASE + route);
-  await page.waitForSelector("[data-rs-slot]");
+  await page.waitForSelector(ready);
   await page.locator(".demo-frame").first().scrollIntoViewIfNeeded();
   await page.waitForTimeout(600); // the grid scrolls itself to "now" first
   if (fromStart) {
@@ -328,6 +328,51 @@ describe("time zones", () => {
     await page.waitForTimeout(250);
     assert.match(await log(page), /^Moved "Sprint planning": store \d{4}-\d{2}-\d{2}T09:00:00\.000Z$/);
     assert.match(await label(page, "t1"), /5:00 AM to 6:30 AM/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
+describe("headless", () => {
+  it("draws a timeline from the headless functions alone: header, lanes, recurrence and navigation", async () => {
+    const { page, context, errors } = await open("/guides/build-your-own-ui/", {
+      fromStart: false,
+      ready: '[data-demo="headless"]',
+    });
+    const demo = page.locator('[data-demo="headless"]');
+    const title = demo.locator("[data-demo-title]");
+    const tile = (id) => demo.locator(`[data-demo-event="${id}"]`);
+
+    // No class of the component, no stylesheet of the package: inline styles only.
+    assert.equal(await demo.locator("[class]").count(), 0);
+    assert.equal(await page.locator('[data-demo="headless"] .rs-root').count(), 0);
+
+    // The week (Monday first) with the series expanded, one occurrence a weekday.
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+    assert.equal(await demo.locator('[data-demo-event^="stand::"]').count(), 5);
+    assert.equal(await demo.locator("[data-demo-event]").count(), 14);
+
+    // On Monday the standup overlaps the other event of the row, so they sit in different lanes.
+    const [a, b] = await Promise.all([tile("a1").boundingBox(), tile("stand::2026-10-05").boundingBox()]);
+    assert.ok(a.y + a.height <= b.y || b.y + b.height <= a.y, "overlapping events share a lane");
+    assert.equal(a.x, b.x); // the same first column
+
+    // Next week: the single events are gone, the series goes on.
+    await demo.getByRole("button", { name: "Next period" }).click();
+    assert.equal(await title.textContent(), "Oct 12 – Oct 18, 2026");
+    assert.equal(await tile("a1").count(), 0);
+    assert.equal(await tile("stand::2026-10-14").count(), 1);
+    await demo.getByRole("button", { name: "Today" }).click();
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+
+    // Clicking an event reads it out; the day view shows the visible hours of one day.
+    await tile("stand::2026-10-07").click();
+    assert.equal(await demo.getByRole("status").textContent(), "Standup, Ann Lee: 9:00 AM - 9:30 AM");
+    await demo.getByRole("button", { name: "Day", exact: true }).click();
+    assert.equal(await title.textContent(), "October 7, 2026");
+    assert.ok(await demo.getByText("9AM", { exact: true }).isVisible());
+    assert.equal(await tile("a1").count(), 0); // Monday's event is not on Wednesday
+    assert.equal(await tile("a3").count(), 1); // the three-day event is
     assert.deepEqual(errors, []);
     await context.close();
   });
