@@ -10,6 +10,9 @@
     "*": {
       "exchange": [
         "./dist/exchange.d.ts"
+      ],
+      "headless": [
+        "./dist/headless.d.ts"
       ]
     }
   },
@@ -28,6 +31,11 @@
       "types": "./dist/exchange.d.ts",
       "import": "./dist/exchange.esm.js",
       "require": "./dist/exchange.cjs"
+    },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.esm.js",
+      "require": "./dist/headless.cjs"
     },
     "./style.css": "./dist/resource-scheduler.css",
     "./dist/resource-scheduler.css": "./dist/resource-scheduler.css"

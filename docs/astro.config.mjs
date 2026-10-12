@@ -15,6 +15,8 @@ const base = process.env.DOCS_BASE ?? "/";
 const schedulerSrc = fileURLToPath(
   new URL("../resource-scheduler/src/components/ResourceScheduler", import.meta.url)
 );
+// `resource-scheduler/headless`: the demo that builds its own UI imports it as @headless.
+const headlessEntry = fileURLToPath(new URL("../resource-scheduler/src/headless.ts", import.meta.url));
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 export default defineConfig({
@@ -95,6 +97,7 @@ export default defineConfig({
             { label: "Keyboard and accessibility", slug: "guides/keyboard-and-accessibility" },
             { label: "Theming", slug: "guides/theming" },
             { label: "Replace parts", slug: "guides/components" },
+            { label: "Build your own UI", slug: "guides/build-your-own-ui" },
             { label: "Next.js and SSR", slug: "guides/nextjs-and-ssr" },
           ],
         },
@@ -118,6 +121,7 @@ export default defineConfig({
             { label: "Props", slug: "reference/props" },
             { label: "Types", slug: "reference/types" },
             { label: "Utilities and hooks", slug: "reference/utilities" },
+            { label: "Headless API", slug: "reference/headless" },
           ],
         },
       ],
@@ -126,7 +130,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     resolve: {
-      alias: { "@scheduler": schedulerSrc },
+      alias: { "@scheduler": schedulerSrc, "@headless": headlessEntry },
       // The package source has its own node_modules; make sure React is one copy.
       dedupe: ["react", "react-dom"],
     },

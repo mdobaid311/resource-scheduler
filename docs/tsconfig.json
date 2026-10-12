@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": {
+      "@headless": ["../resource-scheduler/src/headless.ts"],
       "@scheduler": ["../resource-scheduler/src/components/ResourceScheduler/index.ts"],
       "@scheduler/*": ["../resource-scheduler/src/components/ResourceScheduler/*"]
     }

@@ -76,4 +76,4 @@ The `render*` props (`renderTimeSlot`, `renderEventPopover`, `renderResourceHead
 ## Not included
 
 - Replacing the grid, a slot, the resource column or the group headers as a whole. Those carry the layout, the keyboard grid and the drag logic; use [`classNames`](/guides/theming/) and the tokens for them.
-- A headless version of the logic without the markup. The pure functions (`getUtilization`, `findAvailableSlots`, `expandEvents`, ...) are exported and work without the component.
+- Replacing the markup of the grid altogether. For that, build on the logic without the component: [Build your own UI](/guides/build-your-own-ui/) draws a timeline from the functions of `resource-scheduler/headless` (layout, lanes, row heights, recurrence, rules).

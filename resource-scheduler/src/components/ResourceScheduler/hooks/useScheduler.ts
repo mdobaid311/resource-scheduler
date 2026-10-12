@@ -3,19 +3,20 @@ import { useState, useCallback, useMemo } from "react";
 import {
   getTimeSlots,
   getDatesInView,
-  getVisibleEvents,
-  getVisibleRange,
   type SlotOptions,
   type ViewOptions,
   navigateDate,
-  getEventSpan,
-  getEventStartPosition,
   isToday,
 } from "../utils/dateUtils";
 import { type SchedulerEvent, type Resource, ViewType } from "../types";
-import { LANES, ROW_PADDING } from "../density";
-import { GROUP_ROW_HEIGHT, isGroupRow } from "../utils/groups";
-import { expandEvents } from "../utils/recurrence";
+import { getVisibleResources } from "../utils/events";
+import {
+  getColumns,
+  getGridTemplateRows as toGridTemplateRows,
+  getRowHeight,
+  LANES,
+  layoutEvents,
+} from "../utils/layout";
 
 export const useScheduler = (
   initialResources: Resource[],
@@ -42,19 +43,10 @@ export const useScheduler = (
   );
 
   // Recurring events become one event per occurrence inside the visible range.
-  const resources = useMemo<Resource[]>(() => {
-    const range = getVisibleRange(currentDate, viewType, { ...slots, ...view });
-    return initialResources.map((resource) => ({
-      ...resource,
-      events: getVisibleEvents(
-        expandEvents(resource.events, range.start, range.end),
-        currentDate,
-        viewType,
-        slots,
-        view
-      ),
-    }));
-  }, [initialResources, currentDate, viewType, slots, view]);
+  const resources = useMemo<Resource[]>(
+    () => getVisibleResources(initialResources, currentDate, viewType, { ...slots, ...view }),
+    [initialResources, currentDate, viewType, slots, view]
+  );
 
   const getTimeSlotsMemoized = useCallback(() => {
     return getTimeSlots(currentDate, viewType, slots);
@@ -74,49 +66,19 @@ export const useScheduler = (
   );
 
   const calculateEventPositions = useCallback(
-    (events: SchedulerEvent[], datesInView: Date[]) => {
-      const sorted = [...events]
-        .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-        .map((event) => ({
-          event,
-          span: getEventSpan(event, datesInView, viewType),
-          startPosition: getEventStartPosition(event, datesInView, viewType),
-        }));
-
-      // First-fit lane packing. Events are sorted by start, so a lane only
-      // needs to remember where its last event ends.
-      const laneEnds: number[] = [];
-      return sorted.map((item) => {
-        let lane = laneEnds.findIndex((end) => item.startPosition >= end);
-        if (lane === -1) lane = laneEnds.length;
-        laneEnds[lane] = item.startPosition + item.span;
-        return { ...item, lane };
-      });
-    },
+    (events: SchedulerEvent[], datesInView: Date[]) => layoutEvents(events, datesInView, viewType),
     [viewType]
   );
 
   // The columns of the grid, built once per view (the year view has 365).
   const datesInView = useMemo(
-    () => (viewType === ViewType.Day ? getTimeSlotsMemoized() : getDatesInViewMemoized()),
-    [viewType, getTimeSlotsMemoized, getDatesInViewMemoized]
+    () => getColumns(currentDate, viewType, { ...slots, ...view }),
+    [currentDate, viewType, slots, view]
   );
 
   const measureRow = useCallback(
-    (resource: Resource) => {
-      if (isGroupRow(resource)) return GROUP_ROW_HEIGHT;
-      const eventPositions = calculateEventPositions(
-        resource.events,
-        datesInView
-      );
-      const lanes =
-        eventPositions.length > 0
-          ? Math.max(...eventPositions.map((pos) => pos.lane)) + 1
-          : 1;
-
-      return Math.max(lanes * lane + ROW_PADDING, minRowHeight);
-    },
-    [lane, minRowHeight, calculateEventPositions, datesInView]
+    (resource: Resource) => getRowHeight(resource, datesInView, viewType, { lane, minRowHeight }),
+    [lane, minRowHeight, datesInView, viewType]
   );
 
   // A row is measured once for as long as the view and its resource object stay
@@ -138,12 +100,10 @@ export const useScheduler = (
     return resources.map((resource) => getResourceRowHeight(resource));
   }, [resources, getResourceRowHeight]);
 
-  const getGridTemplateRows = useCallback(() => {
-    const rowHeights = getRowHeights();
-    const headerRow = "auto";
-    const resourceRows = rowHeights.map((height) => `${height}px`).join(" ");
-    return `${headerRow} ${resourceRows}`;
-  }, [getRowHeights]);
+  const getGridTemplateRows = useCallback(
+    () => toGridTemplateRows(getRowHeights()),
+    [getRowHeights]
+  );
 
   return {
     currentDate,
