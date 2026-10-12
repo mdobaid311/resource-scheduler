@@ -81,6 +81,10 @@ export type {
 } from "./components/ResourceScheduler/utils/suggest";
 export { groupUtilization } from "./components/ResourceScheduler/utils/groups";
 export {
+  moveResource,
+  reorderGroup,
+} from "./components/ResourceScheduler/utils/reorder";
+export {
   columnUtilization,
   getUtilization,
 } from "./components/ResourceScheduler/utils/utilization";

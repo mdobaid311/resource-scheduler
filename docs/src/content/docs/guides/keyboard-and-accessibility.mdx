@@ -21,6 +21,7 @@ The timeline is one tab stop. Events are tab stops of their own.
 | Event | <kbd>Enter</kbd> | Open its details |
 | Event | <kbd>Space</kbd> | Pick it up. Arrows move it, <kbd>Space</kbd> drops it, <kbd>Esc</kbd> cancels |
 | Picked-up event | <kbd>Shift</kbd> + <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Resize the end (needs `onEventResize`) |
+| Group header, resource | <kbd>Alt</kbd> + <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> | Move it one place (needs `onGroupReorder` or `onResourceReorder`; see [Reordering](/guides/resource-groups/#reordering)) |
 
 Keyboard moves follow the same rules as the mouse: `eventOverlap` and `isValidDrop` apply, a rejected place is announced and shown in red, and an event cannot leave the visible range. After a drop, focus returns to the event that moved.
 

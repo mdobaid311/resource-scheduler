@@ -7,6 +7,7 @@ import type { Density } from "./density";
 import type { PartialLabels, SchedulerLabels } from "./i18n";
 import type { ViewOptions } from "./utils/dateUtils";
 import type { Placement, PlacementRules } from "./utils/placement";
+import type { DropTarget, ReorderDrag } from "./utils/reorder";
 import type { Utilization } from "./utils/utilization";
 
 // A const object plus a union (not an `enum`) so the source compiles in apps
@@ -262,6 +263,26 @@ export interface ResourceSchedulerProps {
   /** Called with the new list of collapsed groups when the user toggles one. */
   onCollapsedGroupsChange?: (groups: string[]) => void;
   /**
+   * Turns on dragging groups to reorder them: a grip on each group header,
+   * and Alt+ArrowUp or Alt+ArrowDown on a focused header. Called with the
+   * group's key (its name, or its path joined with " / ") and the key of the
+   * sibling group it should go before, `null` for the end. The scheduler does
+   * not own your data, so apply it to your list, for example
+   * `setResources(reorderGroup(resources, key, before))`. Never called for a move
+   * that would change nothing.
+   */
+  onGroupReorder?: (groupKey: string, beforeGroupKey: string | null) => void;
+  /**
+   * Turns on dragging resources to reorder them: a grip on each resource, and
+   * Alt+ArrowUp or Alt+ArrowDown on a focused resource. Called with the
+   * resource's id, the id of the resource it should go before (`null` for the end
+   * of the group) and the key of the group it lands in (`null` for none), which
+   * differs from its own when it was dropped on another group. Apply it with
+   * `setResources(moveResource(resources, id, before, group))`. Never called for
+   * a move that would change nothing.
+   */
+  onResourceReorder?: (resourceId: string, beforeResourceId: string | null, group: string | null) => void;
+  /**
    * Extra classes for the toolbar, headers, resource cells, slots and event
    * cards, merged over the defaults so a conflicting utility wins. See
    * `SchedulerClassNames`.
@@ -384,6 +405,20 @@ export interface ResourceColumnProps {
   rowRange?: { start: number; end: number };
   /** Add the label of the row under the grid with each column's utilization. */
   showColumnUtilization?: boolean;
+  /** Drag and keyboard reordering of groups and resources; without it the column has no grips. */
+  reorder?: ReorderControl;
+  /** Speaks a message through the live region. */
+  announce?: (message: string) => void;
+  /** The id of the hidden text that explains the reorder keys. */
+  reorderHelpId?: string;
+}
+
+/** What the resource column needs for reordering: which grips to show, and how to hand a drop to the app. */
+export interface ReorderControl {
+  groups: boolean;
+  resources: boolean;
+  /** Hands the drop to the app; false when it would change nothing, so nothing was called. */
+  commit: (drag: ReorderDrag, target: DropTarget) => boolean;
 }
 
 export interface TimelineHeaderProps {

@@ -23,12 +23,20 @@
 // (8.7 KB when it was set at 10 KB). The state store and the useSchedulerState
 // hook then added 0.9 KB to both: the main bundle went from 26 KB to 28 KB
 // (26.2 KB used) and the headless entry from 10 KB to 11 KB (9.6 KB used).
+//
+// Then to 33 KB for the features merged together after that: dragging groups
+// and resources to reorder them (3.6 KB: the helpers 1.5 KB, the pointer and
+// keyboard hook 1.4 KB, the grips and labels the rest), suggestResources
+// (0.9 KB), print support and keyboard paging with start-edge resize (0.4 KB
+// each). 31.0 KB was used before keyboard paging, so about 5% of headroom is
+// left; the next feature should look for what to take out before it raises
+// this again.
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
 const BUDGET = {
-  "dist/index.esm.js": 28_000,
+  "dist/index.esm.js": 33_000,
   "dist/exchange.esm.js": 5_000,
   "dist/headless.esm.js": 11_000,
   "dist/resource-scheduler.css": 7_000,

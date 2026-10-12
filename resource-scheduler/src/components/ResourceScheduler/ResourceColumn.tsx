@@ -1,14 +1,38 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
-import { ChevronDown } from "lucide-react";
-import React from "react";
+import { ChevronDown, GripVertical } from "lucide-react";
+import React, { useRef, useState } from "react";
 import { useClassNames, withClass } from "./classNames";
 import { ColumnUtilizationLabel } from "./ColumnUtilization";
 import { useComponents } from "./components";
 import { useDensity } from "./density";
+import { HEADER_HEIGHT, useReorder } from "./hooks/useReorder";
 import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
 import { isGroupRow } from "./utils/groups";
+import type { ReorderDrag } from "./utils/reorder";
 import type { Utilization } from "./utils/utilization";
+
+const KEYS = "Alt+ArrowUp Alt+ArrowDown";
+
+// The grip that starts a drag. Decorative for assistive technology: the keyboard moves rows with Alt+Arrow.
+const Handle: React.FC<{ onPointerDown: (event: React.PointerEvent) => void; className?: string }> = ({
+  onPointerDown,
+  className = "",
+}) => {
+  const { labels } = useI18n();
+  return (
+    <span
+      data-rs-handle
+      aria-hidden="true"
+      title={labels.dragToReorder}
+      onPointerDown={onPointerDown}
+      onClick={(event) => event.stopPropagation()}
+      className={`shrink-0 cursor-grab touch-none text-ocrs-muted-foreground hover:text-ocrs-primary ${className}`}
+    >
+      <GripVertical className="size-4" />
+    </span>
+  );
+};
 
 const hours = (minutes: number) => Math.round(minutes / 6) / 10;
 
@@ -52,6 +76,9 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   onToggleGroup,
   rowRange,
   showColumnUtilization,
+  reorder: control,
+  announce,
+  reorderHelpId,
 }) => {
   const { labels } = useI18n();
   const classNames = useClassNames();
@@ -66,8 +93,17 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   const before = sum(0, start);
   const after = sum(end, heights.length);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { active, isDragged, press, keys } = useReorder({ rows: resources, heights, control, announce, rootRef });
+  // Resource cells are one tab stop, the last one focused (else the first drawn); arrows move between them.
+  const [stop, setStop] = useState<string>();
+  const drawn = resources.slice(start, end).filter((r) => !isGroupRow(r));
+  const tabStop = drawn.some((r) => r.id === stop) ? stop : drawn[0]?.id;
+  const line = active?.target?.line;
+
   return (
     <div
+      ref={rootRef}
       className="rs-resources bg-ocrs-white z-20 sticky start-0 shrink-0"
       style={{ width: resourceColumnWidth }}
     >
@@ -88,8 +124,11 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             : labels.group(name, count);
           // Each level of nesting steps in; the first level keeps the default padding.
           const indent = depth ? { paddingInlineStart: 12 + depth * 16 } : undefined;
+          const drag: ReorderDrag = { kind: "group", key };
+          const grip = control?.groups;
           const body = (
             <>
+              {grip && <Handle onPointerDown={press(drag)} />}
               <ChevronDown
                 aria-hidden="true"
                 className={`size-4 shrink-0 ${collapsed ? "-rotate-90 rtl:rotate-90" : ""}`}
@@ -111,7 +150,10 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               </span>
             </>
           );
-          const cell = "border-b border-e bg-ocrs-muted text-sm font-medium flex items-center gap-2 overflow-hidden";
+          // Dragged rows dim; a resource dropped on a header gets a ring, as it joins that group.
+          const cell = `border-b border-e bg-ocrs-muted text-sm font-medium flex items-center gap-2 overflow-hidden${
+            isDragged(resource) ? " opacity-50" : ""
+          }${active?.target?.header === resource.id ? " ring-2 ring-inset ring-ocrs-primary" : ""}`;
           return onToggleGroup ? (
             <button
               key={resource.id}
@@ -119,6 +161,12 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               aria-expanded={!collapsed}
               aria-label={label}
               onClick={() => onToggleGroup(key)}
+              {...(grip && {
+                "data-rs-row": resource.id,
+                "aria-keyshortcuts": KEYS,
+                "aria-describedby": reorderHelpId,
+                onKeyDown: keys(drag),
+              })}
               className={withClass(
                 `${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`,
                 classNames.groupHeader
@@ -139,17 +187,30 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
           );
         }
         const value = utilization?.get(resource.id);
+        const drag: ReorderDrag = { kind: "resource", id: resource.id };
+        const grip = control?.resources;
         return (
           <div
             key={resource.id}
+            {...(grip && {
+              "data-rs-row": resource.id,
+              tabIndex: resource.id === tabStop ? 0 : -1,
+              "aria-keyshortcuts": KEYS,
+              "aria-describedby": reorderHelpId,
+              onKeyDown: keys(drag),
+              onFocus: () => setStop(resource.id),
+            })}
             className={withClass(
               `${
                 value ? "p-2 flex-col gap-1" : density === "compact" ? "px-3 py-1" : "p-3"
-              } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm`,
+              } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm${
+                grip ? " relative ps-6 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring" : ""
+              }${isDragged(resource) ? " opacity-50" : ""}`,
               classNames.resourceCell
             )}
             style={{ height: rowHeight + "px" }}
           >
+            {grip && <Handle onPointerDown={press(drag)} className="absolute start-1 top-1/2 -translate-y-1/2" />}
             {ResourceHeader ? (
               <ResourceHeader resource={resource} />
             ) : renderResourceHeader ? (
@@ -165,6 +226,14 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
       })}
       {after > 0 && <div aria-hidden="true" style={{ height: after + "px" }} />}
       {showColumnUtilization && <ColumnUtilizationLabel />}
+      {line !== undefined && (
+        <div
+          data-rs-drop-line
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 z-30 h-0.5 bg-ocrs-primary"
+          style={{ top: HEADER_HEIGHT + line - 1 }}
+        />
+      )}
     </div>
   );
 };

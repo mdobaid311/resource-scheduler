@@ -45,6 +45,13 @@ Imported from `resource-scheduler/exchange`, not from the main entry point.
 - **`columnUtilization(resources, columns, { businessHours? })`** adds up the utilization of several resources for each of `columns` (ranges in order, `end` exclusive) and returns one `{ bookedMinutes, availableMinutes, ratio }` per column. What `showColumnUtilization` draws.
 - **`groupUtilization(resources, { start, end }, { businessHours? })`** returns a `Map` from a group header's id (`"rs-group:" + the group's key`) to the same `{ bookedMinutes, availableMinutes, ratio }`, summed over every resource below the group, nested ones included. What a group header shows. See [Resource groups](/guides/resource-groups/).
 
+## Reordering
+
+What you apply the [reorder callbacks](/guides/resource-groups/#reordering) with. Both are pure, return a new array in the order it is shown, and return the array you passed in when nothing would change or a key or id is unknown.
+
+- **`reorderGroup(resources, groupKey, beforeGroupKey)`** moves a group, with all its resources and nested groups, to just before the sibling group `beforeGroupKey`, or to the end of its siblings when that is `null`. A group only moves among the groups with the same parent. Keys are a group's name, or its path joined with " / ".
+- **`moveResource(resources, resourceId, beforeResourceId, group?)`** moves a resource to just before `beforeResourceId`, or to the end of its group when that is `null`. `group` is the key of the group it lands in: leave it out to keep its own, pass `null` for none. A resource that changes group is copied with its `group` set to that group's path; passing its own id as `beforeResourceId` changes only the group.
+
 ## Time zones
 
 The `timeZone` prop uses these; they are exported for your own conversions. See [Time zones](/guides/time-zones/).
