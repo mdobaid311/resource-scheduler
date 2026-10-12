@@ -37,6 +37,7 @@ export {
   UTILIZATION_ROW_HEIGHT,
   getGridTemplateRows,
   getRowHeight,
+  getRowHeightFromLayout,
   getRowHeights,
   getSelectedColumns,
   getTimePosition,
@@ -95,6 +96,15 @@ export {
   formatRangeLabel,
   formatSlotLabel,
 } from "./components/ResourceScheduler/utils/dateUtils";
+
+// State: the steps above kept up to date, as a store any framework can read
+export { createSchedulerStore } from "./components/ResourceScheduler/utils/schedulerStore";
+export type {
+  SchedulerInput,
+  SchedulerState,
+  SchedulerStore,
+  SchedulerStoreInput,
+} from "./components/ResourceScheduler/utils/schedulerStore";
 
 // Data types
 export type {

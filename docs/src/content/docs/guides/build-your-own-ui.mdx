@@ -3,6 +3,7 @@ title: Build your own UI
 description: Draw a resource timeline with your own markup, framework or server, using the scheduling logic of Resource Scheduler as plain functions with no React and no CSS.
 ---
 
+import CustomTimelineDemo from "../../../components/demos/CustomTimelineDemo";
 import HeadlessDemo from "../../../components/demos/HeadlessDemo";
 
 [`classNames`](/guides/theming/) restyles the scheduler and [`components`](/guides/components/) swaps its parts. When you need different markup altogether (a table, a canvas, a Vue or Svelte app, a PDF, an email), build on `resource-scheduler/headless` instead: the layout, recurrence, rules and date math the component is made of, as functions.
@@ -69,7 +70,46 @@ import { LANES, getGridTemplateRows } from "resource-scheduler/headless";
 </div>;
 ```
 
-You hold the state (the date, the view, your data); the functions hold no state of their own.
+The functions hold no state of their own: you give them a date, a view and your data every time.
+
+## State and navigation
+
+Those four steps depend on a date, a view and your data, and their result is worth keeping between renders. In React, `useSchedulerState` does that and hands you the result:
+
+```tsx
+import { useSchedulerState } from "resource-scheduler";
+import { ViewType } from "resource-scheduler/headless";
+
+const { date, view, range, columns, rows, layout, rowHeights, slotMinutes, navigate, setView, setDate, goToToday } =
+  useSchedulerState({
+    resources, // keep it stable (state or useMemo); a new array is new data
+    initialDate: new Date(),
+    initialView: ViewType.Week,
+    weekStartsOn: 1,
+    dayStartHour: 8,
+    dayEndHour: 18,
+  });
+```
+
+- `columns` and `range` are what the grid covers; `rows` are your resources as the grid draws them (group headers included when resources have a `group`, recurring events expanded, only the events in view); `layout[i]` places the events of `rows[i]` and `rowHeights[i]` is its height in px.
+- `navigate("prev" | "next")`, `setView`, `setDate` and `goToToday` change the date and the view and re-render. `initialDate` and `initialView` only start it.
+- Everything else is read on every render, so new `resources`, a flat `events` list, `collapsedGroups`, `hideWeekends`, `density` or `businessHours` show up in the same render. `showUtilization` adds `utilization`, a `Map` by row id of `{ bookedMinutes, availableMinutes, ratio }`.
+- It works on the server: the render a server component does gives the same state the client starts from.
+
+The hook is a few lines over `createSchedulerStore`, a store from `resource-scheduler/headless` that has no framework in it. `getState()` returns the same object until something changes, and `subscribe(listener)` tells you when it did, which is what every framework's reactive primitive wants:
+
+```ts
+import { createSchedulerStore } from "resource-scheduler/headless";
+
+const store = createSchedulerStore({ resources, initialView: "week" });
+store.navigate("next");
+store.setInput({ resources: updated }); // new data or options, only the ones you pass
+
+// Vue: const state = shallowRef(store.getState()); store.subscribe(() => (state.value = store.getState()));
+// Svelte: const state = readable(store.getState(), (set) => store.subscribe(() => set(store.getState())));
+```
+
+An adapter for Vue or Svelte is not shipped; this is all it has to be.
 
 ## The header
 
@@ -102,7 +142,11 @@ i18n.labels.views.week; // "Week", or your own wording from `labels`
 
 ## Drag, resize and create
 
-The pointer handling is yours, because it depends on your markup. The functions turn "the slot under the pointer" into a result. In a `pointermove`, find the resource row and the column under the pointer however you like (`elementsFromPoint` with a `data-` attribute on each cell does it), then:
+This one is a whole timeline on `useSchedulerState`: the header, the grid, and drag, resize and create written in the demo itself, with no double booking (try dropping an event on a busy slot). [Read its source](https://github.com/mdobaid311/resource-scheduler/blob/main/docs/src/components/demos/CustomTimelineDemo.tsx).
+
+<CustomTimelineDemo client:only="react" />
+
+The pointer handling is yours, because it depends on your markup, and it is a few dozen lines: press, follow the pointer, save on release. The functions turn "the slot under the pointer" into a result. In a `pointermove`, find the resource row and the column under the pointer however you like (`elementsFromPoint` with a `data-` attribute on each cell does it, as above), then:
 
 ```ts
 import {

@@ -378,6 +378,81 @@ describe("headless", () => {
   });
 });
 
+describe("custom timeline", () => {
+  // The demo under "Drag, resize and create": useSchedulerState plus pointer handling written in the demo.
+  const openCustom = async () => {
+    const opened = await open("/guides/build-your-own-ui/", { fromStart: false, ready: '[data-demo="custom"]' });
+    const demo = opened.page.locator('[data-demo="custom"]');
+    const tile = (id) => demo.locator(`[data-demo-event="${id}"]`);
+    const cellOf = (resource, column) => demo.locator(`[data-resource="${resource}"][data-slot]`).nth(column); // 0 = Monday
+    // Where a tile sits inside the demo: the page scrolls while dragging, so viewport coordinates would not do.
+    const top = async (id) => (await tile(id).boundingBox()).y - (await demo.boundingBox()).y;
+    return { ...opened, demo, tile, cellOf, top };
+  };
+
+  it("moves an event to another resource and keeps its time of day", async () => {
+    const { page, context, errors, demo, tile, cellOf, top } = await openCustom();
+    const before = await top("a2");
+    await mouseDrag(page, await centerOf(tile("a2")), await centerOf(cellOf("chen", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Moved "Design review" to Chen Wu, 11:00 AM - 1:00 PM');
+    assert.ok((await top("a2")) > before, "the event is now in a lower row");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("refuses a move that would double book, and leaves the event where it was", async () => {
+    const { page, context, errors, demo, tile, cellOf, top } = await openCustom();
+    const before = await top("d1");
+    // Dana's Monday roadmap onto Bob's Tuesday, which his three-day API work covers.
+    await mouseDrag(page, await centerOf(tile("d1")), await centerOf(cellOf("bob", 1)), { release: false });
+    await page.waitForTimeout(100);
+    // The footprint is red while the pointer is over it.
+    const tinted = await cellOf("bob", 1).evaluate((el) => getComputedStyle(el).backgroundColor);
+    assert.match(tinted, /rgba\(239, 68, 68/);
+    await page.mouse.up();
+    await page.waitForTimeout(250);
+    assert.equal(await demo.getByRole("status").textContent(), "Not allowed: that overlaps another event");
+    assert.equal(await top("d1"), before);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("resizes an event from its edge", async () => {
+    const { page, context, errors, demo, tile, cellOf } = await openCustom();
+    const before = await tile("c1").boundingBox();
+    await mouseDrag(page, await centerOf(tile("c1").locator('[data-demo-resize="end"]')), await centerOf(cellOf("chen", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Resized "User tests", 10:00 AM - 3:00 PM');
+    const after = await tile("c1").boundingBox();
+    assert.ok(after.width > before.width * 1.7, "it now spans two days");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("creates an event by dragging across free cells", async () => {
+    const { page, context, errors, demo, cellOf } = await openCustom();
+    await mouseDrag(page, await centerOf(cellOf("dana", 1)), await centerOf(cellOf("dana", 2)));
+    assert.equal(await demo.getByRole("status").textContent(), 'Created "New event" for Dana Fox, All day');
+    assert.equal(await demo.locator('[data-demo-event^="new-"]').count(), 1);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("navigates and changes the view through the hook", async () => {
+    const { context, errors, demo, tile } = await openCustom();
+    const title = demo.locator("[data-demo-title]");
+    assert.equal(await title.textContent(), "Oct 5 – Oct 11, 2026");
+    await demo.getByRole("button", { name: "Next period" }).click();
+    assert.equal(await title.textContent(), "Oct 12 – Oct 18, 2026");
+    assert.equal(await tile("a1").count(), 0);
+    await demo.getByRole("button", { name: "Today" }).click();
+    assert.equal(await tile("a1").count(), 1);
+    await demo.getByRole("button", { name: "Month", exact: true }).click();
+    assert.equal(await title.textContent(), "October 2026");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("keyboard", () => {
   it("picks an event up, moves it to another resource and drops it", async () => {
     const { page, context, errors } = await open(KEYBOARD);

@@ -34,6 +34,7 @@ const VALUES = [
   "getEventStartPosition",
   "layoutEvents",
   "getRowHeight",
+  "getRowHeightFromLayout",
   "getRowHeights",
   "getGridTemplateRows",
   "getTimePosition",
@@ -66,6 +67,8 @@ const VALUES = [
   "getUtilization",
   "columnUtilization",
   "groupUtilization",
+  // State
+  "createSchedulerStore",
   // Time zones
   "utcToZoned",
   "zonedToUtc",
@@ -98,6 +101,10 @@ const TYPES = [
   "EventPosition",
   "RowHeightOptions",
   "DragTarget",
+  "SchedulerInput",
+  "SchedulerState",
+  "SchedulerStore",
+  "SchedulerStoreInput",
   "FindSlotsOptions",
   "Step",
   "StepContext",

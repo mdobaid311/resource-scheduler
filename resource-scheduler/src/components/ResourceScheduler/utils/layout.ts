@@ -87,10 +87,17 @@ export const getRowHeight = (
   row: Resource,
   columns: Date[],
   viewType: ViewType,
+  options: RowHeightOptions = {}
+): number =>
+  isGroupRow(row) ? GROUP_ROW_HEIGHT : getRowHeightFromLayout(row, layoutEvents(row.events, columns, viewType), options);
+
+/** `getRowHeight` for a row whose events are already laid out (`layoutEvents`), so they are not laid out twice. */
+export const getRowHeightFromLayout = (
+  row: Resource,
+  positions: EventPosition[],
   { lane = LANES.comfortable.lane, minRowHeight = 0 }: RowHeightOptions = {}
 ): number => {
   if (isGroupRow(row)) return GROUP_ROW_HEIGHT;
-  const positions = layoutEvents(row.events, columns, viewType);
   const lanes = positions.length > 0 ? Math.max(...positions.map((pos) => pos.lane)) + 1 : 1;
   return Math.max(lanes * lane + ROW_PADDING, minRowHeight);
 };
