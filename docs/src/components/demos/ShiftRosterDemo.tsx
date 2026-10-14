@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ResourceScheduler } from "@scheduler";
+import { rangesOverlap } from "@scheduler/utils/placement";
+import { expandEvents } from "@scheduler/utils/recurrence";
 import { ViewType } from "@scheduler/types";
 import type { ResourceInput, SchedulerEvent, SlotSelection } from "@scheduler/types";
 import { Frame } from "./Frame";
@@ -48,6 +50,27 @@ const initial = (): SchedulerEvent[] => [
   series("bo-late", "bo", "Late", 2, [3, 4, 5, 6]), // Wednesday to Saturday
 ];
 
+const MAX_WEEK_HOURS = 32; // the house rule: four eight-hour shifts a week
+
+const hoursBetween = (start: Date, end: Date) => (end.getTime() - start.getTime()) / 36e5;
+
+// Hours already rostered for one person in the Monday to Sunday week that contains `day`.
+// Recurring shifts are expanded first, so a series counts once per occurrence.
+const rosteredHours = (all: SchedulerEvent[], personId: string, day: Date, ignoreId?: string) => {
+  const from = new Date(day);
+  from.setHours(0, 0, 0, 0);
+  from.setDate(from.getDate() - ((from.getDay() + 6) % 7));
+  const to = new Date(from);
+  to.setDate(to.getDate() + 7);
+  return expandEvents(
+    all.filter((e) => e.resourceId === personId),
+    from,
+    to
+  )
+    .filter((e) => e.id !== ignoreId && rangesOverlap(e.startDate, e.endDate, from, to))
+    .reduce((sum, e) => sum + hoursBetween(e.startDate, e.endDate), 0);
+};
+
 /** A weekly rota: recurring shifts, contracted hours, leave, and a form to add a shift. */
 export default function ShiftRosterDemo({ density }: DemoProps = {}) {
   const [events, setEvents] = useState<SchedulerEvent[]>(initial);
@@ -78,6 +101,11 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
   const addShift = () => {
     if (!draft) return;
     const { from, to, color } = TEMPLATES[template];
+    const person = staff.find((p) => p.id === draft.resourceId)?.name;
+    if (rosteredHours(events, draft.resourceId, draft.start) + (to - from) > MAX_WEEK_HOURS) {
+      setLog(`${person} would pass ${MAX_WEEK_HOURS} hours this week`);
+      return;
+    }
     const day = (hour: number) => {
       const d = new Date(draft.start);
       d.setHours(hour, 0, 0, 0);
@@ -95,7 +123,7 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
     <Frame
       height={530}
       log={log}
-      caption="Bars show rostered hours against contracted hours. Cy is on leave Wednesday and Thursday, and Dee has no shifts yet: click a day in her row. Drag a shift to someone else to cover it for that day only. Closed days refuse shifts."
+      caption="Bars show rostered hours against contracted hours. Cy is on leave Wednesday and Thursday, and Dee has no shifts yet: click a day in her row. Drag a shift to someone else to cover it for that day only. Closed days refuse shifts, and so does a fifth shift in a week: nobody goes past 32 hours."
     >
       {draft && (
         <form
@@ -135,6 +163,11 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
           ariaLabel="Shift roster"
           onSlotSelect={setDraft}
           onEventDrop={(shift, _from, to, start, end) => change(shift, to, start, end)}
+          // Moving an existing shift may not take its new owner past the weekly cap. New shifts
+          // (a click on a day) are checked by the form, because a click selects the whole day.
+          isValidDrop={(shift, { resourceId, start, end }) =>
+            !events.some((e) => e.id === (shift.seriesId ?? shift.id)) ||
+            rosteredHours(events, resourceId, start, shift.id) + hoursBetween(start, end) <= MAX_WEEK_HOURS}
         />
       </div>
     </Frame>

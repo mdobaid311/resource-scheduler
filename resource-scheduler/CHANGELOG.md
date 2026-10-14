@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **Tutorial: React shift planner (employee roster).** People as rows with contracted hours and leave, a weekly `recurrence` for the standing rota, one-day cover through `onEventDrop`, and a maximum hours per week rule in `isValidDrop` that is re-run on the server with `isPlacementAllowed`. The roster demo now enforces the same 32 hour cap.
 - **Tutorial: React room booking calendar.** Rooms as rows, your own booking form through `onSlotSelect`, `eventOverlap={false}` for no double booking, and the same rule re-checked on the server with `isPlacementAllowed`, with the live room booking demo and a Chrome smoke test. Linked from the docs index, the sidebar and the README. Docs only; the package is unchanged.
 - **Tutorial.** A step-by-step page, "Free React resource timeline (a FullCalendar Premium alternative)": install, a flat list of bookings, drag / resize / create, `eventOverlap={false}`, and a FullCalendar callback map, with a live demo and a Chrome smoke test. Linked from the docs index, the sidebar and the README. Docs only; the package is unchanged.
 - **README and package polish.** Size badge and the shadcn one-liner in the README hero, react-big-scheduler in the comparison table and on the compare page (DayPilot Pro price source linked), a clearer npm description, more keywords, `publishConfig.provenance`, and `.github/release.yml` so GitHub Releases group the generated notes by label.

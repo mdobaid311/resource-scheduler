@@ -142,7 +142,7 @@ Target long-tail queries (verify volumes with a keyword tool; I did not measure 
 - "FullCalendar resource timeline alternative", "free react resource timeline", "react room booking calendar", "react shift scheduling component", "react scheduler with resources tailwind".
 - Comparison pages: vs FullCalendar, DayPilot Lite, MUI X Scheduler, react-big-scheduler. Keep them factual and dated, cite prices from vendor pages, re-check quarterly.
 - Tutorials, each with a starter repo: "Room booking app with Next.js + Prisma", "Employee shift planner", "Clinic appointment board", "Equipment rental calendar". Each template doubles as SEO and distribution.
-- Done: tutorial "Free React resource timeline (a FullCalendar Premium alternative)" (`docs/src/content/docs/tutorials/`), "React room booking calendar" (own form, `eventOverlap={false}`, server-side `isPlacementAllowed`), plus the comparison page and five recipes. Still to write: the Next.js + Prisma, shift planner, clinic and rental tutorials with starter repos. Owner: keyword volumes, hosting starter repos.
+- Done: tutorial "Free React resource timeline (a FullCalendar Premium alternative)" (`docs/src/content/docs/tutorials/`), "React room booking calendar" (own form, `eventOverlap={false}`, server-side `isPlacementAllowed`), "React shift planner" (weekly recurrence, per-person rows, a 32 hours a week `isValidDrop` rule), plus the comparison page and five recipes. Still to write: the Next.js + Prisma, clinic and rental tutorials with starter repos. Owner: keyword volumes, hosting starter repos.
 - Publish on own docs first, cross-post to dev.to (`#showdev` + 3 topical tags), Hashnode, Medium with canonical link.
 
 ### 6c. Launch sequence (estimate: 4-6 weeks from today)

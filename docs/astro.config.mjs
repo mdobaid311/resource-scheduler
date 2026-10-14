@@ -107,6 +107,7 @@ export default defineConfig({
           items: [
             { label: "Free React resource timeline", slug: "tutorials/free-react-resource-timeline" },
             { label: "React room booking calendar", slug: "tutorials/react-room-booking-calendar" },
+            { label: "React shift planner", slug: "tutorials/react-shift-planner" },
           ],
         },
         {
