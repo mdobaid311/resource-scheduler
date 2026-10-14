@@ -21,7 +21,7 @@ npm run build
 npm run check:size   # gzip budget, and no stray files in dist/
 ```
 
-CI runs the same commands on Node 20 and 22. It also builds the docs and runs a smoke test in Chrome that drives the live demos with real mouse, keyboard and touch input; locally, run `npm run build` then `npm run preview -- --port 4399` in `docs/`, and `npm run smoke` in a second terminal. Add a line to `CHANGELOG.md` under Unreleased for anything users can see. Please follow the [code of conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), not a public issue.
+CI runs the same commands on Node 20 and 22. It also builds the docs and runs a smoke test in Chrome that drives the live demos with real mouse, keyboard and touch input; locally, run `npm run build` then `npm run preview -- --port 4399` in `docs/`, and `npm run smoke` in a second terminal. Add a line to `CHANGELOG.md` under Unreleased for anything users can see, and a changeset (see Releasing). Please follow the [code of conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), not a public issue.
 
 ## Guidelines
 
@@ -31,3 +31,11 @@ CI runs the same commands on Node 20 and 22. It also builds the docs and runs a 
 - **No new runtime dependencies** without discussion. Keep `react`/`react-dom` as peers.
 - Keep PRs small and focused; describe the user-visible change.
 - See [ROADMAP.md](ROADMAP.md) for planned work. Issues labelled `good first issue` are a good start.
+
+## Releasing
+
+Releases are cut by the maintainer in batches, not per PR, using [Changesets](https://github.com/changesets/changesets).
+
+1. In `resource-scheduler/`, every PR runs `npm run changeset`: pick patch, minor or major and write one line. Commit the generated `.changeset/*.md`. If nothing user-visible changes (docs, CI, tests), run `npm run changeset -- --empty`. CI fails a PR with neither.
+2. To release, on a branch off `main` run `npm run version-packages`: it bumps `package.json`, adds the entries to `CHANGELOG.md` and deletes the used changesets. Move the long-form `[Unreleased]` notes under the new version heading, run `npm run registry:build`, and merge that PR.
+3. Create a GitHub Release whose tag is `v<version>` (it must equal `package.json`). [`release.yml`](.github/workflows/release.yml) then tests and publishes to npm with provenance. Nobody publishes from a laptop.

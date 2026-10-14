@@ -88,7 +88,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 - [x] Vitest tests (dates, layout, creation, drag, scroll); GitHub Actions CI incl. bundle sanity checks
 - [x] Truthful README, full prop table, CONTRIBUTING.md; false "Accessible" and "Timezone" claims removed; dead files deleted
 - [x] Playwright smoke test (done on branch `ci/e2e-smoke`): `npm run smoke` in `docs/` drives the live demos in Chrome with real mouse, keyboard and touch input (create, move, resize, rejection, keyboard pick-up, utilization) and runs in the CI docs job. Removing `touch-action: none` from the event card makes the touch test fail, as it should
-- [~] CI publish with npm provenance is done (`release.yml` publishes when a GitHub Release is published). Changesets, to stop 13-releases-a-day, are not set up (S)
+- [x] CI publish with npm provenance (`release.yml` publishes when a GitHub Release is published) and Changesets to batch releases (`.changeset/`, `npm run changeset`, `npm run version-packages`, a CI check on PRs; flow in CONTRIBUTING.md)
 - [x] Issue templates, SECURITY.md, CODE_OF_CONDUCT. Still to do by the owner: enable private vulnerability reporting on GitHub
 - [ ] Verify touch drag on real devices (S)
 - [x] Bundle-size budget check in CI (`npm run check:size`: gzip budgets per entry, stray files in `dist/`)
