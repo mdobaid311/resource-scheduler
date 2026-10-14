@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -14,7 +14,7 @@ const buttonVariants = cva(
         destructive:
           "bg-ocrs-destructive text-ocrs-destructive-foreground ocrs-shadow-sm hover:bg-ocrs-destructive/90",
         outline:
-          "border border-input bg-ocrs-background ocrs-shadow-sm hover:bg-ocrs-accent hover:text-ocrs-accent-foreground",
+          "border border-ocrs-input bg-ocrs-background ocrs-shadow-sm hover:bg-ocrs-accent hover:text-ocrs-accent-foreground",
         secondary:
           "bg-ocrs-secondary text-ocrs-secondary-foreground ocrs-shadow-sm hover:bg-ocrs-secondary/80",
         ghost: "hover:bg-ocrs-accent hover:text-ocrs-accent-foreground",

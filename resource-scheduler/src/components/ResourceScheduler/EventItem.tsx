@@ -1,4 +1,5 @@
 // src/components/ResourceScheduler/EventItem.tsx
+import { isSameDay } from "date-fns";
 import React, { useContext, useState } from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useComponents } from "./components";
@@ -54,8 +55,8 @@ export const EventItem: React.FC<EventItemProps> = ({
             key={edge}
             aria-hidden="true"
             data-rs-resize={edge}
-            className={`rs-no-print absolute inset-y-0 w-2 cursor-ew-resize rounded opacity-0 hover:opacity-100 hover:bg-black/15 ${
-              edge === "start" ? "start-0" : "end-0"
+            className={`rs-no-print absolute inset-y-0 z-10 w-2 cursor-ew-resize opacity-0 transition-opacity group-hover/event:opacity-100 after:absolute after:inset-y-2 after:w-0.5 after:rounded-full after:bg-current after:opacity-40 ${
+              edge === "start" ? "start-0 after:start-[3px]" : "end-0 after:end-[3px]"
             }`}
             style={{ touchAction: "none" }}
             onPointerDown={(e) => {
@@ -65,6 +66,17 @@ export const EventItem: React.FC<EventItemProps> = ({
           />
         ))
       : null;
+
+  // The tile is a light, solid tint of the event's colour with a strip of the colour on top;
+  // the title is the colour darkened toward the text colour, so it reads in light and dark.
+  const color = event.color || "var(--rs-primary)";
+  const allDay = formatEventTime(event, i18n) === i18n.labels.allDay;
+  // A booking over several whole days shows its dates, which say more than "All day".
+  const lastDay = new Date(event.endDate.getTime() - 1);
+  const time =
+    allDay && !isSameDay(event.startDate, lastDay)
+      ? `${i18n.fmt.titleDateStart(event.startDate)} – ${i18n.fmt.titleDateStart(lastDay)}`
+      : formatEventTime(event, i18n);
 
   const grabbed = drag?.grabbedEventId === event.id;
   const label = `${event.title}, ${resource ? `${resource.name}, ` : ""}${formatRangeLabel(
@@ -144,7 +156,7 @@ export const EventItem: React.FC<EventItemProps> = ({
       <PopoverTrigger asChild>
         {EventPart || renderTimeSlot ? (
           <div
-            className={`relative w-full h-full overflow-hidden ${focusRing}`}
+            className={`group/event relative w-full h-full overflow-hidden ${focusRing}`}
             style={{ touchAction: "none", opacity }}
             {...dragProps}
           >
@@ -158,18 +170,18 @@ export const EventItem: React.FC<EventItemProps> = ({
         ) : (
           <div
             className={withClass(
-              `event-item text-ocrs-foreground ${compact ? "px-1.5 py-0.5" : "p-2"} text-xs rounded border cursor-pointer z-99 h-full ocrs-shadow-xs flex flex-col justify-center ${focusRing}`,
+              `event-item @container group/event relative h-full overflow-hidden rounded-md text-xs text-ocrs-foreground cursor-pointer flex flex-col justify-center transition-shadow hover:ocrs-shadow-md before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-[var(--rs-event-color)] ${
+                compact ? "px-2 pt-1 pb-0.5" : "px-2.5 pt-1.5"
+              } ${focusRing}`,
               classNames.event
             )}
             style={{
-              backgroundColor: `${event.color}20`,
-              borderColor: event.color,
-              borderInlineStartWidth: "3px",
-              position: "relative",
+              "--rs-event-color": color,
+              backgroundColor: `color-mix(in srgb, ${color} 13%, var(--rs-surface))`,
               zIndex: 5,
               opacity,
               touchAction: "none",
-            }}
+            } as React.CSSProperties}
             onClick={(e) => {
               e.stopPropagation();
               setOpen(true);
@@ -178,16 +190,22 @@ export const EventItem: React.FC<EventItemProps> = ({
           >
             {compact ? (
               <div className="truncate">
-                <span className="font-medium text-ocrs-foreground">{event.title}</span>{" "}
-                <span className="text-ocrs-muted-foreground">{formatEventTime(event, i18n)}</span>
+                <span className="font-semibold" style={{ color: `color-mix(in srgb, ${color} 50%, var(--rs-foreground))` }}>
+                  {event.title}
+                </span>
+                <span className="ms-1.5 tabular-nums text-ocrs-muted-foreground @max-[5.5rem]:hidden">{time}</span>
               </div>
             ) : (
               <>
-                <div className="font-medium truncate text-ocrs-foreground">
+                <div
+                  className="truncate font-semibold leading-4"
+                  style={{ color: `color-mix(in srgb, ${color} 50%, var(--rs-foreground))` }}
+                >
                   {event.title}
                 </div>
-                <div className="text-xs truncate text-ocrs-muted-foreground">
-                  {formatEventTime(event, i18n)}
+                {/* A tile too narrow for the time shows the title alone. */}
+                <div className="mt-0.5 truncate text-[11px] leading-4 tabular-nums text-ocrs-muted-foreground @max-[5.5rem]:hidden">
+                  {time}
                 </div>
               </>
             )}
@@ -195,27 +213,42 @@ export const EventItem: React.FC<EventItemProps> = ({
           </div>
         )}
       </PopoverTrigger>
-      <PopoverContent side="top" dir={i18n.dir} className="rs-no-print z-[2000] w-fit p-3">
+      <PopoverContent side="top" dir={i18n.dir} className="rs-no-print z-[2000] w-fit min-w-56 max-w-80 rounded-xl p-4">
         {EventPopover ? (
           <EventPopover event={event} resource={resource!} close={onClose} />
         ) : renderEventPopover ? (
           renderEventPopover(event, resource!, onClose)
         ) : (
-          <div className="space-y-2">
-            <div className="font-semibold text-ocrs-foreground">{event.title}</div>
-            <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
-              <Calendar className="h-4 w-4 text-ocrs-muted-foreground" />
-              <span>
-                {i18n.fmt.dateTime(event.startDate)} -{" "}
-                {i18n.fmt.time(event.endDate)}
-              </span>
-            </div>
-            {resource && (
-              <div className="flex items-center gap-2 text-sm text-ocrs-muted-foreground">
-                <User className="h-4 w-4 text-ocrs-muted-foreground" />
-                <span>{resource.name}</span>
+          <div className="space-y-3">
+            <div className="flex items-start gap-2.5">
+              <span aria-hidden="true" className="mt-1.5 size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+              <div className="min-w-0">
+                <div className="font-semibold leading-snug text-ocrs-foreground">{event.title}</div>
+                {event.description && (
+                  <p className="mt-1 text-sm text-ocrs-muted-foreground">{event.description}</p>
+                )}
               </div>
-            )}
+            </div>
+            <div className="space-y-1.5 text-sm text-ocrs-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>
+                  {allDay
+                    ? formatRangeLabel(event.startDate, event.endDate, ViewType.Week, i18n)
+                    : `${i18n.fmt.dateTime(event.startDate)} – ${
+                        isSameDay(event.startDate, event.endDate)
+                          ? i18n.fmt.time(event.endDate)
+                          : i18n.fmt.dateTime(event.endDate)
+                      }`}
+                </span>
+              </div>
+              {resource && (
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 shrink-0" />
+                  <span>{resource.name}</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </PopoverContent>

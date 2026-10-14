@@ -6,6 +6,7 @@ import RoomBookingDemo from "@demos/RoomBookingDemo";
 import ShiftRosterDemo from "@demos/ShiftRosterDemo";
 import UtilizationDemo from "@demos/UtilizationDemo";
 import type { DemoProps } from "@demos/Frame";
+import { ArrowRight, Book, Box, Chart, Clock, Code, Door, Drop, Gantt, Logo, Monitor, Moon, Pin, Sun } from "./icons";
 
 const DOCS = "https://resource-scheduler-docs.vercel.app";
 const REPO = "https://github.com/mdobaid311/resource-scheduler";
@@ -15,13 +16,15 @@ const RECIPES: {
   label: string;
   blurb: string;
   doc: string;
+  Icon: ComponentType;
   Demo: ComponentType<DemoProps>;
 }[] = [
   {
     id: "room-booking",
     label: "Room booking",
-    blurb: "Pick free time on a room to book it. Booked time can't be selected, moved onto or resized into.",
+    blurb: "Meeting rooms in 30 minute slots, booked through your own form, with no double booking.",
     doc: "recipes/room-booking",
+    Icon: Door,
     Demo: RoomBookingDemo,
   },
   {
@@ -29,6 +32,7 @@ const RECIPES: {
     label: "Shift roster",
     blurb: "Staff on shifts with their own hours. Time off is blocked, and each row shows how full it is.",
     doc: "recipes/shift-roster",
+    Icon: Clock,
     Demo: ShiftRosterDemo,
   },
   {
@@ -36,6 +40,7 @@ const RECIPES: {
     label: "Equipment",
     blurb: "Stock with several units, rented for days. Find the next free stretch, and never overbook.",
     doc: "recipes/equipment-rental",
+    Icon: Box,
     Demo: EquipmentRentalDemo,
   },
   {
@@ -43,6 +48,7 @@ const RECIPES: {
     label: "Field service",
     blurb: "Dispatch jobs to technicians. One click picks the technician who can take it first.",
     doc: "recipes/field-service-dispatch",
+    Icon: Pin,
     Demo: FieldServiceDemo,
   },
   {
@@ -50,6 +56,7 @@ const RECIPES: {
     label: "Project allocation",
     blurb: "Plan people across projects by the month. An allocation can't leave its project's dates.",
     doc: "recipes/project-allocation",
+    Icon: Gantt,
     Demo: ProjectAllocationDemo,
   },
   {
@@ -57,6 +64,7 @@ const RECIPES: {
     label: "Utilization",
     blurb: "Booked against available time for every person, from their hours and capacity.",
     doc: "guides/utilization",
+    Icon: Chart,
     Demo: UtilizationDemo,
   },
 ];
@@ -68,11 +76,12 @@ type Density = "comfortable" | "compact";
 // needs its own accent and today shades, so each preset carries both.
 const PRESETS = {
   Default: null,
-  Violet: { primary: "#7c3aed", accent: ["#ede9fe", "#4c1d95"], today: ["#f5f3ff", "#1f1637"] },
-  Emerald: { primary: "#059669", accent: ["#d1fae5", "#064e3b"], today: ["#ecfdf5", "#0f2a22"] },
-  Rose: { primary: "#e11d48", accent: ["#ffe4e6", "#881337"], today: ["#fff1f2", "#2c141c"] },
-  Slate: { primary: "#475569", accent: ["#e2e8f0", "#334155"], today: ["#f1f5f9", "#1e293b"] },
+  Violet: { primary: "#7c3aed", accent: ["#ede9fe", "#2e1f5e"], today: ["#f8f6ff", "#1d1840"] },
+  Emerald: { primary: "#059669", accent: ["#d1fae5", "#0f3b2e"], today: ["#f2fbf7", "#10261f"] },
+  Rose: { primary: "#e11d48", accent: ["#ffe4e6", "#4c1a2a"], today: ["#fff5f6", "#2a1520"] },
+  Slate: { primary: "#475569", accent: ["#e2e8f0", "#263247"], today: ["#f6f8fa", "#172033"] },
 } as const;
+const SWATCH = { Default: "#2563eb", Violet: "#7c3aed", Emerald: "#059669", Rose: "#e11d48", Slate: "#475569" };
 type Preset = keyof typeof PRESETS;
 
 const KEY = "rs-showcase";
@@ -137,13 +146,19 @@ export default function App() {
     }
   }, [theme, preset, density, tab]);
 
+  // On narrow screens the recipes are a row that scrolls; keep the open one in view.
+  useEffect(() => {
+    document.getElementById(`tab-${tab}`)?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [tab]);
+
   const select = (id: string) => {
     setTab(id);
     history.replaceState(null, "", `#${id}`);
   };
 
+  // The list is a column on wide screens and a row on narrow ones, so both pairs of arrows work.
   const onTabKey = (e: KeyboardEvent, index: number) => {
-    const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
     if (!step) return;
     e.preventDefault();
     const next = RECIPES[(index + step + RECIPES.length) % RECIPES.length].id;
@@ -155,102 +170,139 @@ export default function App() {
   const Demo = active.Demo;
 
   return (
-    <div className="page">
-      <header className="hero">
-        <p className="eyebrow">resource-scheduler</p>
-        <h1>A resource timeline you can drag, theme and trust.</h1>
-        <p className="lede">
-          Five real scheduling problems, one component. Every board below is live: drag, resize, book, and change the
-          look without touching the code.
+    <div className="app">
+      <aside className="sidebar">
+        <a className="brand" href={REPO} aria-label="resource-scheduler on GitHub">
+          <Logo />
+          <span>
+            Resource<b>Scheduler</b>
+          </span>
+        </a>
+
+        <p className="nav-label" id="recipes-label">
+          Recipes
         </p>
-        <nav className="links" aria-label="Project links">
-          <a href={`${DOCS}/start/quick-start/`}>Quick start</a>
-          <a href={`${DOCS}/guides/theming/`}>Theming guide</a>
-          <a href={REPO}>GitHub</a>
-          <a href="https://www.npmjs.com/package/resource-scheduler">npm</a>
-        </nav>
-      </header>
-
-      <section className="toolbar" aria-label="Appearance">
-        <Group label="Theme">
-          {THEMES.map((t) => (
-            <Choice key={t} on={theme === t} onClick={() => setTheme(t)}>
-              {t[0].toUpperCase() + t.slice(1)}
-            </Choice>
-          ))}
-        </Group>
-        <Group label="Density">
-          {DENSITIES.map((d) => (
-            <Choice key={d} on={density === d} onClick={() => setDensity(d)}>
-              {d[0].toUpperCase() + d.slice(1)}
-            </Choice>
-          ))}
-        </Group>
-        <Group label="Accent">
-          {(Object.keys(PRESETS) as Preset[]).map((p) => (
+        <div className="nav" role="tablist" aria-labelledby="recipes-label" aria-orientation="vertical">
+          {RECIPES.map((r, i) => (
             <button
-              key={p}
+              key={r.id}
+              id={`tab-${r.id}`}
               type="button"
-              className="swatch"
-              aria-label={p}
-              aria-pressed={preset === p}
-              title={p}
-              style={{ background: PRESETS[p]?.primary ?? "#3b82f6" }}
-              onClick={() => setPreset(p)}
-            />
+              role="tab"
+              aria-selected={tab === r.id}
+              aria-controls="panel"
+              tabIndex={tab === r.id ? 0 : -1}
+              onClick={() => select(r.id)}
+              onKeyDown={(e) => onTabKey(e, i)}
+            >
+              <r.Icon />
+              {r.label}
+            </button>
           ))}
-        </Group>
-      </section>
-
-      <div className="tabs" role="tablist" aria-label="Recipes">
-        {RECIPES.map((r, i) => (
-          <button
-            key={r.id}
-            id={`tab-${r.id}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === r.id}
-            aria-controls="panel"
-            tabIndex={tab === r.id ? 0 : -1}
-            onClick={() => select(r.id)}
-            onKeyDown={(e) => onTabKey(e, i)}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      <main id="panel" role="tabpanel" aria-labelledby={`tab-${active.id}`}>
-        <div className="panel-head">
-          <p>{active.blurb}</p>
-          <a href={`${DOCS}/${active.doc}/`}>Read the guide &rarr;</a>
         </div>
-        {/* A new key resets the recipe's data when you switch. */}
-        <Demo key={active.id} density={density} />
-      </main>
 
-      <footer>
-        <p>
+        <nav className="links" aria-label="Project links">
+          <a href={`${DOCS}/start/quick-start/`}>
+            <Book />
+            Quick start
+          </a>
+          <a href={`${DOCS}/guides/theming/`}>
+            <Drop />
+            Theming guide
+          </a>
+          <a href={REPO}>
+            <Code />
+            GitHub
+          </a>
+          <a href="https://www.npmjs.com/package/resource-scheduler">
+            <Box />
+            npm
+          </a>
+        </nav>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <p className="tagline">
+            A free, MIT resource timeline for React. Six live recipes, one component.
+          </p>
+          <section className="appearance" aria-label="Appearance">
+            <Group label="Theme">
+              {THEMES.map((t) => (
+                <Choice key={t} on={theme === t} onClick={() => setTheme(t)} label={t[0].toUpperCase() + t.slice(1)}>
+                  {t === "light" ? <Sun /> : t === "dark" ? <Moon /> : <Monitor />}
+                </Choice>
+              ))}
+            </Group>
+            <Group label="Density">
+              {DENSITIES.map((d) => (
+                <Choice key={d} on={density === d} onClick={() => setDensity(d)}>
+                  {d[0].toUpperCase() + d.slice(1)}
+                </Choice>
+              ))}
+            </Group>
+            <div className="swatches" role="group" aria-label="Accent">
+              {(Object.keys(PRESETS) as Preset[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className="swatch"
+                  aria-label={`${p} accent`}
+                  aria-pressed={preset === p}
+                  title={p}
+                  style={{ background: SWATCH[p] }}
+                  onClick={() => setPreset(p)}
+                />
+              ))}
+            </div>
+          </section>
+        </header>
+
+        <main id="panel" role="tabpanel" aria-labelledby={`tab-${active.id}`}>
+          <div className="page-head">
+            <div>
+              <h1>{active.label}</h1>
+              <p>{active.blurb}</p>
+            </div>
+            <a className="primary-button" href={`${DOCS}/${active.doc}/`}>
+              Read the guide
+              <ArrowRight />
+            </a>
+          </div>
+          {/* A new key resets the recipe's data when you switch. */}
+          <Demo key={active.id} density={density} />
+        </main>
+
+        <footer>
           Built from the package source on <code>main</code>, so this is the current code, not the last release.{" "}
           <a href={`${REPO}/tree/main/resource-scheduler-example`}>See how this page is made</a>. MIT licensed.
-        </p>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
 
 function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="group" role="group" aria-label={label}>
-      <span className="group-label">{label}</span>
-      <div className="group-body">{children}</div>
+    <div className="segmented" role="group" aria-label={label}>
+      {children}
     </div>
   );
 }
 
-function Choice({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+function Choice({
+  on,
+  onClick,
+  label,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  label?: string;
+  children: ReactNode;
+}) {
   return (
-    <button type="button" className="choice" aria-pressed={on} onClick={onClick}>
+    <button type="button" aria-pressed={on} aria-label={label} title={label} onClick={onClick}>
       {children}
     </button>
   );

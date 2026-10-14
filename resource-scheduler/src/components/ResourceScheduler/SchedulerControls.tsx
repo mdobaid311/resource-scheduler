@@ -1,13 +1,6 @@
 // src/components/ResourceScheduler/SchedulerControls.tsx
 import { Button } from "./ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useComponents } from "./components";
@@ -64,78 +57,80 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
     );
   }
 
+  // One button per view; on a narrow screen the row scrolls sideways.
+  const viewSwitch = !allowViewChange ? null : (
+    <div
+      role="group"
+      aria-label={labels.view}
+      className="rs-no-print inline-flex max-w-full items-center gap-0.5 overflow-auto rounded-lg bg-ocrs-secondary p-0.5"
+    >
+      {views.map((view) => (
+        <button
+          key={view}
+          type="button"
+          aria-pressed={view === viewType}
+          onClick={() => onViewChange(view)}
+          className={`h-7 shrink-0 rounded-md px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring ${
+            view === viewType
+              ? "bg-ocrs-white text-ocrs-primary-text ocrs-shadow-xs"
+              : "text-ocrs-muted-foreground hover:text-ocrs-foreground"
+          }`}
+        >
+          {labels.views[view]}
+        </button>
+      ))}
+    </div>
+  );
+
+  const step = "rs-no-print h-8 rounded-none px-2 text-ocrs-muted-foreground hover:bg-ocrs-gray-100 hover:text-ocrs-foreground";
+
   return (
     <div
       className={withClass(
-        "rs-toolbar flex lg:flex-row flex-col items-center justify-between gap-4 p-4 bg-ocrs-white rounded-t-lg border-b sticky top-0 z-30",
+        "rs-toolbar sticky top-0 z-30 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b bg-ocrs-white px-4 py-3",
         classNames.toolbar
       )}
     >
-      <div className="flex items-center justify-between lg:justify-start w-full gap-2">
-        <div className="flex items-center gap-1">
+      {/* Announces the new period when the user navigates. */}
+      <div className="min-w-0" aria-live="polite">
+        <span className="block truncate text-lg font-semibold tracking-tight text-ocrs-foreground md:text-xl">
+          {getDateTitle()}
+        </span>
+        <span className="sr-only">{labels.viewTitle(labels.views[viewType])}</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center overflow-hidden rounded-lg border bg-ocrs-white ocrs-shadow-xs">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
+            className={step}
             aria-label={labels.previousPeriod}
             onClick={() => onNavigate("prev")}
           >
             <ChevronLeft className={arrow} />
           </Button>
-
-          {/* Announces the new period when the user navigates. */}
-          <div
-            className="flex flex-col items-center px-2 flex-1 min-w-0"
-            aria-live="polite"
-          >
-            <span className="text-base md:text-lg font-semibold text-ocrs-foreground text-center truncate">
-              {getDateTitle()}
-            </span>
-            <span className="text-xs text-ocrs-muted-foreground font-medium mt-1 text-center">
-              {labels.viewTitle(labels.views[viewType])}
-            </span>
-          </div>
-
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rs-no-print hover:bg-ocrs-gray-100 rounded-lg"
+            className="rs-no-print h-8 rounded-none border-x px-3 font-medium text-ocrs-foreground hover:bg-ocrs-gray-100"
+            aria-label={labels.today}
+            onClick={onGoToToday}
+          >
+            {labels.today}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={step}
             aria-label={labels.nextPeriod}
             onClick={() => onNavigate("next")}
           >
             <ChevronRight className={arrow} />
           </Button>
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="rs-no-print flex items-center gap-1 bg-ocrs-white hover:bg-ocrs-gray-50"
-          aria-label={labels.today}
-          onClick={onGoToToday}
-        >
-          <Calendar className="h-4 w-4" />
-          <span className="hidden sm:inline">{labels.today}</span>
-        </Button>
+        {viewSwitch}
       </div>
-
-      {allowViewChange && (
-        <Select value={viewType} onValueChange={onViewChange} dir={dir}>
-          <SelectTrigger
-            className="rs-no-print lg:w-[140px] w-full bg-ocrs-white"
-            aria-label={labels.view}
-          >
-            <SelectValue placeholder={labels.view} />
-          </SelectTrigger>
-          <SelectContent className="rs-no-print" style={{ zIndex: 99 }}>
-            {views.map((view) => (
-              <SelectItem key={view} value={view}>
-                {labels.views[view]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
     </div>
   );
 };

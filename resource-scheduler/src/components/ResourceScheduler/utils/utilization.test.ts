@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BusinessHours, Resource, SchedulerEvent } from "../types";
-import { columnUtilization, getUtilization } from "./utilization";
+import { columnUtilization, getUtilization, utilizationTone } from "./utilization";
 import { expandEvents } from "./recurrence";
 
 // October 2026: Sun the 4th, Mon the 5th, Wed the 7th, Sun the 11th.
@@ -268,5 +268,16 @@ describe("columnUtilization", () => {
         getUtilization(r, week, { businessHours: office })
       );
     }
+  });
+});
+
+describe("utilizationTone", () => {
+  it("is normal below 90%, high from 90% to 100%, over above 100%", () => {
+    expect(utilizationTone(null)).toBe("normal");
+    expect(utilizationTone(0)).toBe("normal");
+    expect(utilizationTone(89)).toBe("normal");
+    expect(utilizationTone(90)).toBe("high");
+    expect(utilizationTone(100)).toBe("high");
+    expect(utilizationTone(101)).toBe("over");
   });
 });

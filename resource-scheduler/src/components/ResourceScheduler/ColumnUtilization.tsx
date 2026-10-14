@@ -4,16 +4,19 @@ import { COLUMN_UTILIZATION_HEIGHT } from "./density";
 import { useI18n } from "./i18n";
 import type { ViewType } from "./types";
 import { formatSlotLabel } from "./utils/dateUtils";
-import type { Utilization } from "./utils/utilization";
+import { type Utilization, utilizationTone } from "./utils/utilization";
 
 const hours = (minutes: number) => Math.round(minutes / 6) / 10;
+
+// The bar's colour: primary, amber from 90%, red above 100%.
+const BAR = { normal: "bg-ocrs-primary", high: "bg-ocrs-warning", over: "bg-ocrs-destructive" } as const;
 
 /** The name of the row, at the foot of the resource column. It stays in view while the rows scroll. */
 export const ColumnUtilizationLabel: React.FC = () => {
   const { labels } = useI18n();
   return (
     <div
-      className="rs-totals-label sticky bottom-0 z-10 flex items-center justify-center border-e border-t bg-ocrs-gray-50 px-2 text-sm font-medium text-ocrs-muted-foreground"
+      className="rs-totals-label sticky bottom-0 z-10 flex items-center border-e border-t bg-ocrs-muted px-4 text-xs font-semibold uppercase tracking-wide text-ocrs-muted-foreground"
       style={{ height: COLUMN_UTILIZATION_HEIGHT + "px" }}
     >
       {labels.columnUtilization}
@@ -43,7 +46,7 @@ export const ColumnUtilizationRow: React.FC<{
       aria-label={labels.columnUtilization}
       className="rs-totals sticky bottom-0 z-10 grid border-t bg-ocrs-white"
       style={{
-        gridTemplateColumns: `repeat(${slots.length}, ${columnWidth})`,
+        gridTemplateColumns: `repeat(${slots.length}, minmax(${columnWidth}, 1fr))`,
         height: COLUMN_UTILIZATION_HEIGHT + "px",
       }}
     >
@@ -75,7 +78,7 @@ export const ColumnUtilizationRow: React.FC<{
             </span>
             <span className="h-1.5 w-full max-w-12 overflow-hidden rounded-full bg-ocrs-secondary">
               <span
-                className={`block h-full ${percent !== null && percent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+                className={`block h-full rounded-full ${BAR[utilizationTone(percent)]}`}
                 style={{ width: filled + "%" }}
               />
             </span>

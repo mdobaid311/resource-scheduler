@@ -24,78 +24,70 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 
   return (
     <div
-      className="rs-header grid sticky top-0 z-10 bg-ocrs-background"
+      className="rs-header grid sticky top-0 z-10 bg-ocrs-muted"
       style={{
-        gridTemplateColumns: `repeat(${slots.length}, ${
+        gridTemplateColumns: `repeat(${slots.length}, minmax(${
           viewType === "day" ? timeColumnWidth : dateColumnWidth
-        })`,
+        }, 1fr))`,
       }}
     >
-      {slots.map((slot, i) =>
-        colRange && (i < colRange.start || i >= colRange.end) ? null : (
-        <div
-          key={i}
-          style={colRange ? { gridColumn: i + 1 } : undefined}
-          className={withClass(
-            `p-2 text-center border-b h-14 flex flex-col items-center justify-center border-e ${
-              isToday(slot, now) ? "bg-ocrs-blue-50" : "bg-ocrs-gray-50"
-            }`,
-            classNames.dateHeader
-          )}
-        >
-          {DateHeader ? (
-            <DateHeader date={slot} view={viewType} />
-          ) : renderDateHeader ? (
-            renderDateHeader(slot, viewType)
-          ) : viewType === "day" ? (
-            <>
+      {slots.map((slot, i) => {
+        if (colRange && (i < colRange.start || i >= colRange.end)) return null;
+        // In the day view every column is today, so only the other views mark it.
+        const today = viewType !== "day" && isToday(slot, now);
+        return (
+          <div
+            key={i}
+            style={colRange ? { gridColumn: i + 1 } : undefined}
+            className={withClass(
+              `px-1 text-center border-b h-14 flex flex-col items-center justify-center gap-0.5 border-e ${
+                today ? "bg-ocrs-blue-50" : "bg-ocrs-muted"
+              }`,
+              classNames.dateHeader
+            )}
+          >
+            {DateHeader ? (
+              <DateHeader date={slot} view={viewType} />
+            ) : renderDateHeader ? (
+              renderDateHeader(slot, viewType)
+            ) : viewType === "day" ? (
+              // The date is in the title; whole hours are labelled, the slots between them are quieter.
               <span
-                className={`text-xs font-medium ${
-                  isToday(slot, now) ? "text-blue-600" : "text-ocrs-muted-foreground"
+                className={`text-xs tabular-nums ${
+                  slot.getMinutes() === 0
+                    ? "font-semibold text-ocrs-foreground"
+                    : "text-ocrs-muted-foreground"
                 }`}
               >
                 {fmt.hourHeader(slot)}
               </span>
-              <span
-                className={`text-xs ${
-                  isToday(slot, now) ? "text-blue-500" : "text-ocrs-muted-foreground"
-                }`}
-              >
-                {fmt.weekday(slot)}
-              </span>
-            </>
-          ) : (
-            <div className="group flex flex-col items-center">
-              <span
-                className={`text-xs font-medium ${
-                  isToday(slot, now) ? "text-blue-600" : "text-ocrs-muted-foreground"
-                } uppercase`}
-              >
-                {fmt.weekday(slot)}
-              </span>
-              <span
-                className={`text-sm font-medium ${
-                  isToday(slot, now) ? "text-blue-700" : "text-ocrs-foreground"
-                }`}
-              >
-                {fmt.dayOfMonth(slot)}
-              </span>
-              {(i === 0 || slot.getDate() === 1) && (
+            ) : (
+              <div className="group flex flex-col items-center gap-0.5">
                 <span
-                  className={`text-xs ${
-                    isToday(slot, now) ? "text-blue-500" : "text-ocrs-muted-foreground"
+                  className={`text-xs font-semibold ${
+                    today ? "text-ocrs-primary-text" : "text-ocrs-foreground"
                   }`}
                 >
-                  {fmt.monthShort(slot)}
+                  {fmt.weekday(slot)}
                 </span>
-              )}
-              <span className="rs-no-print absolute mt-8 px-2 py-1 rounded bg-ocrs-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                {fmt.monthYear(slot)}
-              </span>
-            </div>
-          )}
-        </div>
-      ))}
+                <span
+                  className={`text-xs tabular-nums ${
+                    today
+                      ? "rounded-full bg-ocrs-primary px-1.5 font-semibold text-ocrs-primary-foreground"
+                      : "text-ocrs-muted-foreground"
+                  }`}
+                >
+                  {fmt.dayOfMonth(slot)}
+                  {(i === 0 || slot.getDate() === 1) && <> {fmt.monthShort(slot)}</>}
+                </span>
+                <span className="rs-no-print absolute mt-10 px-2 py-1 rounded-md bg-ocrs-gray-800 text-ocrs-background text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  {fmt.monthYear(slot)}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

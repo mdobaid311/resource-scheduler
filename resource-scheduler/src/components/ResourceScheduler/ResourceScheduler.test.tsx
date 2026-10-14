@@ -1634,7 +1634,7 @@ describe("ResourceScheduler", () => {
       it("indents a nested header further than its parent", () => {
         showNested();
         expect(toggle("Main", 2).getAttribute("style") ?? "").not.toContain("padding-inline-start");
-        expect(toggle("Floor 1", 1).getAttribute("style") ?? "").toContain("padding-inline-start: 28px");
+        expect(toggle("Floor 1", 1).getAttribute("style") ?? "").toContain("padding-inline-start: 32px");
       });
     });
 

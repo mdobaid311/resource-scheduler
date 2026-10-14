@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed
+- **A new default look.** Light: navy text on white, a pale blue band for the header and the resource column head, light grid lines and soft blue-tinted shadows. Dark: navy surfaces instead of neutral grey. `--rs-radius` is now 0.75rem.
+  - **Event tiles** are a solid tint of the event colour (13% over the surface, so grid lines and today's column no longer show through) with a 3px strip of the colour on top and the title in the colour mixed toward the text colour. A tile narrower than about 90px shows its title alone, a booking over several whole days shows its dates instead of "All day", and the resize grips show when the pointer is over the tile. The default popover gets a colour dot, the description, and a correct range for events over several days.
+  - **Toolbar**: the period title on the left, previous / Today / next as one group, and the views as a segmented control (on a narrow screen the row scrolls). The "Day View" line under the title is now for screen readers only. The select menu is gone, and with it the `@radix-ui/react-select` dependency.
+  - **Header**: two lines at most (the month moved onto the date line, so nothing is clipped), today's date in a pill, and today's colour comes from `--rs-primary` instead of a fixed blue. The day view labels whole hours in bold and drops the repeated weekday, and no longer tints every column as today.
+  - **Grid**: unavailable time is hatched (`--rs-unavailable`), a drag selection and the drag footprint are a tint of `--rs-primary` (a selection on today's column used to be invisible), the keyboard cursor shows only while the grid has keyboard focus, dragging no longer selects page text, columns stretch to fill the width (`minmax(width, 1fr)`), the column lines run to the bottom of the box, and the now line has a dot.
+  - **Resource column**: names are left-aligned, `role` shows under the name, and utilization bars turn amber from 90% (`--rs-warning`) and red above 100%.
+  - **New tokens** `--rs-warning`, `--rs-unavailable` and `--rs-primary-text-mix` (how much of the primary is kept where it is text: 100%, and 60% in dark mode, mixed toward the foreground so it stays readable). The dark set still leaves `--rs-primary` to you.
+  - `formatEventTime` uses an en dash: "9:30 AM – 11:00 AM".
+  - Buttons inside the scheduler had no focus ring colour (`ring-ring` is not a colour in the `ocrs` namespace); they use `--rs-ring` now.
+- **Showcase app.** `resource-scheduler-example` is a dashboard: a white app shell on a soft blue backdrop, a sidebar with the six recipes and the project links, a top bar with theme, density and accent controls, a page header with the recipe and its guide, and the demo in a card. Poppins, a folded layout below 1024px, and the copy says six recipes.
+
 ## [1.4.0] - 2026-10-14
 
 

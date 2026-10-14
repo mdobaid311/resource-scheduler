@@ -11,9 +11,9 @@ All colours come from CSS variables named `--rs-*`. Override them on `:root`, or
 
 ```css
 :root {
-  --rs-primary: #7c3aed;   /* focus and highlight colour */
-  --rs-accent: #ede9fe;    /* drag footprint */
-  --rs-today: #f5f3ff;     /* today and selected slots */
+  --rs-primary: #7c3aed;   /* focus, today's date, selection and drag footprint */
+  --rs-accent: #ede9fe;    /* hover in the toolbar and menus */
+  --rs-today: #f8f6ff;     /* today's column */
   --rs-border: #d1d5db;
 }
 ```
@@ -34,7 +34,7 @@ Any ancestor works, not only `html`. Popovers render in a portal outside the sch
 
 ## Radius and spacing
 
-`--rs-radius` (default `0.5rem`) is the corner radius of the outer frame. Spacing is not a free variable: row and event sizes come from [`density`](#density), because the layout maths needs the real pixel heights.
+`--rs-radius` (default `0.75rem`) is the corner radius of the outer frame. Spacing is not a free variable: row and event sizes come from [`density`](#density), because the layout maths needs the real pixel heights.
 
 ## Tokens
 
@@ -42,10 +42,14 @@ Any ancestor works, not only `html`. Popovers render in a portal outside the sch
 |---|---|
 | `--rs-background`, `--rs-foreground` | Base surfaces and text |
 | `--rs-surface`, `--rs-surface-muted`, `--rs-surface-hover` | Grid, header and hover backgrounds |
-| `--rs-today` | Today and selected slots |
-| `--rs-primary`, `--rs-ring` | Focus ring and the cursor |
-| `--rs-accent` | Footprint while dragging or resizing |
-| `--rs-destructive` | Rejected places |
+| `--rs-muted`, `--rs-muted-foreground` | The header band, group rows and secondary text |
+| `--rs-today` | Today's column (week and longer views) |
+| `--rs-primary`, `--rs-ring` | Focus ring, the cursor, today's date, and a tint of it for selections and the drag footprint |
+| `--rs-primary-text-mix` | How much of the primary is kept where it is text (`100%`; `60%` in dark mode, mixed toward the foreground so it stays readable) |
+| `--rs-accent` | Hover in the toolbar and menus |
+| `--rs-unavailable` | The hatching on unavailable time |
+| `--rs-warning` | Utilization bars at 90% and over |
+| `--rs-destructive` | Rejected places, utilization over 100% and the now line |
 | `--rs-border`, `--rs-input` | Lines and inputs |
 | `--rs-popover`, `--rs-popover-foreground` | Event details popover |
 | `--rs-radius` | Corner radius of the outer frame |

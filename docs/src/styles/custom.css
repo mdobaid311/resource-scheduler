@@ -20,23 +20,30 @@
 /* Starlight marks dark mode with data-theme, the scheduler with a .dark ancestor. */
 :root[data-theme="dark"] .rs-root,
 :root[data-theme="dark"] .rs-portal {
-  --rs-background: #171717;
-  --rs-foreground: #e5e5e5;
-  --rs-popover: #262626;
-  --rs-popover-foreground: #e5e5e5;
-  --rs-secondary: #262626;
-  --rs-secondary-foreground: #e5e5e5;
-  --rs-muted: #262626;
-  --rs-muted-foreground: #a3a3a3;
-  --rs-accent: #1e3a8a;
-  --rs-accent-foreground: #bfdbfe;
-  --rs-border: #404040;
-  --rs-input: #404040;
-  --rs-surface: #171717;
-  --rs-surface-muted: #262626;
-  --rs-surface-hover: #333333;
-  --rs-today: #172554;
-  --rs-tooltip: #e5e5e5;
+  --rs-background: #0f1626;
+  --rs-foreground: #e6ebf5;
+  --rs-card: #182238;
+  --rs-card-foreground: #e6ebf5;
+  --rs-popover: #182238;
+  --rs-popover-foreground: #e6ebf5;
+  --rs-secondary: #1c2740;
+  --rs-secondary-foreground: #cdd6e6;
+  --rs-muted: #151e33;
+  --rs-muted-foreground: #8e9bb4;
+  --rs-accent: #1c2b52;
+  --rs-accent-foreground: #c7d7ff;
+  --rs-border: #243049;
+  --rs-input: #2d3a56;
+  --rs-surface: #0f1626;
+  --rs-surface-muted: #141d31;
+  --rs-surface-hover: #1a2540;
+  --rs-today: #142042;
+  --rs-unavailable: #26324c;
+  --rs-tooltip: #e6ebf5;
+  --rs-primary-text-mix: 60%;
+  --rs-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --rs-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 2px 8px -2px rgb(0 0 0 / 0.4);
+  --rs-shadow-md: 0 2px 4px -2px rgb(0 0 0 / 0.4), 0 8px 24px -4px rgb(0 0 0 / 0.5);
 }
 
 /* Framed demos inside the docs content. */

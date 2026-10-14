@@ -485,12 +485,12 @@ Colors are CSS variables namespaced `--rs-*`, so they never collide with your ow
 :root {
   --rs-primary: #7c3aed;
   --rs-border: #d1d5db;
-  --rs-today: #f5f3ff;     /* highlight for today's column and selections */
+  --rs-today: #f8f6ff;     /* today's column */
   --rs-surface: #ffffff;   /* grid background */
 }
 ```
 
-Available tokens: `--rs-background`, `--rs-foreground`, `--rs-popover`, `--rs-primary`, `--rs-secondary`, `--rs-muted`, `--rs-accent`, `--rs-border`, `--rs-ring`, `--rs-surface`, `--rs-surface-muted`, `--rs-surface-hover`, `--rs-today`, `--rs-tooltip` and the `-foreground` variants. Every surface and text color in the grid reads from these tokens, so dark mode is just a second set of values.
+Available tokens: `--rs-background`, `--rs-foreground`, `--rs-popover`, `--rs-primary`, `--rs-secondary`, `--rs-muted`, `--rs-accent`, `--rs-border`, `--rs-ring`, `--rs-surface`, `--rs-surface-muted`, `--rs-surface-hover`, `--rs-today`, `--rs-unavailable`, `--rs-warning`, `--rs-tooltip`, `--rs-primary-text-mix` and the `-foreground` variants. Every surface and text color in the grid reads from these tokens, so dark mode is just a second set of values.
 
 ## Responsive Design
 

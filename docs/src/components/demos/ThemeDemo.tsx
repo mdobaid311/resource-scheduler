@@ -6,7 +6,7 @@ import { teamWeek } from "./sample";
 import { useSchedule } from "./useSchedule";
 
 const PRESETS = {
-  Default: { "--rs-primary": "#3b82f6", "--rs-accent": "#e0f2fe", "--rs-today": "#eff6ff", "--rs-ring": "#3b82f6" },
+  Default: { "--rs-primary": "#2563eb", "--rs-accent": "#e9f0ff", "--rs-today": "#f5f8ff", "--rs-ring": "#2563eb" },
   Violet: { "--rs-primary": "#7c3aed", "--rs-accent": "#ede9fe", "--rs-today": "#f5f3ff", "--rs-ring": "#7c3aed" },
   Emerald: { "--rs-primary": "#059669", "--rs-accent": "#d1fae5", "--rs-today": "#ecfdf5", "--rs-ring": "#059669" },
   Rose: { "--rs-primary": "#e11d48", "--rs-accent": "#ffe4e6", "--rs-today": "#fff1f2", "--rs-ring": "#e11d48" },

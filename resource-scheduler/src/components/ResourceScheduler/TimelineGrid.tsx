@@ -226,12 +226,13 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
         aria-activedescendant={keyboard.activeId}
         tabIndex={0}
         {...keyboard.gridProps}
-        className="rs-grid grid relative outline-none"
+        className="rs-grid group/grid grid flex-1 relative outline-none select-none"
         style={{
-          gridTemplateColumns: `repeat(${slots.length}, ${
+          gridTemplateColumns: `repeat(${slots.length}, minmax(${
             viewType === "day" ? timeColumnWidth : dateColumnWidth
-          })`,
-          gridTemplateRows: getGridTemplateRows(),
+          }, 1fr))`,
+          // A last row takes whatever height is left, so the column lines run to the bottom.
+          gridTemplateRows: `${getGridTemplateRows()} minmax(0, 1fr)`,
         }}
       >
         {resources.map((resource, rowIndex) => {
@@ -351,7 +352,8 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
                     resource={resource}
                     slot={slot}
                     isSelected={!!isSelected}
-                    isToday={isToday(slot, now)}
+                    // Every column of the day view is today; only the other views tint it.
+                    isToday={viewType !== "day" && isToday(slot, now)}
                     onMouseDown={onMouseDown}
                     onMouseEnter={onMouseEnter}
                     onCellClick={handleCellClick}
@@ -362,13 +364,23 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
             </div>
           );
         })}
+        {slots.map((_, col) =>
+          inWindow(col) ? (
+            <div
+              key={`fill-${col}`}
+              aria-hidden="true"
+              className="rs-no-print border-e"
+              style={{ gridRow: resources.length + 2, gridColumn: col + 1 }}
+            />
+          ) : null
+        )}
         {nowPercent !== null && (
           <div
             aria-hidden="true"
             data-rs-now=""
             className={`rs-no-print absolute top-0 bottom-0 w-0.5 ${
               i18n.dir === "rtl" ? "-mr-px" : "-ml-px"
-            } bg-ocrs-destructive pointer-events-none z-10`}
+            } bg-ocrs-destructive pointer-events-none z-10 before:absolute before:-top-1 before:-start-[3px] before:size-2 before:rounded-full before:bg-ocrs-destructive`}
             style={
               i18n.dir === "rtl"
                 ? { right: `${nowPercent}%` }
