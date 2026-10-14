@@ -17,7 +17,7 @@ export default defineConfig({
       // not installed here. A string tsconfigRaw makes esbuild skip the tsconfig lookup.
       name: "showcase:tsconfig",
       config: () => ({
-        esbuild: { tsconfigRaw: JSON.stringify({ compilerOptions: { useDefineForClassFields: true } }) },
+        esbuild: { tsconfigRaw: JSON.stringify({ compilerOptions: { useDefineForClassFields: true, jsx: "react-jsx" } }) },
       }),
     },
   ],
