@@ -103,6 +103,10 @@ export default defineConfig({
           ],
         },
         {
+          label: "Tutorials",
+          items: [{ label: "Free React resource timeline", slug: "tutorials/free-react-resource-timeline" }],
+        },
+        {
           label: "Recipes",
           items: [
             { label: "Room booking", slug: "recipes/room-booking" },

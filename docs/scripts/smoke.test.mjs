@@ -919,3 +919,31 @@ describe("touch", () => {
     await context.close();
   });
 });
+
+describe("tutorial", () => {
+  it("moves a booking to another row and refuses an overlap", async () => {
+    const { page, context, errors } = await open("/tutorials/free-react-resource-timeline/");
+    const slot = async (rid, day) => {
+      const h = await page.evaluateHandle(
+        ([r, d]) =>
+          [...document.querySelectorAll("[data-rs-slot]")].find(
+            (el) => el.dataset.rsResource === r && new Date(Number(el.dataset.rsSlot)).getDate() === d
+          ),
+        [rid, day]
+      );
+      return h.asElement();
+    };
+    assert.equal(await page.locator("[data-rs-event]").count(), 4);
+
+    // Monday 5 October on Bob is taken by "API work": refused, nothing moves.
+    await mouseDrag(page, await centerOf(event(page, "1")), await centerOf(await slot("bob", 5)));
+    assert.match(await label(page, "1"), /Ann Lee/);
+
+    // Chen is free on Monday.
+    await mouseDrag(page, await centerOf(event(page, "1")), await centerOf(await slot("chen", 5)));
+    assert.equal(await log(page), 'Moved "Standup"');
+    assert.match(await label(page, "1"), /Chen Wu/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});

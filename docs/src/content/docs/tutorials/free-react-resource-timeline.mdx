@@ -1,0 +1,116 @@
+---
+title: Free React resource timeline (a FullCalendar Premium alternative)
+description: Build a drag-and-drop resource timeline in React with no paid tier, step by step. Flat bookings, move, resize, no double booking, with a map from FullCalendar's callbacks.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import FlatTimelineDemo from '../../../components/demos/FlatTimelineDemo';
+
+A **resource timeline** has people, rooms or machines down the side and time across the top. In several popular calendar libraries it is a paid tier (see the [comparison](/compare/alternatives/) for what each one includes). This tutorial builds one with Resource Scheduler, which is MIT and has no paid tier, in four steps. It is the same component running below.
+
+<FlatTimelineDemo client:only="react" />
+
+Drag across empty days to create a booking, drag one to another row or day, grab an edge to resize it. Drop one on top of another: it turns red and is refused.
+
+## 1. Install
+
+```bash
+npm install resource-scheduler
+```
+
+Works with React 18 and 19. Import the stylesheet once, anywhere in your app (it is scoped, so it does not restyle the rest of your page):
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css";
+```
+
+## 2. Keep your bookings as one flat list
+
+Most apps already have a table of bookings. Pass it as `events` and name the row on each one with `resourceId`; `resources` then only needs an `id` and a `name`. The component keeps no copy of your data: you hold the state and it tells you what the user did.
+
+```tsx
+import { useState } from "react";
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import type { Resource, SchedulerEvent } from "resource-scheduler";
+
+type Booking = SchedulerEvent & { resourceId: string };
+
+const people: Resource[] = [
+  { id: "ann", name: "Ann Lee", events: [] },
+  { id: "bob", name: "Bob Ruiz", events: [] },
+];
+
+export function Timeline() {
+  const [events, setEvents] = useState<Booking[]>(initialBookings);
+
+  return (
+    <div style={{ height: 480 }}>
+      <ResourceScheduler
+        resources={people}
+        events={events}
+        initialView={ViewType.Week}
+      />
+    </div>
+  );
+}
+```
+
+The component fills its parent, so the parent needs a height. An event is `{ id, title, startDate, endDate, color? }`; `endDate` is exclusive, so a meeting from 9:00 to 10:00 does not overlap one that starts at 10:00.
+
+## 3. Turn on drag, resize and create
+
+Each gesture is a callback, and a callback is also the opt-in: without `onEventDrop` a dropped event snaps back, and without `onEventResize` there are no resize handles. Each one is a plain state update.
+
+```tsx
+<ResourceScheduler
+  resources={people}
+  events={events}
+  initialView={ViewType.Week}
+  onEventCreate={(event, resourceId) =>
+    setEvents((prev) => [...prev, { ...event, id: crypto.randomUUID(), resourceId }])
+  }
+  onEventDrop={(event, _fromId, toId, start, end) =>
+    setEvents((prev) =>
+      prev.map((e) => (e.id === event.id ? { ...e, resourceId: toId, startDate: start, endDate: end } : e))
+    )
+  }
+  onEventResize={(event, _resourceId, start, end) =>
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, startDate: start, endDate: end } : e)))
+  }
+/>
+```
+
+To open your own form instead of creating an event straight away, pass `onSlotSelect`; see [Creating events](/guides/creating-events/).
+
+## 4. Refuse conflicts
+
+One prop stops double booking for drag, resize and create alike, and shows the refused place in red before the drop:
+
+```tsx
+<ResourceScheduler /* ... */ eventOverlap={false} />
+```
+
+For anything else (capacity, opening hours, a holiday), pass `isValidDrop(event, { resourceId, start, end })`. The same check is exported as `isPlacementAllowed`, so you can run it on your server before saving. See [Conflict control](/guides/conflict-control/).
+
+## Coming from FullCalendar
+
+The model is close, and so are the callbacks:
+
+| FullCalendar | Resource Scheduler |
+|---|---|
+| `eventDrop` | `onEventDrop` |
+| `eventResize` | `onEventResize` |
+| `select` | `onSlotSelect` |
+| `eventClick` | `onEventClick` |
+| `eventOverlap` | `eventOverlap` (also accepts a function) |
+| `eventAllow` / `selectAllow` | `isValidDrop` |
+
+<Aside type="caution" title="Know the gaps">
+  This is a younger library. RRULE strings, calendar sync with Google or Outlook, and Gantt dependencies are not built in. Read [Alternatives](/compare/alternatives/) before you switch.
+</Aside>
+
+## Where next
+
+- Pick a finished starting point: [room booking](/recipes/room-booking/), [shift roster](/recipes/shift-roster/), [equipment rental](/recipes/equipment-rental/).
+- [Keyboard and accessibility](/guides/keyboard-and-accessibility/) and [theming](/guides/theming/) are built in.
+- Prefer to own the source? Copy it with the shadcn CLI: see [Installation](/start/installation/).
