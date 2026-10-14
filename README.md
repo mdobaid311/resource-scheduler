@@ -9,12 +9,14 @@
   <a href="https://www.npmjs.com/package/resource-scheduler"><img alt="npm version" src="https://img.shields.io/npm/v/resource-scheduler?color=2563eb" /></a>
   <a href="https://github.com/mdobaid311/resource-scheduler/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/mdobaid311/resource-scheduler/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://github.com/mdobaid311/resource-scheduler/blob/main/resource-scheduler/LICENSE"><img alt="MIT license" src="https://img.shields.io/npm/l/resource-scheduler?color=2563eb" /></a>
+  <img alt="Bundle size: 33 KB gzip budget, enforced in CI" src="https://img.shields.io/badge/gzip-%E2%89%A433%20KB-2563eb" />
   <img alt="TypeScript types included" src="https://img.shields.io/badge/types-included-2563eb" />
 </p>
 
 <p align="center">
   <a href="https://resource-scheduler-demo.vercel.app/"><b>Docs and live demos</b></a> &middot;
   <a href="#installation">Install</a> &middot;
+  <code>npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler</code> &middot;
   <a href="https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md">Roadmap</a>
 </p>
 
@@ -32,6 +34,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | FullCalendar | Premium add-on, from $480 per developer |
 | MUI X Scheduler | The Event Timeline is Premium |
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
+| react-big-scheduler | Free, MIT, has a resource view; no commits since March 2023 and about 170 open issues and pull requests |
 
 Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
 
