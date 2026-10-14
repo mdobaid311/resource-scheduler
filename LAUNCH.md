@@ -7,7 +7,7 @@ Every claim below can be checked in the repo or the docs. Keep it that way: repl
 ## Before you post anything
 
 - [ ] Publish v1.3.0 with a GitHub Release. It is the first release since 1.1.1, which crashes under React 18.
-- [ ] Docs deployed (Vercel, Root Directory `docs`) and `https://resource-scheduler-demo.vercel.app/` serves them. Check `/og.png`, `/llms.txt`, `/sitemap-index.xml`.
+- [ ] Docs deployed (Vercel, Root Directory `docs`) and `https://resource-scheduler-docs.vercel.app/` serves them. Check `/og.png`, `/llms.txt`, `/sitemap-index.xml`.
 - [ ] README hero GIF renders on the GitHub page (it loads from `main`).
 - [ ] GitHub: repo description, topics (`react`, `scheduler`, `resource-scheduler`, `timeline`, `calendar`, `shadcn`, `tailwindcss`, `typescript`), social preview image (use `docs/public/og.png`), Discussions on, a few `good first issue` labels.
 - [ ] `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` works in a fresh app (it resolves from `main`).
@@ -41,7 +41,7 @@ Post a weekday morning US Eastern. Link the GitHub repo directly.
 >
 > What it does not do yet: live calendar sync, a Vue or Svelte version. Rows and columns are virtualized: 2,500 resources with 50,000 events draw in 0.8 s in a week view and a year view across 50 resources in 0.15 s (the benchmark is in the docs and you can rerun it).
 >
-> Docs with live demos: https://resource-scheduler-demo.vercel.app/ . There is a comparison page with what the alternatives cost and where this one falls short. I would like to hear what blocks you from using it.
+> Docs with live demos: https://resource-scheduler-docs.vercel.app/ . There is a comparison page with what the alternatives cost and where this one falls short. I would like to hear what blocks you from using it.
 
 Expect: "why not FullCalendar?" (answer with the comparison page, factually), "does it scale?" (be straight: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, past a few thousand resources load a window from your server), "license?" (MIT).
 

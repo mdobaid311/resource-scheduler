@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://resource-scheduler-demo.vercel.app/"><b>Docs and live demos</b></a> &middot;
+  <a href="https://resource-scheduler-docs.vercel.app/"><b>Docs and live demos</b></a> &middot;
   <a href="#installation">Install</a> &middot;
   <code>npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler</code> &middot;
   <a href="https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md">Roadmap</a>
@@ -36,7 +36,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 | react-big-scheduler | Free, MIT, has a resource view; no commits since March 2023 and about 170 open issues and pull requests |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/) the [step-by-step tutorial](https://resource-scheduler-demo.vercel.app/tutorials/free-react-resource-timeline/), the [room booking tutorial](https://resource-scheduler-demo.vercel.app/tutorials/react-room-booking-calendar/), the [shift planner tutorial](https://resource-scheduler-demo.vercel.app/tutorials/react-shift-planner/), the [clinic appointment board tutorial](https://resource-scheduler-demo.vercel.app/tutorials/react-clinic-appointment-board/), the [equipment rental tutorial](https://resource-scheduler-demo.vercel.app/tutorials/react-equipment-rental-calendar/), or the [Next.js and Prisma tutorial](https://resource-scheduler-demo.vercel.app/tutorials/react-room-booking-nextjs-prisma/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-docs.vercel.app/compare/alternatives/) the [step-by-step tutorial](https://resource-scheduler-docs.vercel.app/tutorials/free-react-resource-timeline/), the [room booking tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-calendar/), the [shift planner tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-shift-planner/), the [clinic appointment board tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-clinic-appointment-board/), the [equipment rental tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-equipment-rental-calendar/), or the [Next.js and Prisma tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-nextjs-prisma/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
 
 ## Features
 
@@ -47,7 +47,7 @@ Prices checked October 2026; see the [full comparison](https://resource-schedule
 - ⌨️ **Keyboard and screen readers**: ARIA grid, keyboard move, resize and create, live announcements
 - 🖨️ **Prints**: toolbar controls dropped, every row and column drawn (virtualization is off on paper), colors kept, landscape ready
 - 🎨 **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app
-- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/)
+- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-docs.vercel.app/guides/build-your-own-ui/)
 - 📦 **Two ways to install**: npm, or copy the source into your project with the shadcn CLI
 - 🔷 **TypeScript** types included; React 18 and 19; Next.js ready
 
@@ -156,7 +156,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation](https://resource-scheduler-demo.vercel.app/)
+- 📚 [Documentation](https://resource-scheduler-docs.vercel.app/)
 - 🐛 [Bug Reports](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💡 [Feature Requests](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💬 [Discussions](https://github.com/mdobaid311/resource-scheduler/discussions)

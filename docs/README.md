@@ -24,7 +24,7 @@ Any static host works. On Vercel, import the repository and set the **Root Direc
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SITE_URL` | `https://resource-scheduler-demo.vercel.app` | Public origin. Used for the sitemap, canonical URLs and the social image |
+| `SITE_URL` | `https://resource-scheduler-docs.vercel.app` | Public origin. Used for the sitemap, canonical URLs and the social image |
 | `DOCS_BASE` | `/` | Base path, for example `/resource-scheduler` on GitHub Pages |
 
 The install step must also install the package, because the demos import its source: set the Install Command to `npm --prefix ../resource-scheduler ci && npm ci`.

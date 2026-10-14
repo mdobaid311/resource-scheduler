@@ -7,7 +7,7 @@ import ShiftRosterDemo from "@demos/ShiftRosterDemo";
 import UtilizationDemo from "@demos/UtilizationDemo";
 import type { DemoProps } from "@demos/Frame";
 
-const DOCS = "https://resource-scheduler-demo.vercel.app";
+const DOCS = "https://resource-scheduler-docs.vercel.app";
 const REPO = "https://github.com/mdobaid311/resource-scheduler";
 
 const RECIPES: {

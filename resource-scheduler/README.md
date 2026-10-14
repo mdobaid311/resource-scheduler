@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://resource-scheduler-demo.vercel.app/"><b>Docs and live demos</b></a> &middot;
+  <a href="https://resource-scheduler-docs.vercel.app/"><b>Docs and live demos</b></a> &middot;
   <a href="#installation">Install</a> &middot;
   <code>npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler</code> &middot;
   <a href="https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md">Roadmap</a>
@@ -36,7 +36,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 | react-big-scheduler | Free, MIT, has a resource view; no commits since March 2023 and about 170 open issues and pull requests |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-demo.vercel.app/compare/alternatives/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-docs.vercel.app/compare/alternatives/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
 
 ## Features
 
@@ -47,7 +47,7 @@ Prices checked October 2026; see the [full comparison](https://resource-schedule
 - ⌨️ **Keyboard and screen readers**: ARIA grid, keyboard move, resize and create, live announcements
 - 🖨️ **Prints**: toolbar controls dropped, every row and column drawn (virtualization is off on paper), colors kept, landscape ready
 - 🎨 **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app
-- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/)
+- 🧱 **Headless core**: `resource-scheduler/headless` is the layout, lanes, recurrence, rules and date math as plain functions (no React, no CSS, server-safe), to [build your own UI](https://resource-scheduler-docs.vercel.app/guides/build-your-own-ui/)
 - 📦 **Two ways to install**: npm, or copy the source into your project with the shadcn CLI
 - 🔷 **TypeScript** types included; React 18 and 19; Next.js ready
 
@@ -264,7 +264,7 @@ interface SchedulerEvent {
 }
 ```
 
-Handlers receive an occurrence of a recurring event (`id` is `"<id>::<yyyy-MM-dd>"`); update your one series, for example by adding an exception for "this event only". See the [recurring events guide](https://resource-scheduler-demo.vercel.app/guides/recurring-events/).
+Handlers receive an occurrence of a recurring event (`id` is `"<id>::<yyyy-MM-dd>"`); update your one series, for example by adding an exception for "this event only". See the [recurring events guide](https://resource-scheduler-docs.vercel.app/guides/recurring-events/).
 
 `Event` is still exported as a deprecated alias of `SchedulerEvent`; prefer the new name, `Event` shadows the DOM global.
 
@@ -457,7 +457,7 @@ import { useSchedulerState } from "resource-scheduler";
 const { columns, rows, layout, rowHeights, navigate } = useSchedulerState({ resources, initialView: "week" });
 ```
 
-See [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/) (with a timeline whose drag, resize and create are written in the demo) and the [Headless API](https://resource-scheduler-demo.vercel.app/reference/headless/).
+See [Build your own UI](https://resource-scheduler-docs.vercel.app/guides/build-your-own-ui/) (with a timeline whose drag, resize and create are written in the demo) and the [Headless API](https://resource-scheduler-docs.vercel.app/reference/headless/).
 
 ## Styling
 
@@ -475,7 +475,7 @@ Ctrl+P (or `window.print()`) prints a readable board with no setup: the toolbar 
 @page { size: landscape; margin: 10mm; }
 ```
 
-Put the class `rs-no-print` on anything of your own (a custom `Toolbar`) that should stay off the paper. The rules are one `@media print` block aimed at `rs-*` classes; see the [printing guide](https://resource-scheduler-demo.vercel.app/guides/printing/) for the limits (the date header prints once, dense views are overviews, dark themes print dark).
+Put the class `rs-no-print` on anything of your own (a custom `Toolbar`) that should stay off the paper. The rules are one `@media print` block aimed at `rs-*` classes; see the [printing guide](https://resource-scheduler-docs.vercel.app/guides/printing/) for the limits (the date header prints once, dense views are overviews, dark themes print dark).
 
 ### Theming
 
@@ -536,7 +536,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation & live demo](https://resource-scheduler-demo.vercel.app/)
+- 📚 [Documentation & live demo](https://resource-scheduler-docs.vercel.app/)
 - 🐛 [Bug Reports](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💡 [Feature Requests](https://github.com/mdobaid311/resource-scheduler/issues)
 - 💬 [Discussions](https://github.com/mdobaid311/resource-scheduler/discussions)
