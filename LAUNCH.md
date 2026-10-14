@@ -25,7 +25,7 @@ Proof points, all in the repo:
 - Keyboard and screen reader support, with an axe-core test in CI.
 - Themed with `--rs-*` CSS variables; scoped, so it does not leak into your app.
 - Repeating events, and rows virtualized for big boards (1,000 resources is about 424 DOM nodes; `npm run bench` in `docs/` reproduces it).
-- Honest comparison page, dated, with what is missing (RRULE strings as input).
+- Honest comparison page, dated, with what is missing.
 
 ## Show HN
 
@@ -39,7 +39,7 @@ Post a weekday morning US Eastern. Link the GitHub repo directly.
 >
 > What it does: drag to create, move and resize events; reject double bookings with one prop; shade business hours and time off; keyboard and screen reader support; repeating events; rows virtualized for large boards; five views; dark mode through CSS variables. You can `npm install` it or copy the source into your repo with the shadcn CLI.
 >
-> What it does not do yet: RRULE strings as input, a Vue or Svelte version. Rows and columns are virtualized: 2,500 resources with 50,000 events draw in 0.8 s in a week view and a year view across 50 resources in 0.15 s (the benchmark is in the docs and you can rerun it).
+> What it does not do yet: live calendar sync, a Vue or Svelte version. Rows and columns are virtualized: 2,500 resources with 50,000 events draw in 0.8 s in a week view and a year view across 50 resources in 0.15 s (the benchmark is in the docs and you can rerun it).
 >
 > Docs with live demos: https://resource-scheduler-demo.vercel.app/ . There is a comparison page with what the alternatives cost and where this one falls short. I would like to hear what blocks you from using it.
 
@@ -75,7 +75,7 @@ Each tutorial in ROADMAP section 6b (room booking, shift planner, clinic board) 
 
 - **Why not FullCalendar?** It is excellent. Its resource timeline is in the Premium tier (see the dated comparison page for the current price). This one is MIT and covers the resource timeline case only, not a general calendar.
 - **Does it handle thousands of rows?** Rows, yes: only the ones near the viewport are rendered, so 1,000 resources is about 424 DOM nodes and a 7 ms pointer move (`npm run bench` in `docs/` reproduces the numbers). Columns, no: a year view across many resources renders every day and is slow.
-- **Recurring events?** Yes: daily, weekly, monthly and yearly with exceptions. Not RRULE strings or hourly repeats.
+- **Recurring events?** Yes: hourly, daily, weekly, monthly and yearly with exceptions, the last Friday or the last day of the month, and RRULE strings in and out.
 - **Why Tailwind / shadcn?** The npm build ships a precompiled stylesheet, so no Tailwind setup is needed. The shadcn route copies the source if you want to edit it.
 - **Can I use it from Next.js?** Yes. The bundle starts with `"use client"`.
 

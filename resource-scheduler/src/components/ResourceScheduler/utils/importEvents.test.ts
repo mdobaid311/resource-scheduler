@@ -268,12 +268,12 @@ describe("icsToEvents: recurrence", () => {
 
   it("imports a rule it cannot represent as one event, with a warning", () => {
     for (const rule of [
-      "FREQ=MONTHLY;BYDAY=2TU",
-      "FREQ=MONTHLY;BYMONTHDAY=15",
-      "FREQ=MONTHLY;BYSETPOS=-1;BYDAY=MO,TU,WE,TH,FR",
+      "FREQ=MONTHLY;BYDAY=1MO,-1FR",
+      "FREQ=MONTHLY;BYYEARDAY=3",
       "FREQ=DAILY;BYDAY=MO,TU",
       "FREQ=YEARLY;BYMONTH=3",
-      "FREQ=HOURLY",
+      "FREQ=YEARLY;BYDAY=-1FR",
+      "FREQ=MINUTELY;INTERVAL=30",
       "FREQ=WEEKLY;BYDAY=1MO",
       "INTERVAL=2",
     ]) {
@@ -285,9 +285,46 @@ describe("icsToEvents: recurrence", () => {
     }
   });
 
-  it("accepts BYMONTHDAY and BYMONTH that match the start", () => {
-    expect(read(start, "RRULE:FREQ=MONTHLY;BYMONTHDAY=5").event.recurrence).toEqual({ freq: "monthly" });
-    expect(read(start, "RRULE:FREQ=YEARLY;BYMONTH=10;BYMONTHDAY=5").event.recurrence).toEqual({ freq: "yearly" });
+  it("reads month days, positions and hourly rules", () => {
+    expect(read(start, "RRULE:FREQ=MONTHLY;BYMONTHDAY=5").event.recurrence).toEqual({ freq: "monthly", byMonthDay: [5] });
+    expect(read(start, "RRULE:FREQ=YEARLY;BYMONTH=10;BYMONTHDAY=5").event.recurrence).toEqual({ freq: "yearly", byMonthDay: [5] });
+    expect(read(start, "RRULE:FREQ=MONTHLY;BYMONTHDAY=1,-1").event.recurrence).toEqual({ freq: "monthly", byMonthDay: [1, -1] });
+    expect(read(start, "RRULE:FREQ=MONTHLY;BYDAY=2TU").event.recurrence).toEqual({ freq: "monthly", byWeekday: [2], bySetPos: [2] });
+    expect(read(start, "RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1").event.recurrence).toEqual({
+      freq: "monthly",
+      byWeekday: [1, 2, 3, 4, 5],
+      bySetPos: [-1],
+    });
+    expect(read(start, "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1FR").event.recurrence).toEqual({
+      freq: "yearly",
+      byWeekday: [5],
+      bySetPos: [-1],
+    });
+    expect(read(start, "RRULE:FREQ=HOURLY;INTERVAL=4;COUNT=6").event.recurrence).toEqual({ freq: "hourly", interval: 4, count: 6 });
+  });
+
+  it("names the part of a rule it cannot show", () => {
+    const { warnings } = read(start, "RRULE:FREQ=YEARLY;BYMONTH=3");
+    expect(warnings).toEqual([expect.stringContaining("BYMONTH=3")]);
+    expect(read(start, "RRULE:FREQ=DAILY;BYHOUR=9").warnings[0]).toContain("BYHOUR");
+  });
+
+  it("keeps the exact moment of an exception and a changed occurrence of an hourly series", () => {
+    const text = calendar(
+      vevent(start, "DTEND:20261005T100000", "RRULE:FREQ=HOURLY;INTERVAL=3", "EXDATE:20261005T120000"),
+      [
+        "BEGIN:VEVENT",
+        "UID:u1",
+        "SUMMARY:Standup (moved)",
+        "RECURRENCE-ID:20261005T150000",
+        "DTSTART:20261005T160000",
+        "DTEND:20261005T170000",
+        "END:VEVENT",
+      ].join(CRLF)
+    );
+    const [series, moved] = icsToEvents(text);
+    expect(series.recurrence?.exceptions).toEqual([new Date(2026, 9, 5, 12), new Date(2026, 9, 5, 15)]);
+    expect(moved.id).toBe("u1#2026-10-05T15:00");
   });
 
   it("turns a changed occurrence into its own event and skips that day in the series", () => {

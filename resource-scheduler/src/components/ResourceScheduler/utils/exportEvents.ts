@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/utils/exportEvents.ts
-import { endOfDay, format, startOfDay } from "date-fns";
-import type { Recurrence, ResourceInput, SchedulerEvent } from "../types";
+import { format, startOfDay } from "date-fns";
+import type { ResourceInput, SchedulerEvent } from "../types";
+import { dateOnly, stamp, toRRule } from "./rrule";
 
 export interface ExportOptions {
   /** Your resources, to turn an event's `resourceId` into a name. */
@@ -18,10 +19,6 @@ const nameOf = (id: string, resources?: ResourceInput[]) =>
 // --- iCalendar (RFC 5545) -----------------------------------------------------
 
 const encoder = new TextEncoder();
-const DAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-
-const stamp = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
-const dateOnly = (d: Date) => format(d, "yyyyMMdd");
 const escapeText = (s: string) =>
   s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r\n|\r|\n/g, "\\n");
 
@@ -49,18 +46,6 @@ const isAllDay = (e: SchedulerEvent) =>
   e.endDate > e.startDate &&
   startOfDay(e.startDate).getTime() === e.startDate.getTime() &&
   startOfDay(e.endDate).getTime() === e.endDate.getTime();
-
-const rrule = (r: Recurrence, allDay: boolean, start: Date) => {
-  const parts = [`FREQ=${r.freq.toUpperCase()}`];
-  if (r.interval && r.interval > 1) parts.push(`INTERVAL=${r.interval}`);
-  if (r.freq === "yearly" && (r.byMonthDay?.length || r.bySetPos?.length || r.byWeekday?.length)) parts.push(`BYMONTH=${start.getMonth() + 1}`);
-  if (r.byWeekday?.length && r.freq !== "hourly" && r.freq !== "daily") parts.push(`BYDAY=${r.byWeekday.map((d) => DAYS[d]).join(",")}`);
-  if (r.byMonthDay?.length && (r.freq === "monthly" || r.freq === "yearly")) parts.push(`BYMONTHDAY=${r.byMonthDay.join(",")}`);
-  if (r.bySetPos?.length && (r.freq === "monthly" || r.freq === "yearly")) parts.push(`BYSETPOS=${r.bySetPos.join(",")}`);
-  if (r.until) parts.push(`UNTIL=${allDay ? dateOnly(r.until) : stamp(r.freq === "hourly" ? r.until : endOfDay(r.until))}`);
-  if (r.count !== undefined) parts.push(`COUNT=${r.count}`);
-  return `RRULE:${parts.join(";")}`;
-};
 
 /**
  * The events as an iCalendar file (`.ics`) that Google Calendar, Outlook and
@@ -90,7 +75,7 @@ export const eventsToICS = (
     if (e.description) out.push(`DESCRIPTION:${escapeText(e.description)}`);
     if (resources && place.length) out.push(`LOCATION:${place.join("\\, ")}`);
     if (e.recurrence) {
-      out.push(rrule(e.recurrence, allDay, e.startDate));
+      out.push(`RRULE:${toRRule(e.recurrence, { start: e.startDate, allDay })}`);
       const skipped = e.recurrence.exceptions ?? [];
       if (skipped.length) {
         // Each exception is the occurrence's start on that day.

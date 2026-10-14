@@ -39,7 +39,7 @@ const events = resources.flatMap((r) => r.events.map((e) => ({ ...e, resourceId:
 
 - **Timed events** are written in UTC, so every calendar app places them at the right moment.
 - **Whole days** (an event that starts and ends at local midnight, like a rental) are written as all-day events. The end is exclusive, as it is in iCalendar.
-- **Recurring events** stay one event: `recurrence` becomes `RRULE` (`FREQ`, `INTERVAL`, `BYDAY`, `UNTIL`, `COUNT`) and `exceptions` become `EXDATE`, so the calendar app expands them itself.
+- **Recurring events** stay one event: `recurrence` becomes `RRULE` (`FREQ`, `INTERVAL`, `BYDAY`, `BYMONTHDAY`, `BYSETPOS`, `UNTIL`, `COUNT`, written by [`toRRule`](#rrule-strings); "the last Friday" is `BYDAY=-1FR`) and `exceptions` become `EXDATE`, so the calendar app expands them itself.
 - **Room names as locations.** Passing `resources` writes the resource name as `LOCATION`. That suits rooms and equipment; for people, leave `resources` out.
 - The `UID` is `<id>@resource-scheduler`, the same on every export, which is what calendar apps use to recognise an event.
 - Text is escaped and lines are folded at 75 bytes without splitting a character.
@@ -84,17 +84,46 @@ An event is drawn on the resource it names, so every imported event needs one. `
 What is read:
 
 - **Times.** UTC times (`Z`), times in a `TZID` zone and floating times become moments; dates become whole local days, with the exclusive end iCalendar uses. `DTEND` or `DURATION` gives the end; an event with neither lasts an hour, or a day when it has a date only. Zones are IANA names such as `Europe/Paris`, read with the browser's own time zone data.
-- **Repeats.** `RRULE` and `EXDATE` become `recurrence`: daily, weekly (with `BYDAY`), monthly and yearly rules, with `INTERVAL`, `COUNT` and `UNTIL`. An occurrence that was changed (`RECURRENCE-ID`) becomes its own event, with the id `<uid>#<yyyy-MM-dd>`, and its day is skipped in the series.
+- **Repeats.** `RRULE` and `EXDATE` become `recurrence`: hourly, daily, weekly, monthly and yearly rules, with `INTERVAL`, `COUNT`, `UNTIL`, `BYDAY` (also "the second Tuesday" as `2TU`), `BYMONTHDAY` and `BYSETPOS` (read by [`parseRRule`](#rrule-strings)). An occurrence that was changed (`RECURRENCE-ID`) becomes its own event, with the id `<uid>#<yyyy-MM-dd>` (`<uid>#<yyyy-MM-dd>T<HH:mm>` for an hourly series), and its day is skipped in the series.
 - **Ids.** The `UID` becomes the `id`, without the `@resource-scheduler` that `eventsToICS` adds, so a round trip keeps your ids. Duplicates get a numeric suffix so ids stay unique.
 - **Text.** Titles and descriptions are unescaped and unfolded. They come from whoever wrote the file: render them as text, never as HTML.
 
 What is left out (each one except a cancelled event sends a message to `onWarning`):
 
 - **Cancelled events** and cancelled occurrences (`STATUS:CANCELLED`).
-- **A rule the scheduler cannot show**: the second Tuesday of the month, the last weekday, every hour, `BYMONTHDAY` on another day than the start. The event is imported once, on its first day.
+- **A rule the scheduler cannot show**: a `BYMONTH` other than the month the series starts in (or several months), `BYYEARDAY`, `BYWEEKNO`, minutely or secondly repeats, different positions on different weekdays (`1MO,-1FR`), `WKST` other than Monday on a rule every n weeks. The event is imported once, on its first day, and the message names the part.
 - **A zone that is not an IANA name**, such as Outlook's "Eastern Standard Time". Its times are read as local time. If your files come from Outlook, ask for UTC or convert the zone names first.
 - **An event with no readable start**, or one that ends before it starts, and the `RDATE` list.
 - Alarms, tasks, attendees and attachments are ignored without a message.
+
+## RRULE strings
+
+`parseRRule` and `toRRule` are the rule reader and writer that `icsToEvents` and `eventsToICS` use, exported for your own storage, an API or a form. They are pure and live in `resource-scheduler/exchange`.
+
+```ts
+import { parseRRule, toRRule } from "resource-scheduler/exchange";
+
+const start = new Date(2026, 9, 30, 9); // DTSTART: the first occurrence
+
+parseRRule("FREQ=MONTHLY;BYDAY=-1FR;COUNT=12", { start });
+// { freq: "monthly", byWeekday: [5], bySetPos: [-1], count: 12 }
+
+toRRule({ freq: "monthly", byWeekday: [5], bySetPos: [-1] });
+// "FREQ=MONTHLY;BYDAY=-1FR"   (add "RRULE:" for a line of an .ics file)
+
+try {
+  parseRRule("FREQ=YEARLY;BYMONTH=3,9", { start });
+} catch (error) {
+  // RangeError: BYMONTH=3,9: a yearly series repeats in the month it starts in (10)
+}
+```
+
+- **Read:** `FREQ` (hourly to yearly), `INTERVAL`, `COUNT`, `UNTIL`, `BYDAY`, `BYMONTHDAY`, `BYSETPOS`, `BYMONTH` for yearly in the start month, and `WKST=MO`. The prefix `RRULE:` and the case are optional. `BYDAY=2TU` or `-1FR` (one weekday, any positions) become `byWeekday` and `bySetPos`; plain weekdays with `BYSETPOS` stay as they are.
+- **Not guessed:** anything else makes `parseRRule` throw a `RangeError` that names the part (`BYYEARDAY is not supported`), rather than dropping it and returning a rule that means something else. The same for values out of range and for a part the frequency cannot take (a `BYDAY` on a daily rule, `BYMONTHDAY` on a weekly one).
+- **`start`** is the first occurrence (`DTSTART`). A yearly rule repeats in the month it starts in, so `parseRRule` checks `BYMONTH` against it and `toRRule` writes it for a yearly rule with weekdays or month days. `DTSTART` and `EXDATE` are not part of the rule: `exceptions` are written and read as `EXDATE`.
+- **`UNTIL`** is a calendar day, as for `recurrence.until`. For an hourly rule it is the moment. `toRRule` writes the end of that day in UTC, or a date with `{ allDay: true }`.
+- **Hourly** repeats count elapsed time. A client that counts wall-clock hours in a zone with daylight saving can place occurrences after the change an hour apart from the scheduler.
+- The output was checked against ical.js: the same occurrences for the last Friday, the second Tuesday, the last weekday, month days, Friday the 13th, yearly rules, hourly, `COUNT` and `UNTIL`.
 
 ## Not included
 
