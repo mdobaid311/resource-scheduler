@@ -8,7 +8,7 @@ import RoomBookingDemo from '../../../components/demos/RoomBookingDemo';
 
 The [room booking tutorial](/tutorials/react-room-booking-calendar/) ends with "check again on the server". This one builds that server. You get a Next.js App Router app where rooms and bookings live in Postgres through Prisma, the calendar is Resource Scheduler in a client component, and the route handlers decide whether a booking is allowed.
 
-There is no starter repo to clone: every file is in the steps below, so you can copy them in order. The browser side behaves like this demo (it has no server, so its data resets on reload):
+Every file is in the steps below, so you can copy them in order. The finished app is also in this repository as the [`resource-scheduler-rooms-starter`](https://github.com/mdobaid311/resource-scheduler/tree/main/resource-scheduler-rooms-starter) folder; fetch just that folder with `npx degit mdobaid311/resource-scheduler/resource-scheduler-rooms-starter rooms`. The browser side behaves like this demo (it has no server, so its data resets on reload):
 
 <RoomBookingDemo client:only="react" />
 
