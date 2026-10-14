@@ -1,0 +1,450 @@
+---
+title: Room booking app with Next.js and Prisma
+description: Build a full-stack room booking app with the Next.js App Router, Prisma and Postgres. Resource Scheduler in a client component, double booking refused in a transaction with a 409, and optimistic updates that roll back.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import RoomBookingDemo from '../../../components/demos/RoomBookingDemo';
+
+The [room booking tutorial](/tutorials/react-room-booking-calendar/) ends with "check again on the server". This one builds that server. You get a Next.js App Router app where rooms and bookings live in Postgres through Prisma, the calendar is Resource Scheduler in a client component, and the route handlers decide whether a booking is allowed.
+
+There is no starter repo to clone: every file is in the steps below, so you can copy them in order. The browser side behaves like this demo (it has no server, so its data resets on reload):
+
+<RoomBookingDemo client:only="react" />
+
+Drag across free time on a room to open the form. The app you build adds three things to it: the data comes from a database, a save can be refused by the server, and a refused save rolls back on screen.
+
+<Aside type="note" title="Versions">
+  The snippets are written for Next.js 15 (in 14, `params` in a route handler is not a Promise) and Prisma 6 with Postgres. Newer Prisma majors changed how the client is generated and how the connection is configured, so follow the Prisma docs for that part. The queries and the transaction do not depend on it.
+</Aside>
+
+## How the pieces fit
+
+1. The server component `app/page.tsx` reads rooms and bookings with Prisma and passes them as plain strings.
+2. The client component `app/board.tsx` renders `ResourceScheduler` and sends changes to the API.
+3. The route handlers under `app/api/bookings` call one function, which re-checks the placement with `isPlacementAllowed` inside a transaction.
+4. The browser and the server share one object, `bookingRules`, so they cannot disagree about what "free" means.
+
+## 1. Create the app
+
+```bash
+npx create-next-app@latest rooms --ts --app
+cd rooms
+npm install resource-scheduler @prisma/client
+npm install -D prisma@6
+npx prisma init --datasource-provider postgresql
+```
+
+Put your Postgres connection string in `.env` as `DATABASE_URL`. Any Postgres works, local or hosted.
+
+## 2. The schema
+
+Store times as `DateTime`. Prisma saves them in UTC, and the end is exclusive: a booking that ends at 10:00 does not collide with one that starts at 10:00.
+
+```prisma title="prisma/schema.prisma"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id       String    @id @default(cuid())
+  name     String
+  seats    Int
+  bookings Booking[]
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  title     String
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  startsAt  DateTime
+  endsAt    DateTime
+  createdAt DateTime @default(now())
+
+  @@index([roomId, startsAt])
+}
+```
+
+Create the tables and two rooms to play with:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+```ts title="prisma/seed.ts"
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  await prisma.room.createMany({
+    data: [
+      { name: "Atlas", seats: 8 },
+      { name: "Borealis", seats: 4 },
+    ],
+  });
+}
+
+main().finally(() => prisma.$disconnect());
+```
+
+```bash
+npx tsx prisma/seed.ts
+```
+
+## 3. Shared code
+
+One Prisma client for the whole dev server (Next.js reloads modules, and without this every reload opens a new connection pool):
+
+```ts title="lib/db.ts"
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+The rule, in one place. The client spreads it onto the component, and the server hands the same object to `isPlacementAllowed`:
+
+```ts title="lib/rules.ts"
+export const bookingRules = { eventOverlap: false as const };
+```
+
+A booking crosses the server boundary and the network as JSON, where a `Date` becomes a string. This is the shape on the wire:
+
+```ts title="lib/dto.ts"
+import type { Booking } from "@prisma/client";
+
+export type BookingDTO = {
+  id: string;
+  title: string;
+  roomId: string;
+  startsAt: string;
+  endsAt: string;
+};
+
+export const toDTO = (b: Booking): BookingDTO => ({
+  id: b.id,
+  title: b.title,
+  roomId: b.roomId,
+  startsAt: b.startsAt.toISOString(),
+  endsAt: b.endsAt.toISOString(),
+});
+```
+
+## 4. The page loads rooms and bookings
+
+A server component can read the database directly. It loads the rooms and a window of bookings around now (for a long range, fetch per visible range with `onRangeChange`, see [Loading and control](/guides/loading-and-control/)). It also passes the current time as a string, so the first render on the server and in the browser start on the same day. See [Next.js and SSR](/guides/nextjs-and-ssr/).
+
+```tsx title="app/page.tsx"
+import { prisma } from "@/lib/db";
+import { toDTO } from "@/lib/dto";
+import { Board } from "./board";
+
+export const dynamic = "force-dynamic"; // read the database per request, not at build time
+
+const DAY = 24 * 60 * 60 * 1000;
+
+export default async function Page() {
+  const now = new Date();
+  const [rooms, bookings] = await Promise.all([
+    prisma.room.findMany({ orderBy: { name: "asc" } }),
+    prisma.booking.findMany({
+      where: {
+        endsAt: { gt: new Date(now.getTime() - DAY) },
+        startsAt: { lt: new Date(now.getTime() + 14 * DAY) },
+      },
+    }),
+  ]);
+
+  return (
+    <main style={{ padding: 16 }}>
+      <Board
+        rooms={rooms.map((r) => ({ id: r.id, name: `${r.name} (${r.seats} seats)` }))}
+        initial={bookings.map(toDTO)}
+        initialDate={now.toISOString()}
+      />
+    </main>
+  );
+}
+```
+
+## 5. The server decides
+
+This is the file the whole tutorial is for. A booking is allowed only if `isPlacementAllowed` says so for the room's current bookings, and the check and the write happen in one `Serializable` transaction, so two requests that both read "free" cannot both commit.
+
+```ts title="lib/bookings.ts"
+import { Prisma } from "@prisma/client";
+import { isPlacementAllowed } from "resource-scheduler/headless";
+import type { Resource } from "resource-scheduler/headless";
+import { prisma } from "./db";
+import { bookingRules } from "./rules";
+
+export class Conflict extends Error {}
+export class NotFound extends Error {}
+
+type Slot = { roomId: string; start: Date; end: Date };
+
+const inTransaction = <T>(run: (tx: Prisma.TransactionClient) => Promise<T>) =>
+  prisma.$transaction(run, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+// Throws Conflict unless the booking `id` (none, for a new one) may take this slot.
+async function assertFree(tx: Prisma.TransactionClient, id: string | undefined, { roomId, start, end }: Slot) {
+  const room = await tx.room.findUnique({
+    where: { id: roomId },
+    include: { bookings: { where: { startsAt: { lt: end }, endsAt: { gt: start } } } },
+  });
+  if (!room) throw new NotFound();
+
+  const resource: Resource = {
+    id: room.id,
+    name: room.name,
+    events: room.bookings.map((b) => ({ id: b.id, title: b.title, startDate: b.startsAt, endDate: b.endsAt })),
+  };
+  const moving = { id: id ?? "new", title: "", startDate: start, endDate: end };
+
+  if (!isPlacementAllowed(moving, { resourceId: roomId, start, end }, [resource], bookingRules)) {
+    throw new Conflict();
+  }
+}
+
+export const createBooking = (slot: Slot & { title: string }) =>
+  inTransaction(async (tx) => {
+    await assertFree(tx, undefined, slot);
+    return tx.booking.create({
+      data: { roomId: slot.roomId, title: slot.title, startsAt: slot.start, endsAt: slot.end },
+    });
+  });
+
+export const moveBooking = (id: string, slot: Slot) =>
+  inTransaction(async (tx) => {
+    if (!(await tx.booking.findUnique({ where: { id } }))) throw new NotFound();
+    await assertFree(tx, id, slot); // the booking's own old time is ignored: its id is `id`
+    return tx.booking.update({
+      where: { id },
+      data: { roomId: slot.roomId, startsAt: slot.start, endsAt: slot.end },
+    });
+  });
+```
+
+The query already narrows to bookings that overlap the slot, and `isPlacementAllowed` applies the same overlap rule the browser used, including ignoring the booking being moved. Under `Serializable`, Postgres aborts one of two conflicting transactions when it commits; Prisma reports that as error `P2034`, which the next file also turns into a 409 (retrying once is an equally good answer).
+
+Two small helpers turn requests into slots and errors into responses:
+
+```ts title="lib/http.ts"
+import { Prisma } from "@prisma/client";
+import { Conflict, NotFound } from "./bookings";
+
+// body comes from request.json(), so nothing in it is trusted.
+export function parseSlot(body: { roomId?: unknown; startsAt?: unknown; endsAt?: unknown }) {
+  const start = new Date(body.startsAt as string);
+  const end = new Date(body.endsAt as string);
+  if (typeof body.roomId !== "string" || !(start < end)) return null; // also catches Invalid Date
+  return { roomId: body.roomId, start, end };
+}
+
+export function fail(error: unknown) {
+  if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034")) {
+    return Response.json({ error: "That time was just booked." }, { status: 409 });
+  }
+  if (error instanceof NotFound) return Response.json({ error: "Not found." }, { status: 404 });
+  throw error;
+}
+```
+
+The route handlers are thin:
+
+```ts title="app/api/bookings/route.ts"
+import { createBooking } from "@/lib/bookings";
+import { toDTO } from "@/lib/dto";
+import { fail, parseSlot } from "@/lib/http";
+
+export async function POST(request: Request) {
+  const body = await request.json().catch(() => ({}));
+  const slot = parseSlot(body);
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  if (!slot || !title) return Response.json({ error: "Invalid booking." }, { status: 400 });
+
+  try {
+    return Response.json(toDTO(await createBooking({ ...slot, title })), { status: 201 });
+  } catch (error) {
+    return fail(error);
+  }
+}
+```
+
+```ts title="app/api/bookings/[id]/route.ts"
+import { moveBooking } from "@/lib/bookings";
+import { toDTO } from "@/lib/dto";
+import { fail, parseSlot } from "@/lib/http";
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const slot = parseSlot(await request.json().catch(() => ({})));
+  if (!slot) return Response.json({ error: "Invalid booking." }, { status: 400 });
+
+  try {
+    return Response.json(toDTO(await moveBooking(id, slot)));
+  } catch (error) {
+    return fail(error);
+  }
+}
+```
+
+<Aside type="caution" title="This app has no sign-in">
+  Anyone who can reach these routes can book and move anything. Before real use, check the user in each handler, and let a person change only their own bookings.
+</Aside>
+
+## 6. The calendar, with optimistic updates
+
+The client component keeps the bookings in state and renders them through the flat `events` prop, each with a `resourceId`, which maps straight onto database rows. The key idea of an optimistic update: show the change at once, send it, and undo it if the server says no. A booking that is still being saved is drawn grey and has a temporary id.
+
+```tsx title="app/board.tsx"
+"use client";
+
+import { useState } from "react";
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import type { SchedulerEvent, SlotSelection } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+import type { BookingDTO } from "@/lib/dto";
+import { bookingRules } from "@/lib/rules";
+
+type Room = { id: string; name: string };
+
+const PENDING = "pending-";
+
+const toEvent = (b: BookingDTO): SchedulerEvent => ({
+  id: b.id,
+  title: b.title,
+  resourceId: b.roomId,
+  startDate: new Date(b.startsAt),
+  endDate: new Date(b.endsAt),
+});
+
+async function send(url: string, method: "POST" | "PATCH", body: unknown): Promise<BookingDTO> {
+  const response = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body), // a Date becomes an ISO string
+  });
+  if (response.status === 409) throw new Error("Someone just booked that time.");
+  if (!response.ok) throw new Error("The booking could not be saved.");
+  return response.json();
+}
+
+export function Board({ rooms, initial, initialDate }: { rooms: Room[]; initial: BookingDTO[]; initialDate: string }) {
+  const [bookings, setBookings] = useState(() => initial.map(toEvent));
+  const [start] = useState(() => new Date(initialDate));
+  const [draft, setDraft] = useState<SlotSelection | null>(null);
+  const [message, setMessage] = useState("");
+
+  async function book(slot: SlotSelection, title: string) {
+    const tempId = PENDING + crypto.randomUUID();
+    setMessage("");
+    setBookings((all) => [
+      ...all,
+      { id: tempId, title, resourceId: slot.resourceId, startDate: slot.start, endDate: slot.end, color: "#94a3b8" },
+    ]);
+    try {
+      const saved = toEvent(await send("/api/bookings", "POST", { roomId: slot.resourceId, title, startsAt: slot.start, endsAt: slot.end }));
+      setBookings((all) => all.map((b) => (b.id === tempId ? saved : b)));
+    } catch (error) {
+      setBookings((all) => all.filter((b) => b.id !== tempId)); // roll back
+      setMessage((error as Error).message);
+    }
+  }
+
+  async function reschedule(event: SchedulerEvent, roomId: string, startDate: Date, endDate: Date) {
+    if (event.id.startsWith(PENDING)) return; // not saved yet, so there is nothing to patch
+    const before = bookings.find((b) => b.id === event.id);
+    setMessage("");
+    setBookings((all) => all.map((b) => (b.id === event.id ? { ...b, resourceId: roomId, startDate, endDate } : b)));
+    try {
+      await send(`/api/bookings/${event.id}`, "PATCH", { roomId, startsAt: startDate, endsAt: endDate });
+    } catch (error) {
+      if (before) setBookings((all) => all.map((b) => (b.id === event.id ? before : b))); // roll back
+      setMessage((error as Error).message);
+    }
+  }
+
+  return (
+    <>
+      {draft && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            book(draft, String(new FormData(e.currentTarget).get("title")));
+            setDraft(null);
+          }}
+        >
+          <input name="title" aria-label="Title" placeholder="Meeting title" required autoFocus />
+          <button type="submit">Book</button>
+          <button type="button" onClick={() => setDraft(null)}>Cancel</button>
+        </form>
+      )}
+      {message && <p role="alert">{message}</p>}
+      <div style={{ height: 440 }}>
+        <ResourceScheduler
+          {...bookingRules}
+          resources={rooms}
+          events={bookings}
+          initialDate={start}
+          initialView={ViewType.Day}
+          allowViewChange={false}
+          slotDuration={30}
+          dayStartHour={8}
+          dayEndHour={18}
+          ariaLabel="Meeting room bookings"
+          onSlotSelect={setDraft}
+          onEventDrop={(event, _from, to, s, e) => reschedule(event, to, s, e)}
+          onEventResize={(event, roomId, s, e) => reschedule(event, roomId, s, e)}
+        />
+      </div>
+    </>
+  );
+}
+```
+
+Why it holds together:
+
+- `Board` passes callbacks and holds state, so it has to be a client component. The scheduler's own bundle already starts with `"use client"`.
+- The browser refuses overlaps before the drop (the place turns red), so most conflicts never reach the server. The ones that do, from two people at once or from someone who skips the UI, come back as 409 and are rolled back with a message.
+- `reschedule` serves both moving and resizing: both end with a room and a new start and end. Without `onEventResize` there would be no resize handles.
+- The rooms are plain `{ id, name }` rows. The bookings are the single flat list in `events`, so no room carries its own `events`.
+
+## 7. Try it
+
+```bash
+npm run dev
+```
+
+Open the page, drag across free time on Atlas and book it. Then ask the server directly, with the same body twice, to see the guard work without the UI (replace the room id with one from `npx prisma studio`):
+
+```bash
+curl -i -X POST localhost:3000/api/bookings -H "Content-Type: application/json" \
+  -d '{"roomId":"ROOM_ID","title":"Standup","startsAt":"2026-10-20T09:00:00Z","endsAt":"2026-10-20T09:30:00Z"}'
+```
+
+The first call answers `201`, the second `409`. Open the page in two windows, book the same free slot in both, and the second window shows the grey block disappear with "Someone just booked that time."
+
+## Going further
+
+- A second line of defence in the database. Postgres can refuse overlapping rows by itself with an exclusion constraint on a `tsrange` of the two columns (`CREATE EXTENSION btree_gist`, then `EXCLUDE USING gist ("roomId" WITH =, tsrange("startsAt", "endsAt") WITH &&)`), added to a migration you create with `npx prisma migrate dev --create-only`. It is optional here, because the transaction already covers the normal case.
+- Rules beyond overlap (office hours, a seat limit, no booking in the past): put them in `isValidDrop` inside `bookingRules`. The browser and the server then both apply them. See [Conflict control](/guides/conflict-control/).
+- Recurring bookings: store the rule next to the booking and let `expandEvents` produce the occurrences. See [Recurring events](/guides/recurring-events/).
+- Rooms in several time zones: [Time zones](/guides/time-zones/).
+- React 19 has `useOptimistic`. The plain `useState` version above does the same job and works on React 18 too.
+
+## Where next
+
+- The front-end only version: [React room booking calendar](/tutorials/react-room-booking-calendar/).
+- The finished [room booking recipe](/recipes/room-booking/), with business hours, capacity and recurring bookings.
+- [Next.js and SSR](/guides/nextjs-and-ssr/) and [Build your own UI](/guides/build-your-own-ui/#on-a-server) for the server entry point.
