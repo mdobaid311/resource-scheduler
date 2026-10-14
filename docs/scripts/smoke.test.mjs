@@ -920,6 +920,33 @@ describe("touch", () => {
   });
 });
 
+describe("room booking tutorial", () => {
+  it("books free time through its own form and refuses booked time", async () => {
+    const { page, context, errors } = await open("/tutorials/react-room-booking-calendar/");
+    const eventCount = () => page.locator("[data-rs-event]").count();
+    const before = await eventCount();
+
+    // Atlas is booked 9:00 to 10:30 today: selecting there opens no form.
+    await mouseDrag(page, await centerOf(await cell(page, "atlas", 9)), await centerOf(await cell(page, "atlas", 10)));
+    assert.equal(await page.locator(".demo-form").count(), 0);
+
+    // Free time on Borealis opens the form; submitting books it.
+    await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
+    await page.waitForSelector(".demo-form");
+    await page.fill('.demo-form input[aria-label="Event title"]', "Design review");
+    await page.click('.demo-form button[type="submit"]');
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), 'Booked "Design review"');
+    assert.equal(await eventCount(), before + 1);
+
+    // The new booking blocks the same time for the next person.
+    await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
+    assert.equal(await page.locator(".demo-form").count(), 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("tutorial", () => {
   it("moves a booking to another row and refuses an overlap", async () => {
     const { page, context, errors } = await open("/tutorials/free-react-resource-timeline/");
