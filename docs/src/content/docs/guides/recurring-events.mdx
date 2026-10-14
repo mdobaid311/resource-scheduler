@@ -58,7 +58,28 @@ The two usual choices, both shown in the demo above:
 - **This event only.** Add the occurrence's day to the series' `exceptions`, and add a normal one-off event at the new time.
 - **The whole series.** Change the series itself: its `resourceId`, or the time of day of `startDate` and `endDate`.
 
-"This and following events" is the same idea: end the old series with `until` the day before and start a new series from the occurrence.
+Two helpers do the bookkeeping for you. Both are pure: they return new events and change nothing.
+
+```ts
+import { editOccurrence, splitRecurrence } from "resource-scheduler";
+
+// "This and following": the old series ends the day before, a new one starts at the occurrence.
+const { before, after } = splitRecurrence(standup, occurrenceStart, {
+  title: "Planning",
+  startDate: newStart,
+  endDate: newEnd,
+});
+// before: standup with recurrence.until = the day before (its count is dropped)
+// after:  a new series, id "<id>::from-<yyyy-MM-dd>", with the edits applied
+
+// "This occurrence only": an exception on the series plus a one-off event.
+const { series, changed } = editOccurrence(standup, occurrenceStart, { startDate: newStart, endDate: newEnd });
+```
+
+- `occurrence` is any time on that day, and it must be an occurrence of the event; otherwise both functions throw a `RangeError`.
+- `after` keeps a `count` as what is left (`count` minus the occurrences before the split, exceptions included), keeps `until`, and carries over the exceptions from the split on. It keeps the time of day and length unless the edits give new dates. Put `recurrence` in the edits to change the rule, or `id` to choose the id.
+- `before` is `null` when the occurrence is the first one: nothing is left of the old series, so remove it.
+- `changed` gets the id `<id>::edit-<yyyy-MM-dd>` and `seriesId`, and no `recurrence` unless the edits set one.
 
 Conflict rules (`eventOverlap`, `isValidDrop`, `blockUnavailable`) see the occurrences, so a new booking cannot land on top of one.
 

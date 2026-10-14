@@ -14,6 +14,8 @@ All of these are exported from `resource-scheduler`. The pure functions among th
 
 - **`expandRecurrence(event, from, to)`** returns the occurrences of one event that touch `from` to `to` (end exclusive). A plain event comes back as is, or not at all when it is outside the window.
 - **`expandEvents(events, from, to)`** expands the recurring events in a list and passes the others through. See [Recurring events](/guides/recurring-events/).
+- **`splitRecurrence(event, occurrence, edits?)`** returns `{ before, after }` for "edit this and following": the series ended the day before (`null` when `occurrence` is the first one) and a new series from the occurrence with `edits` applied.
+- **`editOccurrence(event, occurrence, edits?)`** returns `{ series, changed }` for "this occurrence only": the series with an exception, and a one-off event for that day.
 
 ## Rows
 

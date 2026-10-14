@@ -57,6 +57,8 @@ export { withEvents } from "./components/ResourceScheduler/utils/events";
 export {
   expandEvents,
   expandRecurrence,
+  editOccurrence,
+  splitRecurrence,
 } from "./components/ResourceScheduler/utils/recurrence";
 export { getRowWindow } from "./components/ResourceScheduler/utils/rowWindow";
 export {

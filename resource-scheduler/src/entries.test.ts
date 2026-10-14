@@ -19,6 +19,8 @@ const MAIN_BEFORE = [
   "columnUtilization",
   "defaultLabels",
   "expandEvents",
+  "splitRecurrence",
+  "editOccurrence",
   "expandRecurrence",
   "findAvailableSlots",
   "formatEventTime",
