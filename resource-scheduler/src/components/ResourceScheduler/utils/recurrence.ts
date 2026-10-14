@@ -5,6 +5,11 @@ import { rangesOverlap } from "./placement";
 
 // Stops a series with no end from looping forever on an absurd window.
 const MAX_OCCURRENCES = 200_000;
+// Gives up on a monthly or yearly rule that never matches, such as 31 February.
+const MAX_PERIODS = 100_000;
+const HOUR = 3_600_000;
+
+const isHourly = (rule: Recurrence) => rule.freq === "hourly";
 
 // The wall-clock time of `time` on another day, so 9:00 stays 9:00 across a
 // daylight saving change.
@@ -19,16 +24,53 @@ const atDay = (day: Date, time: Date) =>
     time.getMilliseconds()
   );
 
-// The days a series falls on, in order, from the first one. Months and years
-// that lack the date (31 February, 29 February) are skipped, as in iCalendar.
-function* occurrenceDays(first: Date, rule: Recurrence): Generator<Date> {
+// The days of one month that a monthly or yearly rule picks, in order:
+// `byMonthDay` and `byWeekday` narrow the month, then `bySetPos` picks from what is left.
+// With neither, it is the day of the month the series starts on (none when the month is shorter).
+const monthDays = (year: number, month: number, rule: Recurrence, date: number): number[] => {
+  const length = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const dates = rule.byMonthDay?.length ? rule.byMonthDay.map((d) => (d < 0 ? length + 1 + d : d)) : null;
+  const weekdays = rule.byWeekday?.length ? rule.byWeekday : null;
+
+  const days: number[] = [];
+  if (!dates && !weekdays) {
+    if (date <= length) days.push(date);
+  } else {
+    for (let d = 1; d <= length; d++) {
+      if (dates && !dates.includes(d)) continue;
+      if (weekdays && !weekdays.includes((firstWeekday + d - 1) % 7)) continue;
+      days.push(d);
+    }
+  }
+  if (!rule.bySetPos?.length) return days;
+  const picked = rule.bySetPos.map((p) => (p > 0 ? p - 1 : days.length + p));
+  return [...new Set(picked)]
+    .filter((i) => i >= 0 && i < days.length)
+    .sort((a, b) => a - b)
+    .map((i) => days[i]);
+};
+
+// The occurrences of a series, in order, from the first one: the days for daily
+// to yearly (months and years that lack the date, such as 31 February or
+// 29 February, are skipped, as in iCalendar), the starting instants for hourly.
+// `skipTo` lets an hourly series jump close to a window instead of counting up to it.
+function* occurrenceDays(first: Date, rule: Recurrence, skipTo?: Date): Generator<Date> {
   const interval = Math.max(1, Math.floor(rule.interval ?? 1));
   const firstDay = startOfDay(first);
   const year = firstDay.getFullYear();
   const month = firstDay.getMonth();
   const date = firstDay.getDate();
 
-  if (rule.freq === "daily") {
+  if (rule.freq === "hourly") {
+    // Elapsed time, not wall-clock time: "every 2 hours" is 2 real hours apart,
+    // so the clock reading shifts by an hour across a daylight saving change.
+    const step = interval * HOUR;
+    const t0 = first.getTime();
+    for (let i = skipTo ? Math.max(0, Math.floor((skipTo.getTime() - t0) / step)) : 0; ; i++) {
+      yield new Date(t0 + i * step);
+    }
+  } else if (rule.freq === "daily") {
     for (let i = 0; ; i++) yield addDays(firstDay, i * interval);
   } else if (rule.freq === "weekly") {
     // Weeks start on Monday, as in iCalendar; days run Monday first.
@@ -42,24 +84,48 @@ function* occurrenceDays(first: Date, rule: Recurrence): Generator<Date> {
         if (day >= firstDay) yield day;
       }
     }
-  } else if (rule.freq === "monthly") {
-    for (let i = 0; ; i++) {
-      const day = new Date(year, month + i * interval, date);
-      if (day.getDate() === date) yield day;
-    }
   } else {
-    for (let i = 0; ; i++) {
-      const day = new Date(year + i * interval, month, date);
-      if (day.getMonth() === month) yield day;
+    // Monthly and yearly differ only in how the month is reached.
+    for (let i = 0; i < MAX_PERIODS; i++) {
+      const period =
+        rule.freq === "monthly" ? new Date(year, month + i * interval, 1) : new Date(year + i * interval, month, 1);
+      for (const d of monthDays(period.getFullYear(), period.getMonth(), rule, date)) {
+        const day = new Date(period.getFullYear(), period.getMonth(), d);
+        if (day >= firstDay) yield day;
+      }
     }
   }
 }
 
+// An occurrence is a day, or for an hourly series an instant.
+const startAt = (event: SchedulerEvent, rule: Recurrence, day: Date) =>
+  isHourly(rule) ? day : atDay(day, event.startDate);
+
+const endAt = (event: SchedulerEvent, rule: Recurrence, day: Date) =>
+  isHourly(rule)
+    ? new Date(day.getTime() + (event.endDate.getTime() - event.startDate.getTime()))
+    : atDay(addDays(day, differenceInCalendarDays(event.endDate, event.startDate)), event.endDate);
+
+const isSkipped = (rule: Recurrence, day: Date) =>
+  rule.exceptions?.some((skipped) => (isHourly(rule) ? skipped.getTime() === day.getTime() : isSameDay(skipped, day))) ??
+  false;
+
+const pastUntil = (rule: Recurrence, day: Date) =>
+  rule.until !== undefined && day > (isHourly(rule) ? rule.until : startOfDay(rule.until));
+
+// `exception` is before the occurrence `day`, by day (by instant for hourly).
+const isBefore = (rule: Recurrence, exception: Date, day: Date) =>
+  (isHourly(rule) ? exception : startOfDay(exception)) < day;
+
+const idPart = (rule: Recurrence, day: Date) =>
+  format(day, isHourly(rule) ? "yyyy-MM-dd'T'HH:mmxxx" : "yyyy-MM-dd");
+
 /**
  * The occurrences of `event` that touch `from` to `to` (end exclusive). An
  * event without a `recurrence` comes back as is, or not at all when it is
- * outside the window. Each occurrence gets the id `<id>::<yyyy-MM-dd>` and a
- * `seriesId`, keeps the time of day and the length, and has no `recurrence`.
+ * outside the window. Each occurrence gets the id `<id>::<yyyy-MM-dd>` (hourly:
+ * `<id>::<yyyy-MM-dd>T<HH:mm><offset>`) and a `seriesId`, keeps the time of
+ * day and the length, and has no `recurrence`.
  */
 export const expandRecurrence = (
   event: SchedulerEvent,
@@ -71,25 +137,28 @@ export const expandRecurrence = (
     return rangesOverlap(event.startDate, event.endDate, from, to) ? [event] : [];
   }
 
-  const spanDays = differenceInCalendarDays(event.endDate, event.startDate);
-  const lastDay = rule.until ? startOfDay(rule.until) : null;
   const found: SchedulerEvent[] = [];
   let generated = 0;
+  // Without a count nothing depends on the occurrences before the window.
+  const skipTo =
+    isHourly(rule) && rule.count === undefined
+      ? new Date(from.getTime() - (event.endDate.getTime() - event.startDate.getTime()))
+      : undefined;
 
-  for (const day of occurrenceDays(event.startDate, rule)) {
-    if (lastDay && day > lastDay) break;
+  for (const day of occurrenceDays(event.startDate, rule, skipTo)) {
+    if (pastUntil(rule, day)) break;
     if (rule.count !== undefined && generated >= rule.count) break;
     if (++generated > MAX_OCCURRENCES) break;
 
-    const start = atDay(day, event.startDate);
+    const start = startAt(event, rule, day);
     if (start >= to) break; // later ones start even later
-    if (rule.exceptions?.some((skipped) => isSameDay(skipped, day))) continue;
-    const end = atDay(addDays(day, spanDays), event.endDate);
+    if (isSkipped(rule, day)) continue;
+    const end = endAt(event, rule, day);
     if (!rangesOverlap(start, end, from, to)) continue;
 
     found.push({
       ...event,
-      id: `${event.id}::${format(day, "yyyy-MM-dd")}`,
+      id: `${event.id}::${idPart(rule, day)}`,
       startDate: start,
       endDate: end,
       recurrence: undefined,
@@ -113,19 +182,20 @@ export const expandEvents = (
     ? events.flatMap((e) => (e.recurrence ? expandRecurrence(e, from, to) : [e]))
     : events;
 
-// The day of `occurrence` in the series and how many occurrences come before
-// it (exceptions count). Throws when it is not an occurrence of the event.
+// The occurrence at `occurrence` (its day; for hourly its start) in the series
+// and how many occurrences come before it (exceptions count). Throws when it is
+// not an occurrence of the event.
 const locate = (event: SchedulerEvent, occurrence: Date) => {
   const rule = event.recurrence;
   if (!rule) throw new RangeError("The event does not recur");
-  const target = startOfDay(occurrence);
-  const lastDay = rule.until ? startOfDay(rule.until) : null;
+  const hourly = isHourly(rule);
+  const target = hourly ? occurrence : startOfDay(occurrence);
   let before = 0;
   for (const day of occurrenceDays(event.startDate, rule)) {
-    if (day > target || (lastDay && day > lastDay)) break;
+    if (day > target || pastUntil(rule, day)) break;
     if (rule.count !== undefined && before >= rule.count) break;
-    if (isSameDay(day, target)) {
-      if (rule.exceptions?.some((skipped) => isSameDay(skipped, day))) break;
+    if (hourly ? day.getTime() === target.getTime() : isSameDay(day, target)) {
+      if (isSkipped(rule, day)) break;
       return { rule, day, before };
     }
     if (++before > MAX_OCCURRENCES) break;
@@ -134,23 +204,22 @@ const locate = (event: SchedulerEvent, occurrence: Date) => {
 };
 
 // What `edits` leave of the occurrence on `day`: the same time of day and length.
-const occurrenceOn = (event: SchedulerEvent, day: Date, edits: Partial<SchedulerEvent>) => ({
-  startDate: atDay(day, event.startDate),
-  endDate: atDay(addDays(day, differenceInCalendarDays(event.endDate, event.startDate)), event.endDate),
+const occurrenceOn = (event: SchedulerEvent, rule: Recurrence, day: Date, edits: Partial<SchedulerEvent>) => ({
+  startDate: startAt(event, rule, day),
+  endDate: endAt(event, rule, day),
   ...edits,
 });
 
-const isoDay = (day: Date) => format(day, "yyyy-MM-dd");
-
 /**
  * "Edit this and following": splits a recurring `event` at `occurrence` (any
- * time on that day; it must be an occurrence). `before` is the original
- * series ended the day before through `until` (its `count` is dropped), or
- * `null` when `occurrence` is the first one and nothing is left of it, so
- * remove the original. `after` is a new series that starts at the occurrence
- * with `edits` applied. It gets the id `<id>::from-<yyyy-MM-dd>` (or
- * `edits.id`), the rest of the `count`, and the exceptions from the split on.
- * Pass `edits.recurrence` to change the rule too, and both dates to move it.
+ * time on that day; for an hourly series its exact start). It must be an
+ * occurrence. `before` is the original series ended before it through `until`
+ * (its `count` is dropped), or `null` when `occurrence` is the first one and
+ * nothing is left of it, so remove the original. `after` is a new series that
+ * starts at the occurrence with `edits` applied. It gets the id
+ * `<id>::from-<yyyy-MM-dd>` (or `edits.id`), the rest of the `count`, and the
+ * exceptions from the split on. Pass `edits.recurrence` to change the rule
+ * too, and both dates to move it.
  */
 export const splitRecurrence = (
   event: SchedulerEvent,
@@ -159,23 +228,23 @@ export const splitRecurrence = (
 ): { before: SchedulerEvent | null; after: SchedulerEvent } => {
   const { rule, day, before } = locate(event, occurrence);
   const { count, exceptions, ...kept } = rule;
-  const later = exceptions?.filter((skipped) => startOfDay(skipped) >= day);
-  const earlier = exceptions?.filter((skipped) => startOfDay(skipped) < day);
+  const later = exceptions?.filter((skipped) => !isBefore(rule, skipped, day));
+  const earlier = exceptions?.filter((skipped) => isBefore(rule, skipped, day));
   return {
     before: before
       ? {
           ...event,
           recurrence: {
             ...kept,
-            until: addDays(day, -1),
+            until: isHourly(rule) ? new Date(day.getTime() - 1) : addDays(day, -1),
             ...(earlier?.length ? { exceptions: earlier } : {}),
           },
         }
       : null,
     after: {
       ...event,
-      ...occurrenceOn(event, day, edits),
-      id: edits.id ?? `${event.id}::from-${isoDay(day)}`,
+      ...occurrenceOn(event, rule, day, edits),
+      id: edits.id ?? `${event.id}::from-${idPart(rule, day)}`,
       recurrence: edits.recurrence ?? {
         ...kept,
         ...(count !== undefined ? { count: count - before } : {}),
@@ -201,8 +270,8 @@ export const editOccurrence = (
     series: { ...event, recurrence: { ...rule, exceptions: [...(rule.exceptions ?? []), day] } },
     changed: {
       ...event,
-      ...occurrenceOn(event, day, edits),
-      id: edits.id ?? `${event.id}::edit-${isoDay(day)}`,
+      ...occurrenceOn(event, rule, day, edits),
+      id: edits.id ?? `${event.id}::edit-${idPart(rule, day)}`,
       recurrence: edits.recurrence,
       seriesId: event.id,
     },

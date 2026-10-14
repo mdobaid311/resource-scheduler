@@ -70,12 +70,14 @@ interface SchedulerEvent {
 }
 
 interface Recurrence {
-  freq: "daily" | "weekly" | "monthly" | "yearly";
-  interval?: number;     // every n periods. Default 1
-  byWeekday?: number[];  // weekly only, 0 = Sunday
-  until?: Date;          // last day it may start on, inclusive
+  freq: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
+  interval?: number;     // every n periods. Default 1. Hourly counts elapsed time
+  byWeekday?: number[];  // weekly, monthly, yearly; 0 = Sunday
+  byMonthDay?: number[]; // monthly, yearly: 1 to 31, or -1 (last day) from the end
+  bySetPos?: number[];   // monthly, yearly: 1 first, -1 last of what byWeekday/byMonthDay give
+  until?: Date;          // last day it may start on, inclusive (hourly: the last moment)
   count?: number;        // total occurrences, counting the first
-  exceptions?: Date[];   // days to skip
+  exceptions?: Date[];   // days to skip (hourly: exact starts)
 }
 ```
 

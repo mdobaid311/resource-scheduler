@@ -50,11 +50,14 @@ const isAllDay = (e: SchedulerEvent) =>
   startOfDay(e.startDate).getTime() === e.startDate.getTime() &&
   startOfDay(e.endDate).getTime() === e.endDate.getTime();
 
-const rrule = (r: Recurrence, allDay: boolean) => {
+const rrule = (r: Recurrence, allDay: boolean, start: Date) => {
   const parts = [`FREQ=${r.freq.toUpperCase()}`];
   if (r.interval && r.interval > 1) parts.push(`INTERVAL=${r.interval}`);
-  if (r.freq === "weekly" && r.byWeekday?.length) parts.push(`BYDAY=${r.byWeekday.map((d) => DAYS[d]).join(",")}`);
-  if (r.until) parts.push(`UNTIL=${allDay ? dateOnly(r.until) : stamp(endOfDay(r.until))}`);
+  if (r.freq === "yearly" && (r.byMonthDay?.length || r.bySetPos?.length || r.byWeekday?.length)) parts.push(`BYMONTH=${start.getMonth() + 1}`);
+  if (r.byWeekday?.length && r.freq !== "hourly" && r.freq !== "daily") parts.push(`BYDAY=${r.byWeekday.map((d) => DAYS[d]).join(",")}`);
+  if (r.byMonthDay?.length && (r.freq === "monthly" || r.freq === "yearly")) parts.push(`BYMONTHDAY=${r.byMonthDay.join(",")}`);
+  if (r.bySetPos?.length && (r.freq === "monthly" || r.freq === "yearly")) parts.push(`BYSETPOS=${r.bySetPos.join(",")}`);
+  if (r.until) parts.push(`UNTIL=${allDay ? dateOnly(r.until) : stamp(r.freq === "hourly" ? r.until : endOfDay(r.until))}`);
   if (r.count !== undefined) parts.push(`COUNT=${r.count}`);
   return `RRULE:${parts.join(";")}`;
 };
@@ -87,7 +90,7 @@ export const eventsToICS = (
     if (e.description) out.push(`DESCRIPTION:${escapeText(e.description)}`);
     if (resources && place.length) out.push(`LOCATION:${place.join("\\, ")}`);
     if (e.recurrence) {
-      out.push(rrule(e.recurrence, allDay));
+      out.push(rrule(e.recurrence, allDay, e.startDate));
       const skipped = e.recurrence.exceptions ?? [];
       if (skipped.length) {
         // Each exception is the occurrence's start on that day.
@@ -96,7 +99,7 @@ export const eventsToICS = (
         out.push(
           allDay
             ? `EXDATE;VALUE=DATE:${skipped.map(dateOnly).join(",")}`
-            : `EXDATE:${skipped.map((d) => stamp(at(d))).join(",")}`
+            : `EXDATE:${skipped.map((d) => stamp(e.recurrence?.freq === "hourly" ? d : at(d))).join(",")}`
         );
       }
     }
