@@ -40,6 +40,26 @@ jobs:
           ! grep -q "react.transitional.element" dist/index.esm.js
           ! grep -Eq "(^|[},])body\{|html,:host|--background:" dist/resource-scheduler.css
 
+  changeset:
+    # Every PR carries a changeset (`npm run changeset`), or an empty one
+    # (`npm run changeset -- --empty`) when nothing user-visible changes.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resource-scheduler
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: resource-scheduler/package-lock.json
+      - run: npm ci
+      - run: npx changeset status --since=origin/${{ github.base_ref }}
+
   docs:
     # The docs site embeds the real component, so it also checks that the
     # package source compiles inside another project.
