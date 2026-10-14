@@ -412,7 +412,8 @@ describe("printing", () => {
     const paper = await page.evaluate(() => {
       const style = (selector) => getComputedStyle(document.querySelector(selector));
       return {
-        controls: [...document.querySelectorAll(".rs-toolbar button, .rs-toolbar [role=combobox]")].map((el) => getComputedStyle(el).display),
+        // Rendered or not: the view buttons sit in a group that is hidden as a whole.
+        controls: [...document.querySelectorAll(".rs-toolbar button, .rs-toolbar [role=combobox]")].map((el) => el.checkVisibility()),
         title: document.querySelector(".rs-toolbar").innerText,
         scroll: style(".rs-scroll").overflowX,
         header: style(".rs-header").position,
@@ -422,7 +423,7 @@ describe("printing", () => {
         page: document.documentElement.clientWidth,
       };
     });
-    assert.ok(paper.controls.length >= 4 && paper.controls.every((d) => d === "none"), "arrows, Today and the view select are gone");
+    assert.ok(paper.controls.length >= 4 && paper.controls.every((visible) => !visible), "arrows, Today and the view switch are gone");
     assert.match(paper.title, /Oct 4 – Oct 10, 2026/); // the title stays
     assert.equal(paper.scroll, "visible");
     assert.equal(paper.header, "static");
@@ -488,7 +489,7 @@ describe("headless", () => {
 
     // Clicking an event reads it out; the day view shows the visible hours of one day.
     await tile("stand::2026-10-07").click();
-    assert.equal(await demo.getByRole("status").textContent(), "Standup, Ann Lee: 9:00 AM - 9:30 AM");
+    assert.equal(await demo.getByRole("status").textContent(), "Standup, Ann Lee: 9:00 AM – 9:30 AM");
     await demo.getByRole("button", { name: "Day", exact: true }).click();
     assert.equal(await title.textContent(), "October 7, 2026");
     assert.ok(await demo.getByText("9AM", { exact: true }).isVisible());
@@ -515,7 +516,7 @@ describe("custom timeline", () => {
     const { page, context, errors, demo, tile, cellOf, top } = await openCustom();
     const before = await top("a2");
     await mouseDrag(page, await centerOf(tile("a2")), await centerOf(cellOf("chen", 2)));
-    assert.equal(await demo.getByRole("status").textContent(), 'Moved "Design review" to Chen Wu, 11:00 AM - 1:00 PM');
+    assert.equal(await demo.getByRole("status").textContent(), 'Moved "Design review" to Chen Wu, 11:00 AM – 1:00 PM');
     assert.ok((await top("a2")) > before, "the event is now in a lower row");
     assert.deepEqual(errors, []);
     await context.close();
@@ -542,7 +543,7 @@ describe("custom timeline", () => {
     const { page, context, errors, demo, tile, cellOf } = await openCustom();
     const before = await tile("c1").boundingBox();
     await mouseDrag(page, await centerOf(tile("c1").locator('[data-demo-resize="end"]')), await centerOf(cellOf("chen", 2)));
-    assert.equal(await demo.getByRole("status").textContent(), 'Resized "User tests", 10:00 AM - 3:00 PM');
+    assert.equal(await demo.getByRole("status").textContent(), 'Resized "User tests", 10:00 AM – 3:00 PM');
     const after = await tile("c1").boundingBox();
     assert.ok(after.width > before.width * 1.7, "it now spans two days");
     assert.deepEqual(errors, []);
