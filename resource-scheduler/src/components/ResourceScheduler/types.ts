@@ -53,8 +53,9 @@ export interface Recurrence {
   freq: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
   /**
    * Repeat every n hours, days, weeks, months or years. Default 1. Hourly
-   * counts elapsed time, so across a daylight saving change the clock time of
-   * an occurrence moves by an hour (the other frequencies keep the clock time).
+   * steps the clock too ("every 4 hours" from 08:00 is 08:00, 12:00, ... on
+   * every day, also when the clocks change), so a reading the clock skips is
+   * not an occurrence.
    */
   interval?: number;
   /**
@@ -78,7 +79,7 @@ export interface Recurrence {
   bySetPos?: number[];
   /**
    * The last day it may start on, inclusive (the time is ignored). Hourly: the
-   * last moment it may start at.
+   * last moment it may start at (on the clock of the scheduler).
    */
   until?: Date;
   /** How many occurrences in total, counting the first. Exceptions still count. */

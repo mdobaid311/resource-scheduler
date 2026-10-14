@@ -143,7 +143,7 @@ describe("hourly", () => {
 
   it("gives each occurrence an id with the time, and a seriesId", () => {
     const out = expand(series(rule), d(2026, 10, 5), d(2026, 10, 5, 12));
-    expect(out[0].id).toMatch(/^s::2026-10-05T09:00[+-]\d\d:\d\d$/);
+    expect(out[0].id).toBe("s::2026-10-05T09:00");
     expect(out[0].seriesId).toBe("s");
     expect(out[0].recurrence).toBeUndefined();
   });
@@ -152,7 +152,8 @@ describe("hourly", () => {
     const start = d(2020, 1, 1, 9);
     const out = expand(series({ freq: "hourly", interval: 5 }, start), d(2026, 10, 5), d(2026, 10, 6));
     expect(out.length).toBeGreaterThanOrEqual(4);
-    for (const e of out) expect((e.startDate.getTime() - start.getTime()) % (5 * 3_600_000)).toBe(0);
+    const wall = (x: Date) => Date.UTC(x.getFullYear(), x.getMonth(), x.getDate(), x.getHours(), x.getMinutes());
+    for (const e of out) expect((wall(e.startDate) - wall(start)) % (5 * 3_600_000)).toBe(0);
     expect(out[0].startDate.getTime()).toBeGreaterThanOrEqual(d(2026, 10, 5).getTime() - 3_600_000);
   });
 
@@ -175,15 +176,17 @@ describe("hourly", () => {
     expect(hours(expand({ ...base, recurrence: other }, ...wide))).toEqual([9, 11]);
   });
 
-  it("counts elapsed time across a daylight saving change", () => {
-    for (const [from, to] of [
-      [d(2026, 3, 7, 12), d(2026, 3, 9, 12)],
-      [d(2026, 10, 31, 12), d(2026, 11, 2, 12)],
-    ]) {
-      const out = expand(series({ freq: "hourly", interval: 2 }, new Date(from.getTime() - 3 * 3_600_000)), from, to);
-      const gaps = out.slice(1).map((e, i) => e.startDate.getTime() - out[i].startDate.getTime());
-      expect(new Set(gaps)).toEqual(new Set([2 * 3_600_000]));
-      expect(out.every((e) => e.endDate.getTime() - e.startDate.getTime() === 3_600_000)).toBe(true);
+  it("steps the clock, also on a day the clocks change", () => {
+    // Every 2 hours from midnight: even hours on every day. A reading the clock skips (02:00 when
+    // the clocks go forward) is not an occurrence; the others keep their hour and their length.
+    for (const day of [d(2026, 3, 7), d(2026, 3, 8), d(2026, 10, 31), d(2026, 11, 1)]) {
+      const out = expand(series({ freq: "hourly", interval: 2 }, day), day, d(day.getFullYear(), day.getMonth() + 1, day.getDate() + 2));
+      const expected = [0, 1]
+        .flatMap((n) => Array.from({ length: 12 }, (_, i) => [new Date(day.getFullYear(), day.getMonth(), day.getDate() + n, i * 2), i * 2] as const))
+        .filter(([t, hour]) => t.getHours() === hour)
+        .map(([t]) => t.getTime());
+      expect(out.map((e) => e.startDate.getTime())).toEqual(expected);
+      expect(out.every((e) => e.startDate.getHours() % 2 === 0)).toBe(true);
     }
   });
 
@@ -224,7 +227,7 @@ describe("split and edit with the new rules", () => {
     const { before, after } = splitRecurrence(event, d(2026, 10, 5, 18));
     expect(before?.recurrence?.until).toEqual(new Date(d(2026, 10, 5, 18).getTime() - 1));
     expect(before?.recurrence?.exceptions).toEqual([d(2026, 10, 5, 12)]);
-    expect(after.id).toMatch(/^s::from-2026-10-05T18:00[+-]\d\d:\d\d$/);
+    expect(after.id).toBe("s::from-2026-10-05T18:00");
     expect(after.recurrence?.count).toBe(5);
     expect(after.recurrence?.exceptions).toEqual([d(2026, 10, 6, 6)]);
     expect(all(before, after)).toEqual(all(event));
@@ -236,7 +239,7 @@ describe("split and edit with the new rules", () => {
     const event = series({ freq: "hourly", interval: 3 });
     const { series: kept, changed } = editOccurrence(event, d(2026, 10, 5, 12), { title: "Moved" });
     expect(kept.recurrence?.exceptions).toEqual([d(2026, 10, 5, 12)]);
-    expect(changed.id).toMatch(/^s::edit-2026-10-05T12:00[+-]\d\d:\d\d$/);
+    expect(changed.id).toBe("s::edit-2026-10-05T12:00");
     expect(changed.startDate).toEqual(d(2026, 10, 5, 12));
     expect(changed.endDate).toEqual(d(2026, 10, 5, 13));
     expect(changed.recurrence).toBeUndefined();

@@ -44,6 +44,14 @@ zonedToUtc(new Date(2026, 9, 7, 9), "Asia/Tokyo"); // the instant it is 09:00 on
 
 Export is unaffected: `eventsToICS` writes the instants, and `icsToEvents` reads `TZID` zones into instants.
 
+## Recurring events
+
+A series is stored like any event: the instants of its first occurrence plus a `recurrence`. With `timeZone` it repeats at the same **wall-clock time in the zone**, also across a clock change in that zone: a daily 09:00 in Paris is 07:00 UTC until 25 October 2026 and 08:00 UTC from then on, "the last Friday at noon" in New York is 16:00 UTC on 30 October and 17:00 UTC on 27 November, and a series every 4 hours from midnight is 00:00, 04:00, 08:00 ... on every day, also on a day with 23 or 25 hours. It is the same whatever zone the viewer's machine is in. Handlers receive the occurrence's instants as usual.
+
+- `until` and `exceptions` are calendar days, read as days in the zone (build them with `new Date(y, m, d)`).
+- One zone per scheduler: a series with a zone of its own, different from `timeZone`, is not supported.
+- A reading that does not exist in the zone (02:30 when its clocks go forward) is shown at that reading and reported with the offset from before the change, as for any event. An hourly series skips it.
+
 ## Limits
 
 - **A day on the grid has 24 hours.** On the day a zone changes its clock, the hour that does not exist is still drawn, and the hour that happens twice is drawn once. A time that does not exist (02:30 when clocks go forward at 02:00) is stored as the moment an hour later, and one that happens twice as the first of the two, as RFC 5545 says.
