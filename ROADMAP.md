@@ -79,7 +79,7 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 
 - [x] Items 1-6: CSS scoped (`.rs-root`, `--rs-*` tokens, no preflight/`body`/`*` rules), `react`/`react-dom` peer-only, `tailwindcss` peer dropped, `react-dnd` replaced by Pointer Events, `"use client"` banner, `sideEffects`, `SchedulerEvent` (+ deprecated `Event` alias)
 - [x] Bugs 7-13: zero-length click event, selection excluded last slot and stuck outside grid, day-view start/span, drop time-of-day, scroll target, midnight/calendar-day spans, derived (not copied) resources, linear lane packing
-- [ ] Bug 14 (`onSlotClick` contract) and 15 (hard-coded "New Event"/random color) are deferred to P1 `onSlotSelect`
+- [x] Bug 14 (`onSlotClick` contract) and 15 (hard-coded "New Event"/random color): resolved by P1 `onSlotSelect`, which reports `{ resourceId, start, end }` and lets the app choose title and color. The `onEventCreate` path keeps its old defaults for backwards compatibility, and a cell click still fires `onEventClick` for an event starting in that cell
 - [x] Extra bugs found while fixing:
   - bundle inlined React 19's `jsx-runtime` (broke React 18, which the package claimed to support); now external
   - day view showed only events live *right now*; events on the last day of week/month/quarter/year were hidden
