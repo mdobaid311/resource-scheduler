@@ -24,7 +24,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 
   return (
     <div
-      className="rs-header grid sticky top-0 z-10 bg-ocrs-muted"
+      className="rs-header grid shrink-0 sticky top-0 z-10 bg-ocrs-muted"
       style={{
         gridTemplateColumns: `repeat(${slots.length}, minmax(${
           viewType === "day" ? timeColumnWidth : dateColumnWidth

@@ -385,8 +385,6 @@
           },
           ".rs-root button": {
             "background-color": "transparent",
-            "border-width": "0",
-            "border-style": "solid",
             "color": "inherit",
             "font": "inherit"
           },
@@ -412,6 +410,9 @@
           },
           ".rs-toolbar, .rs-resources, .rs-resources-head, .rs-header, .rs-totals, .rs-totals-label": {
             "position": "static"
+          },
+          ".rs-resources::after, .rs-nav": {
+            "display": "none"
           },
           ".rs-scroll": {
             "overflow": "visible",

@@ -44,7 +44,7 @@ export const ColumnUtilizationRow: React.FC<{
     <div
       role="group"
       aria-label={labels.columnUtilization}
-      className="rs-totals sticky bottom-0 z-10 grid border-t bg-ocrs-white"
+      className="rs-totals sticky bottom-0 z-10 grid shrink-0 border-t bg-ocrs-white"
       style={{
         gridTemplateColumns: `repeat(${slots.length}, minmax(${columnWidth}, 1fr))`,
         height: COLUMN_UTILIZATION_HEIGHT + "px",

@@ -112,7 +112,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
     <div
       ref={rootRef}
       // The `after` line carries the column's edge down past the last row.
-      className="rs-resources bg-ocrs-white z-20 sticky start-0 shrink-0 after:pointer-events-none after:absolute after:inset-y-0 after:end-0 after:w-px after:bg-ocrs-border"
+      className="rs-resources bg-ocrs-white z-20 sticky start-0 flex shrink-0 flex-col [&>*]:shrink-0 after:pointer-events-none after:absolute after:inset-y-0 after:end-0 after:w-px after:bg-ocrs-border"
       style={{ width: resourceColumnWidth }}
     >
       <div className="rs-resources-head border-e sticky top-0 z-10 bg-ocrs-muted px-4 border-b h-14 flex items-center">
@@ -159,7 +159,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             </>
           );
           // Dragged rows dim; a resource dropped on a header gets a ring, as it joins that group.
-          const cell = `border-b border-e bg-ocrs-muted text-sm font-semibold text-ocrs-foreground flex items-center gap-2 overflow-hidden${
+          const cell = `border-0 border-b border-e bg-ocrs-muted text-sm font-semibold text-ocrs-foreground flex items-center gap-2 overflow-hidden${
             isDragged(resource) ? " opacity-50" : ""
           }${active?.target?.header === resource.id ? " ring-2 ring-inset ring-ocrs-primary" : ""}`;
           return onToggleGroup ? (
@@ -225,7 +225,10 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
               renderResourceHeader(resource)
             ) : (
               <>
-                <span className="line-clamp-2 break-words whitespace-pre-line font-medium leading-5 text-ocrs-foreground">
+                <span
+                  // Two lines of name and a role do not fit a row; never cut one through.
+                  className={`${resource.role ? "line-clamp-1" : "line-clamp-2"} break-words whitespace-pre-line font-medium leading-5 text-ocrs-foreground`}
+                >
                   {resource.name}
                 </span>
                 {resource.role && (
@@ -238,7 +241,13 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
         );
       })}
       {after > 0 && <div aria-hidden="true" style={{ height: after + "px" }} />}
-      {showColumnUtilization && <ColumnUtilizationLabel />}
+      {showColumnUtilization && (
+        <>
+          {/* Pushes the label down to the totals row when the rows are few. */}
+          <div data-rs-spacer aria-hidden="true" className="flex-1" />
+          <ColumnUtilizationLabel />
+        </>
+      )}
       {line !== undefined && (
         <div
           data-rs-drop-line
