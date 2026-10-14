@@ -997,6 +997,60 @@ describe("shift planner tutorial", () => {
   });
 });
 
+describe("clinic appointment board tutorial", () => {
+  it("refuses a visit with no gap, books through the form, and books the next free visit", async () => {
+    const { page, context, errors } = await open("/tutorials/react-clinic-appointment-board/");
+    const tap = async (target) => {
+      const c = await centerOf(target);
+      await page.mouse.click(c.x, c.y);
+    };
+    // Grab a visit by its left edge and drop that edge on a slot, so the slot under the pointer is the new start.
+    const leftEdge = async (target) => {
+      await target.scrollIntoViewIfNeeded();
+      const b = await target.boundingBox();
+      return { x: b.x + 3, y: b.y + b.height / 2 };
+    };
+    const tanaka = "v5"; // Dr Brown, 9:00 to 9:30
+    assert.match(await label(page, tanaka), /Dr Brown/);
+
+    // Singh (Nurse Cho) ends at 9:30, so a visit at 9:30 has no gap: refused, nothing moves.
+    await mouseDrag(page, await leftEdge(event(page, tanaka)), await leftEdge(await cell(page, "cho", 9, 30)));
+    assert.match(await label(page, tanaka), /Dr Brown/);
+
+    // 9:45 leaves the 15 minute gap: allowed.
+    await mouseDrag(page, await leftEdge(event(page, tanaka)), await leftEdge(await cell(page, "cho", 9, 45)));
+    assert.equal(await log(page), "Moved Tanaka to Nurse Cho at 9:45 AM");
+    assert.match(await label(page, tanaka), /Nurse Cho/);
+
+    // Lunch is shaded and cannot be selected: no form.
+    await tap(await cell(page, "ahmed", 12));
+    assert.equal(await page.locator(".demo-form").count(), 0);
+
+    // 8:00 is a free slot, but a 30 minute visit there would touch Patel's gap: the form says so.
+    await tap(await cell(page, "ahmed", 8));
+    await page.waitForSelector(".demo-form");
+    await page.click('.demo-form button[type="submit"]');
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), "8:00 AM to 8:30 AM does not fit for Dr Ahmed");
+
+    // 14:00 is free: book with the form.
+    await page.click('.demo-form button[type="button"]');
+    await tap(await cell(page, "ahmed", 14));
+    await page.waitForSelector(".demo-form");
+    await page.fill('.demo-form input[aria-label="Patient"]', "Garcia");
+    await page.click('.demo-form button[type="submit"]');
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), "Booked Garcia with Dr Ahmed at 2:00 PM");
+
+    // It is 10:30: Dr Brown is the first clinician free from now on.
+    await page.click(".demo-controls button");
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), "Booked Walk-in with Dr Brown at 10:30 AM");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("tutorial", () => {
   it("moves a booking to another row and refuses an overlap", async () => {
     const { page, context, errors } = await open("/tutorials/free-react-resource-timeline/");

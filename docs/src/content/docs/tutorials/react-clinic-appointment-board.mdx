@@ -1,0 +1,209 @@
+---
+title: React clinic appointment board
+description: Build a clinic appointment board in React with fixed length visits, hours and lunch per clinician, no double booking with a gap between patients, and a next free slot button.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ClinicBoardDemo from '../../../components/demos/ClinicBoardDemo';
+
+A clinic board has clinicians down the side and the day across the top. Every visit is the same length, each clinician works their own hours, nobody is booked back to back, and reception wants to ask "who is free next?". This tutorial builds that with Resource Scheduler in seven steps. It is the same component running below.
+
+<ClinicBoardDemo client:only="react" />
+
+Try three things. Drag Tanaka (Dr Brown, 9:00) to Nurse Cho at 9:30: that is right after Singh, so the gap is missing and the drop turns red. Drop it at 9:45 and it moves. Then pick "Anyone" and press "Book it" to book the next free visit.
+
+## 1. Install
+
+```bash
+npm install resource-scheduler
+```
+
+Works with React 18 and 19. Import the stylesheet once; it is scoped, so it does not restyle the rest of your page:
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css";
+```
+
+## 2. Clinicians are rows, with their own hours
+
+Each clinician is a resource. Their working days and hours are `businessHours`, and one-off gaps such as lunch or training are `unavailable`. Both are shaded in the grid:
+
+```tsx
+import type { ResourceInput } from "resource-scheduler";
+
+const everyDay = [0, 1, 2, 3, 4, 5, 6]; // use [1, 2, 3, 4, 5] for a Monday to Friday clinic
+
+const clinicians: ResourceInput[] = [
+  {
+    id: "ahmed",
+    name: "Dr Ahmed",
+    businessHours: { daysOfWeek: everyDay, startHour: 8, endHour: 17 },
+    unavailable: [{ start: new Date(2026, 9, 7, 12), end: new Date(2026, 9, 7, 13) }], // lunch
+  },
+  { id: "brown", name: "Dr Brown", businessHours: { daysOfWeek: everyDay, startHour: 8, endHour: 13 } }, // mornings only
+  {
+    id: "cho",
+    name: "Nurse Cho",
+    businessHours: { daysOfWeek: everyDay, startHour: 9, endHour: 17 },
+    unavailable: [{ start: new Date(2026, 9, 7, 15), end: new Date(2026, 9, 7, 16) }], // training
+  },
+];
+```
+
+`daysOfWeek` counts Sunday as 0. In a database this is a `clinicians` table with hours, plus a table of blocked time that you turn into `unavailable` ranges for the day on screen.
+
+## 3. A visit is an event with a fixed length
+
+Three numbers describe the clinic. Keep them in one place, because every step below uses them:
+
+```tsx
+const SLOT = 15; // the grid: a booking starts on a quarter hour
+const VISIT = 30; // every appointment is the same length
+const BUFFER = 15; // minutes to write up and reset between patients
+const MINUTE = 60_000;
+```
+
+A booked visit is a plain event. It names its row with `resourceId`:
+
+```tsx
+import type { SchedulerEvent } from "resource-scheduler";
+
+const visits: SchedulerEvent[] = [
+  { id: "v1", title: "Patel", resourceId: "ahmed", startDate: new Date(2026, 9, 7, 8, 30), endDate: new Date(2026, 9, 7, 9) },
+  { id: "v2", title: "Okafor", resourceId: "ahmed", startDate: new Date(2026, 9, 7, 9, 30), endDate: new Date(2026, 9, 7, 10) },
+  { id: "v4", title: "Reyes", resourceId: "brown", startDate: new Date(2026, 9, 7, 8), endDate: new Date(2026, 9, 7, 8, 30) },
+];
+```
+
+The list is flat, so it can come straight from one query on your appointments table.
+
+## 4. Draw the day
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+
+<div style={{ height: 330 }}>
+  <ResourceScheduler
+    resources={clinicians}
+    events={visits}
+    initialView={ViewType.Day}
+    allowViewChange={false}
+    slotDuration={SLOT}
+    dayStartHour={8}
+    dayEndHour={17}
+    blockUnavailable
+    ariaLabel="Clinic appointments"
+  />
+</div>
+```
+
+The component fills its parent, so the parent needs a height. Each prop is one rule:
+
+| Prop | What it does |
+|---|---|
+| `slotDuration={SLOT}` | The grid is quarter hours, so a click or a drop lands on one |
+| `dayStartHour` / `dayEndHour` | The hours shown, 8:00 to 17:00 |
+| `blockUnavailable` | Nothing can be booked outside a clinician's hours or in their lunch |
+
+Because `onEventResize` is not passed, the resize handles stay off and a visit keeps its length. See [views and slots](/guides/views-and-slots/).
+
+## 5. One rule: no double booking, with a gap
+
+`eventOverlap={false}` would stop two visits overlapping, but it cannot ask for a gap between them. Give each booked visit some padding instead, and ask whether the new visit fits in what is left:
+
+```tsx
+import { findAvailableSlots, withEvents } from "resource-scheduler";
+
+// Each booked visit holds its clinician for BUFFER minutes either side. A free slot in this
+// padded copy is a visit plus its gaps, and the padding never shows on screen.
+const padded = (all: SchedulerEvent[], ignoreId?: string): SchedulerEvent[] =>
+  all
+    .filter((e) => e.id !== ignoreId)
+    .map((e) => ({
+      ...e,
+      startDate: new Date(e.startDate.getTime() - BUFFER * MINUTE),
+      endDate: new Date(e.endDate.getTime() + BUFFER * MINUTE),
+    }));
+
+// The one rule: hours, lunch, no double booking and the gap, all answered by findAvailableSlots.
+// The window is exactly the range asked about, so it returns that slot or nothing.
+const canBook = (all: SchedulerEvent[], clinicianId: string, start: Date, end: Date, ignoreId?: string) => {
+  const clinician = withEvents(clinicians, padded(all, ignoreId)).find((c) => c.id === clinicianId);
+  return (
+    !!clinician &&
+    findAvailableSlots(clinician, { from: start, to: end, duration: (end.getTime() - start.getTime()) / MINUTE, step: SLOT }).length > 0
+  );
+};
+```
+
+`withEvents` puts the flat list onto the clinicians. `findAvailableSlots` treats a slot as free when it overlaps no event, misses `unavailable` time and sits inside the clinician's `businessHours`, so one call covers all four rules. Times that only touch do not overlap, so a visit that starts exactly 15 minutes after the last one ends is allowed. The visit being moved is left out with `ignoreId`, so it does not block its own new place.
+
+Pass it as `isValidDrop`, and book through your own form:
+
+```tsx
+<ResourceScheduler
+  /* ... */
+  onSlotSelect={setDraft} // a click on a free slot: open your form
+  onEventDrop={(visit, _from, to, start, end) =>
+    setEvents((all) => all.map((e) => (e.id === visit.id ? { ...e, resourceId: to, startDate: start, endDate: end } : e)))
+  }
+  isValidDrop={(visit, { resourceId, start, end }) => canBook(events, resourceId, start, end, visit.id)}
+/>
+```
+
+`isValidDrop` runs for every move and every new selection, and the refused place turns red before the drop. A callback is the opt-in: without `onEventDrop` a dropped visit snaps back.
+
+<Aside type="note" title="A click selects one slot, a visit is two">
+  A click selects a single 15 minute slot, so the grid only checks that slot. The form then books a full 30 minute visit and runs `canBook` on the whole range before it adds it, saying so when it does not fit. The full code is in the [demo source](https://github.com/mdobaid311/resource-scheduler/blob/main/docs/src/components/demos/ClinicBoardDemo.tsx).
+</Aside>
+
+## 6. The next free slot
+
+Reception rarely picks a time first. They ask who is free next. `suggestResources` answers that: give it a window and a length, and it returns the earliest free slot of each clinician, best first. Hand it the same padded events, so the gap is respected:
+
+```tsx
+import { suggestResources } from "resource-scheduler";
+
+const [next] = suggestResources(
+  withEvents(clinicians, padded(events)),
+  { from: new Date(), to: new Date(2026, 9, 7, 17), duration: VISIT, step: SLOT },
+  { resourceIds: who === "any" ? undefined : [who], limit: 1 }
+);
+// next = { resourceId, start, end, ... }, or undefined when nobody is free before 17:00
+```
+
+Pass `resourceIds` to ask about one clinician, or leave it out to ask about all of them. For a single clinician, `findAvailableSlots(clinician, { from, to, duration: VISIT, step: SLOT, limit: 3 })` lists the next three free slots to offer the patient. See [Availability](/guides/availability/).
+
+## 7. Check it on the server too
+
+The browser check is a courtesy: anyone can call your API without the board. The rule is a plain function of dates and events, so the server runs it again before it saves. `isPlacementAllowed` applies `isValidDrop` for you:
+
+```ts
+import { findAvailableSlots, isPlacementAllowed } from "resource-scheduler";
+import type { Resource, SchedulerEvent } from "resource-scheduler";
+
+export function canBookVisit(clinician: Resource, visit: SchedulerEvent) {
+  return isPlacementAllowed(
+    visit,
+    { resourceId: clinician.id, start: visit.startDate, end: visit.endDate },
+    [clinician], // the clinician with their hours and current visits, read inside your transaction
+    {
+      isValidDrop: (v, { start, end }) =>
+        findAvailableSlots(
+          { ...clinician, events: padded(clinician.events, v.id) },
+          { from: start, to: end, duration: (end.getTime() - start.getTime()) / MINUTE, step: SLOT }
+        ).length > 0,
+    }
+  );
+}
+```
+
+Return an error (HTTP 409 is the usual choice) when it is `false`, and run the check and the insert in one transaction. See [Conflict control](/guides/conflict-control/).
+
+## Where next
+
+- Add [recurring events](/guides/recurring-events/) for a standing weekly slot, such as a patient seen every Tuesday.
+- A clinic in another time zone from the browser: [Time zones](/guides/time-zones/).
+- Share the day as a calendar file or a spreadsheet: [Export](/guides/export/).
+- Other builds: the [room booking tutorial](/tutorials/react-room-booking-calendar/), the [shift planner](/tutorials/react-shift-planner/) and the [free resource timeline](/tutorials/free-react-resource-timeline/).
+- Coming from another library? The [comparison](/compare/alternatives/) lists what each one includes.
