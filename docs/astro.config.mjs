@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 
 // Set these for your deployment (Vercel: Project Settings > Environment Variables).
-const site = process.env.SITE_URL ?? "https://resource-scheduler-demo.vercel.app";
+const site = process.env.SITE_URL ?? "https://resource-scheduler-docs.vercel.app";
 const base = process.env.DOCS_BASE ?? "/";
 
 // The live demos import the package source, so the docs always show what is on

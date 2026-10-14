@@ -10,7 +10,7 @@ body:
     attributes:
       label: Before you post
       options:
-        - label: I searched the existing issues and the [docs](https://resource-scheduler-demo.vercel.app/)
+        - label: I searched the existing issues and the [docs](https://resource-scheduler-docs.vercel.app/)
           required: true
   - type: textarea
     id: what-happened

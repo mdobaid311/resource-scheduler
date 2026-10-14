@@ -10,4 +10,4 @@ npm install
 npm run dev
 ```
 
-The theme is `data-theme` on `<html>` and the accents are `--rs-*` variables set on `<html>` (see `src/App.tsx`); the page itself is styled with the same tokens. The guide: <https://resource-scheduler-demo.vercel.app/guides/theming/>.
+The theme is `data-theme` on `<html>` and the accents are `--rs-*` variables set on `<html>` (see `src/App.tsx`); the page itself is styled with the same tokens. The guide: <https://resource-scheduler-docs.vercel.app/guides/theming/>.

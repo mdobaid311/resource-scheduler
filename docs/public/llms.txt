@@ -59,45 +59,45 @@ export function Board() {
 
 ## Docs
 
-- [Introduction](https://resource-scheduler-demo.vercel.app/start/introduction/): what it is and is not
-- [Installation](https://resource-scheduler-demo.vercel.app/start/installation/): npm and shadcn
-- [Quick start](https://resource-scheduler-demo.vercel.app/start/quick-start/): a working board with create, move and resize
-- [Data model](https://resource-scheduler-demo.vercel.app/guides/data-model/): resources, events, flat events, end times
-- [Views and slots](https://resource-scheduler-demo.vercel.app/guides/views-and-slots/): views, slot length, week start, weekends
-- [Load data and control the view](https://resource-scheduler-demo.vercel.app/guides/loading-and-control/): onRangeChange and the ref
-- [Creating events](https://resource-scheduler-demo.vercel.app/guides/creating-events/): onSlotSelect and onEventCreate
-- [Drag and resize](https://resource-scheduler-demo.vercel.app/guides/drag-and-resize/)
-- [Conflict control](https://resource-scheduler-demo.vercel.app/guides/conflict-control/): eventOverlap and isValidDrop
-- [Business hours and availability](https://resource-scheduler-demo.vercel.app/guides/availability/)
-- [Utilization](https://resource-scheduler-demo.vercel.app/guides/utilization/): showUtilization, capacity, getUtilization
-- [Resource groups](https://resource-scheduler-demo.vercel.app/guides/resource-groups/): group, collapsedGroups, onGroupReorder, onResourceReorder
-- [Export and import](https://resource-scheduler-demo.vercel.app/guides/export/): eventsToICS, eventsToCSV, icsToEvents
-- [Time zones](https://resource-scheduler-demo.vercel.app/guides/time-zones/): timeZone, utcToZoned, zonedToUtc
-- [Keyboard and accessibility](https://resource-scheduler-demo.vercel.app/guides/keyboard-and-accessibility/)
-- [Printing](https://resource-scheduler-demo.vercel.app/guides/printing/): landscape, margins, printing a chosen range, limits
-- [Theming](https://resource-scheduler-demo.vercel.app/guides/theming/): the --rs-* tokens, dark mode
-- [Replace parts](https://resource-scheduler-demo.vercel.app/guides/components/): components, Toolbar, Event, EventPopover
-- [Build your own UI](https://resource-scheduler-demo.vercel.app/guides/build-your-own-ui/): resource-scheduler/headless, layout, lanes, row heights, drag math
-- [Next.js and SSR](https://resource-scheduler-demo.vercel.app/guides/nextjs-and-ssr/)
+- [Introduction](https://resource-scheduler-docs.vercel.app/start/introduction/): what it is and is not
+- [Installation](https://resource-scheduler-docs.vercel.app/start/installation/): npm and shadcn
+- [Quick start](https://resource-scheduler-docs.vercel.app/start/quick-start/): a working board with create, move and resize
+- [Data model](https://resource-scheduler-docs.vercel.app/guides/data-model/): resources, events, flat events, end times
+- [Views and slots](https://resource-scheduler-docs.vercel.app/guides/views-and-slots/): views, slot length, week start, weekends
+- [Load data and control the view](https://resource-scheduler-docs.vercel.app/guides/loading-and-control/): onRangeChange and the ref
+- [Creating events](https://resource-scheduler-docs.vercel.app/guides/creating-events/): onSlotSelect and onEventCreate
+- [Drag and resize](https://resource-scheduler-docs.vercel.app/guides/drag-and-resize/)
+- [Conflict control](https://resource-scheduler-docs.vercel.app/guides/conflict-control/): eventOverlap and isValidDrop
+- [Business hours and availability](https://resource-scheduler-docs.vercel.app/guides/availability/)
+- [Utilization](https://resource-scheduler-docs.vercel.app/guides/utilization/): showUtilization, capacity, getUtilization
+- [Resource groups](https://resource-scheduler-docs.vercel.app/guides/resource-groups/): group, collapsedGroups, onGroupReorder, onResourceReorder
+- [Export and import](https://resource-scheduler-docs.vercel.app/guides/export/): eventsToICS, eventsToCSV, icsToEvents
+- [Time zones](https://resource-scheduler-docs.vercel.app/guides/time-zones/): timeZone, utcToZoned, zonedToUtc
+- [Keyboard and accessibility](https://resource-scheduler-docs.vercel.app/guides/keyboard-and-accessibility/)
+- [Printing](https://resource-scheduler-docs.vercel.app/guides/printing/): landscape, margins, printing a chosen range, limits
+- [Theming](https://resource-scheduler-docs.vercel.app/guides/theming/): the --rs-* tokens, dark mode
+- [Replace parts](https://resource-scheduler-docs.vercel.app/guides/components/): components, Toolbar, Event, EventPopover
+- [Build your own UI](https://resource-scheduler-docs.vercel.app/guides/build-your-own-ui/): resource-scheduler/headless, layout, lanes, row heights, drag math
+- [Next.js and SSR](https://resource-scheduler-docs.vercel.app/guides/nextjs-and-ssr/)
 
 ## Recipes
 
 Each has a live demo and the complete data model.
 
-- [Room booking](https://resource-scheduler-demo.vercel.app/recipes/room-booking/): no double booking, your own form
-- [Shift roster](https://resource-scheduler-demo.vercel.app/recipes/shift-roster/): recurring shifts, contracted hours, leave, utilization
-- [Equipment rental](https://resource-scheduler-demo.vercel.app/recipes/equipment-rental/): stock counts with `capacity` and `isValidDrop`, service days, finding free days
-- [Field service dispatch](https://resource-scheduler-demo.vercel.app/recipes/field-service-dispatch/): shifts, breaks, and booking the best technician with `suggestResources`
-- [Project allocation](https://resource-scheduler-demo.vercel.app/recipes/project-allocation/): whole-day allocations, project windows with `isValidDrop`, bench time with `showUtilization`
+- [Room booking](https://resource-scheduler-docs.vercel.app/recipes/room-booking/): no double booking, your own form
+- [Shift roster](https://resource-scheduler-docs.vercel.app/recipes/shift-roster/): recurring shifts, contracted hours, leave, utilization
+- [Equipment rental](https://resource-scheduler-docs.vercel.app/recipes/equipment-rental/): stock counts with `capacity` and `isValidDrop`, service days, finding free days
+- [Field service dispatch](https://resource-scheduler-docs.vercel.app/recipes/field-service-dispatch/): shifts, breaks, and booking the best technician with `suggestResources`
+- [Project allocation](https://resource-scheduler-docs.vercel.app/recipes/project-allocation/): whole-day allocations, project windows with `isValidDrop`, bench time with `showUtilization`
 
 ## Reference
 
-- [Props](https://resource-scheduler-demo.vercel.app/reference/props/)
-- [Types](https://resource-scheduler-demo.vercel.app/reference/types/)
-- [Utilities and hooks](https://resource-scheduler-demo.vercel.app/reference/utilities/)
-- [Headless API](https://resource-scheduler-demo.vercel.app/reference/headless/): every export of resource-scheduler/headless
+- [Props](https://resource-scheduler-docs.vercel.app/reference/props/)
+- [Types](https://resource-scheduler-docs.vercel.app/reference/types/)
+- [Utilities and hooks](https://resource-scheduler-docs.vercel.app/reference/utilities/)
+- [Headless API](https://resource-scheduler-docs.vercel.app/reference/headless/): every export of resource-scheduler/headless
 
 ## Optional
 
-- [Alternatives compared](https://resource-scheduler-demo.vercel.app/compare/alternatives/): FullCalendar, MUI X, DayPilot, Bryntum and where this one falls short
+- [Alternatives compared](https://resource-scheduler-docs.vercel.app/compare/alternatives/): FullCalendar, MUI X, DayPilot, Bryntum and where this one falls short
 - [Source](https://github.com/mdobaid311/resource-scheduler)
