@@ -1,6 +1,6 @@
 # Resource Scheduler showcase
 
-All six recipes on one page (room booking, shift roster, equipment, field service, project allocation, utilization), with a light / dark / system theme switch, accent presets and a density toggle. The choices are remembered in `localStorage` and the open recipe is in the URL hash.
+All six recipes in one dashboard (room booking, shift roster, equipment, field service, project allocation, utilization), with a light / dark / system theme switch, accent presets and a density toggle. The choices are remembered in `localStorage` and the open recipe is in the URL hash.
 
 It is built from the package source in `../resource-scheduler` and the recipe demos in `../docs/src/components/demos`, so it shows what is on `main`, and each recipe exists once.
 
