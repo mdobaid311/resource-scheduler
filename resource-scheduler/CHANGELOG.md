@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-14
+
+
 ### Fixed
 - **Recurring events and `timeZone`.** Checked rule by rule: with `timeZone`, a daily, weekly, monthly or yearly series already repeated at the same wall-clock time in the scheduler's zone, also across a clock change in that zone, because dates are converted at the boundary (now covered by tests that use explicit zones and run from four viewer zones: UTC, New York, Lord Howe, Kolkata). The new hourly rule did not: it stepped real milliseconds on those wall-clock dates, so on a day the viewer's machine changed its clocks the series moved, depending on where it was viewed from. Hourly now steps the clock fields, so it is the same in every viewer zone. This only touches `hourly`, which is unreleased.
 
