@@ -1,3 +1,6 @@
+# markdown copies of the tutorials for dev.to / Hashnode (npm run cross-post)
+.cross-post/
+
 # build output
 dist/
 # generated types
