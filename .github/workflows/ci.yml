@@ -109,3 +109,20 @@ jobs:
         working-directory: resource-scheduler-example
       - run: npm run build
         working-directory: resource-scheduler-example
+
+  starter:
+    # resource-scheduler-rooms-starter uses the published package, so it also catches a release that breaks it.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: resource-scheduler-rooms-starter/package-lock.json
+      - run: npm ci
+        working-directory: resource-scheduler-rooms-starter
+      - run: npm run build
+        working-directory: resource-scheduler-rooms-starter
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/rooms
