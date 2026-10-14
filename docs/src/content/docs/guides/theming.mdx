@@ -22,7 +22,19 @@ Popovers render in a portal outside the scheduler, so put overrides on `:root` (
 
 ## Dark mode
 
-Give any ancestor the class `dark` and the dark tokens apply. Your own event colours are yours to adapt.
+Three ways, all setting the same dark tokens:
+
+```html
+<html class="dark">                 <!-- class, as in shadcn and Tailwind -->
+<html data-theme="dark">            <!-- explicit attribute -->
+<html data-theme="system">          <!-- follows prefers-color-scheme -->
+```
+
+Any ancestor works, not only `html`. Popovers render in a portal outside the scheduler, so put the class or attribute on `html` or `body` if you want them themed too. `data-theme="system"` is in the npm stylesheet only; the shadcn install keeps just `.dark` (shadcn cannot express a media query on an attribute), so there you toggle the class yourself. Your own event colours are yours to adapt.
+
+## Radius and spacing
+
+`--rs-radius` (default `0.5rem`) is the corner radius of the outer frame. Spacing is not a free variable: row and event sizes come from [`density`](#density), because the layout maths needs the real pixel heights.
 
 ## Tokens
 
@@ -36,6 +48,7 @@ Give any ancestor the class `dark` and the dark tokens apply. Your own event col
 | `--rs-destructive` | Rejected places |
 | `--rs-border`, `--rs-input` | Lines and inputs |
 | `--rs-popover`, `--rs-popover-foreground` | Event details popover |
+| `--rs-radius` | Corner radius of the outer frame |
 | `--rs-shadow-xs`, `--rs-shadow-sm`, `--rs-shadow`, `--rs-shadow-md` | Elevation |
 
 Every surface and text colour in the grid reads from these tokens, so a dark theme is just a second set of values. The demo above is one.

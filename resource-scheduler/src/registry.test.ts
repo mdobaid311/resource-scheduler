@@ -93,7 +93,44 @@ describe("registry.json", () => {
   });
 });
 
+describe("theme selectors in tokens.css", () => {
+  const css = fs.readFileSync(path.join(__dirname, "styles/tokens.css"), "utf8");
+  const decls = (body: string) =>
+    [...body.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => `${m[1]}:${m[2].trim()}`).sort();
+
+  it("applies the dark tokens for .dark and data-theme=dark", () => {
+    expect(css).toMatch(/\.dark,\s*\[data-theme="dark"\]\s*\{/);
+  });
+
+  it("data-theme=system under prefers-color-scheme repeats the dark values exactly", () => {
+    const dark = css.match(/\[data-theme="dark"\]\s*\{([^}]*)\}/)![1];
+    const media = css.match(
+      /@media \(prefers-color-scheme: dark\)\s*\{\s*\[data-theme="system"\]\s*\{([^}]*)\}/
+    )![1];
+    expect(decls(media)).toEqual(decls(dark));
+  });
+
+  it("has a radius token, left out of the dark set, that the root uses", () => {
+    expect(parse(css).cssVars.light["rs-radius"]).toBe("0.5rem");
+    expect(parse(css).cssVars.dark["rs-radius"]).toBeUndefined();
+    expect(
+      fs.readFileSync(path.join(__dirname, "components/ResourceScheduler/ResourceScheduler.tsx"), "utf8")
+    ).toContain("rounded-[var(--rs-radius)]");
+  });
+});
+
 describe("parseTokens", () => {
+  it("reads .dark with a data-theme alias and skips the system media block", () => {
+    const parsed = parse(`
+      :root { --a: 1px; }
+      .dark,
+      [data-theme="dark"] { --a: 2px; }
+      @media (prefers-color-scheme: dark) { [data-theme="system"] { --a: 2px; } }
+    `);
+    expect(parsed.cssVars.dark).toEqual({ a: "2px" });
+    expect(parsed.css).toEqual({});
+  });
+
   it("reads variables, theme, utilities and scoped base rules", () => {
     const parsed = parse(`
       /* comment { with braces } */

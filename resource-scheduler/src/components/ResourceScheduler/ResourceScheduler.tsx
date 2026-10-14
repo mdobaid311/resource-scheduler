@@ -516,7 +516,7 @@ const SchedulerView = forwardRef<
       <div
         dir={i18n.dir}
         className={withClass(
-          "rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-lg overflow-hidden",
+          "rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-[var(--rs-radius)] overflow-hidden",
           classNames?.root
         )}
         style={
