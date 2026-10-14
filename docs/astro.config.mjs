@@ -110,6 +110,7 @@ export default defineConfig({
             { label: "React shift planner", slug: "tutorials/react-shift-planner" },
             { label: "React clinic appointment board", slug: "tutorials/react-clinic-appointment-board" },
             { label: "React equipment rental calendar", slug: "tutorials/react-equipment-rental-calendar" },
+            { label: "Room booking with Next.js and Prisma", slug: "tutorials/react-room-booking-nextjs-prisma" },
           ],
         },
         {
