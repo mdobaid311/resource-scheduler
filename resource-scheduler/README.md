@@ -251,9 +251,11 @@ interface SchedulerEvent {
   resourceId?: string;     // flat `events` prop only: the resource it belongs to
   resourceIds?: string[];  // ...or several
   recurrence?: {           // makes it repeat; the scheduler draws each occurrence
-    freq: "daily" | "weekly" | "monthly" | "yearly";
+    freq: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
     interval?: number;
-    byWeekday?: number[];  // weekly only, 0 = Sunday
+    byWeekday?: number[];  // weekly, monthly, yearly; 0 = Sunday
+    byMonthDay?: number[]; // monthly, yearly; -1 is the last day
+    bySetPos?: number[];   // monthly, yearly; with byWeekday: -1 the last Friday
     until?: Date;          // inclusive
     count?: number;
     exceptions?: Date[];   // days to skip

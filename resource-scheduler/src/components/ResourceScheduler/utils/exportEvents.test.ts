@@ -83,6 +83,22 @@ describe("eventsToICS", () => {
     expect(out).toContain("EXDATE;VALUE=DATE:20261012");
   });
 
+  it("writes month days, positions and hourly rules", () => {
+    const rule = (recurrence: NonNullable<SchedulerEvent["recurrence"]>) =>
+      lines(eventsToICS([event({ startDate: new Date(2026, 9, 5, 9), endDate: new Date(2026, 9, 5, 10), recurrence })], { now: NOW }));
+    expect(rule({ freq: "monthly", byMonthDay: [1, -1] })).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=1,-1");
+    expect(rule({ freq: "monthly", byWeekday: [5], bySetPos: [-1] })).toContain("RRULE:FREQ=MONTHLY;BYDAY=FR;BYSETPOS=-1");
+    expect(rule({ freq: "yearly", byWeekday: [5], bySetPos: [-1] })).toContain("RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=FR;BYSETPOS=-1");
+    const until = new Date(2026, 9, 6, 15);
+    const stamped = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+    expect(rule({ freq: "hourly", interval: 4, until, exceptions: [new Date(2026, 9, 5, 13)] })).toEqual(
+      expect.arrayContaining([
+        `RRULE:FREQ=HOURLY;INTERVAL=4;UNTIL=${stamped(until)}`,
+        `EXDATE:${stamped(new Date(2026, 9, 5, 13))}`,
+      ])
+    );
+  });
+
   it("ends a timed series at the end of its last day", () => {
     const out = lines(
       eventsToICS(

@@ -32,7 +32,7 @@ Conventions: a `Date` is a local wall-clock time (for another zone, convert firs
 | Name | Call | What it does |
 | --- | --- | --- |
 | `withEvents` | `withEvents(resources, events?)` | Adds a flat event list to the resources named by `resourceId` / `resourceIds`. Returns `Resource[]`; a resource without `events` gets an empty array. |
-| `expandRecurrence` | `expandRecurrence(event, from, to)` | The occurrences of one event that touch `from` to `to` (`end` exclusive). Ids are `<id>::<yyyy-MM-dd>` with `seriesId`. |
+| `expandRecurrence` | `expandRecurrence(event, from, to)` | The occurrences of one event that touch `from` to `to` (`end` exclusive). Ids are `<id>::<yyyy-MM-dd>` (hourly: `<id>::<yyyy-MM-dd>T<HH:mm><offset>`) with `seriesId`. |
 | `expandEvents` | `expandEvents(events, from, to)` | `expandRecurrence` over a list; events that do not recur pass through. |
 | `splitRecurrence` | `splitRecurrence(event, occurrence, edits?)` | "Edit this and following": `{ before, after }`, the series ended the day before (`null` for the first occurrence) and a new series from the occurrence with the edits applied. Throws a `RangeError` if `occurrence` is not one. |
 | `editOccurrence` | `editOccurrence(event, occurrence, edits?)` | "This occurrence only": `{ series, changed }`, the series with an exception and a one-off event for that day. |
@@ -137,7 +137,7 @@ Every part of the state is kept until the parts it depends on change: a new date
 | `SchedulerEvent` | An event: `id`, `title`, `startDate`, `endDate`, and optionally `color`, `description`, `resourceId`, `resourceIds`, `recurrence`, `seriesId`. |
 | `Resource` | A row: `id`, `name`, `events`, and optionally `role`, `businessHours`, `unavailable`, `capacity`, `group`. |
 | `ResourceInput` | A `Resource` whose `events` may be left out (for `withEvents`). |
-| `Recurrence` | How an event repeats: `freq`, `interval`, `byWeekday`, `until`, `count`, `exceptions`. |
+| `Recurrence` | How an event repeats: `freq` (hourly to yearly), `interval`, `byWeekday`, `byMonthDay`, `bySetPos`, `until`, `count`, `exceptions`. |
 | `BusinessHours` | Working time: `daysOfWeek`, `startHour`, `endHour`. |
 | `UnavailableRange` | `{ start, end }` a resource cannot be booked. |
 | `SlotSelection` | `{ resourceId, start, end }` of selected empty slots. |

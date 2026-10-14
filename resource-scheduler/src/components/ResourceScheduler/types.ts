@@ -50,16 +50,40 @@ export interface SchedulerEvent {
 
 /** How an event repeats. The first occurrence is the event's own start. */
 export interface Recurrence {
-  freq: "daily" | "weekly" | "monthly" | "yearly";
-  /** Repeat every n days, weeks, months or years. Default 1. */
+  freq: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
+  /**
+   * Repeat every n hours, days, weeks, months or years. Default 1. Hourly
+   * counts elapsed time, so across a daylight saving change the clock time of
+   * an occurrence moves by an hour (the other frequencies keep the clock time).
+   */
   interval?: number;
-  /** Weekly only: the weekdays it falls on, 0 (Sunday) to 6. Default: the first occurrence's weekday. */
+  /**
+   * The weekdays it falls on, 0 (Sunday) to 6, for weekly, monthly and yearly.
+   * Weekly default: the first occurrence's weekday. Monthly and yearly: with
+   * no `byMonthDay`, every such weekday of the month, or the ones `bySetPos` picks.
+   */
   byWeekday?: number[];
-  /** The last day it may start on, inclusive (the time is ignored). */
+  /**
+   * Monthly and yearly (in the month of the first occurrence): the days of the
+   * month it falls on, 1 to 31, or counting from the end of the month: -1 is
+   * the last day. A month without that day is skipped. Combined with
+   * `byWeekday` it needs both ("Friday the 13th").
+   */
+  byMonthDay?: number[];
+  /**
+   * Monthly and yearly: picks from the days `byWeekday` and `byMonthDay` give
+   * in each month: 1 is the first, -1 the last. `byWeekday: [5], bySetPos: [-1]`
+   * is the last Friday; `byWeekday: [1, 2, 3, 4, 5], bySetPos: [-1]` the last weekday.
+   */
+  bySetPos?: number[];
+  /**
+   * The last day it may start on, inclusive (the time is ignored). Hourly: the
+   * last moment it may start at.
+   */
   until?: Date;
   /** How many occurrences in total, counting the first. Exceptions still count. */
   count?: number;
-  /** Days to skip. Compared by calendar day. */
+  /** Occurrences to skip. Compared by calendar day; hourly: by the exact start. */
   exceptions?: Date[];
 }
 
