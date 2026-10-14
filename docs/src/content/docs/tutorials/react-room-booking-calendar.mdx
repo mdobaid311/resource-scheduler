@@ -1,0 +1,144 @@
+---
+title: React room booking calendar (no double booking)
+description: Build a meeting room booking calendar in React with your own booking form, overlap refused in the browser, and the same check run on your server before you save.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import RoomBookingDemo from '../../../components/demos/RoomBookingDemo';
+
+A room booking calendar has rooms down the side and half hours across the top. People pick free time, fill in a form, and two bookings can never share a room. This tutorial builds that with Resource Scheduler in five steps. It is the same component running below.
+
+<RoomBookingDemo client:only="react" />
+
+Drag across free time on a room to open the form. Try the booked blocks: you cannot select them, drop another booking on them, or resize into them.
+
+## 1. Install
+
+```bash
+npm install resource-scheduler
+```
+
+Works with React 18 and 19. Import the stylesheet once; it is scoped, so it does not restyle the rest of your page:
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css";
+```
+
+## 2. Rooms are rows, half hours are columns
+
+Each room is a `Resource` that carries its bookings in `events`. You own the state; the component only reports what the user did. The day view with 30 minute slots and office hours looks like this:
+
+```tsx
+import { useState } from "react";
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import type { Resource } from "resource-scheduler";
+
+const initialRooms: Resource[] = [
+  { id: "atlas", name: "Atlas (8 seats)", events: [] },
+  { id: "borealis", name: "Borealis (4 seats)", events: [] },
+];
+
+export function Rooms() {
+  const [rooms, setRooms] = useState<Resource[]>(initialRooms);
+
+  return (
+    <div style={{ height: 420 }}>
+      <ResourceScheduler
+        resources={rooms}
+        initialView={ViewType.Day}
+        allowViewChange={false}
+        slotDuration={30}
+        dayStartHour={8}
+        dayEndHour={18}
+        ariaLabel="Meeting room bookings"
+      />
+    </div>
+  );
+}
+```
+
+The component fills its parent, so the parent needs a height. `endDate` is exclusive: a booking from 9:00 to 10:00 does not collide with one that starts at 10:00.
+
+## 3. Use your own booking form
+
+Pass `onSlotSelect` and the built-in create dialog is replaced by your callback. It receives `{ resourceId, start, end }`, the free range the user dragged across. Keep it in state and render whatever form you like:
+
+```tsx
+import type { SlotSelection } from "resource-scheduler";
+
+const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+// ...
+<ResourceScheduler /* ... */ onSlotSelect={setDraft} />
+
+{draft && (
+  <BookingForm
+    slot={draft}
+    onCancel={() => setDraft(null)}
+    onBook={(title) => {
+      setRooms((prev) =>
+        prev.map((r) =>
+          r.id === draft.resourceId
+            ? { ...r, events: [...r.events, { id: crypto.randomUUID(), title, startDate: draft.start, endDate: draft.end }] }
+            : r
+        )
+      );
+      setDraft(null);
+    }}
+  />
+)}
+```
+
+`BookingForm` is yours: a title field, an attendee picker, a recurrence option. See [Creating events](/guides/creating-events/) for the other ways to create.
+
+## 4. Refuse double booking
+
+One prop covers selecting, moving and resizing. The refused place turns red before the drop:
+
+```tsx
+<ResourceScheduler /* ... */ eventOverlap={false} />
+```
+
+To also let people move or stretch an existing booking, add the two callbacks. A callback is the opt-in: without `onEventDrop` a dropped booking snaps back, and without `onEventResize` there are no resize handles.
+
+```tsx
+<ResourceScheduler
+  /* ... */
+  eventOverlap={false}
+  onEventDrop={(event, fromId, toId, start, end) => moveBooking(event, fromId, toId, start, end)}
+  onEventResize={(event, resourceId, start, end) => resizeBooking(event, resourceId, start, end)}
+/>
+```
+
+For rules beyond overlap (opening hours, a capacity limit, a holiday), pass `isValidDrop(event, { resourceId, start, end })`. See [Conflict control](/guides/conflict-control/).
+
+## 5. Check again on the server
+
+<Aside type="caution" title="The browser check is a courtesy">
+  Two people can pick the same free slot at the same moment, and anyone can call your API without the UI. The save endpoint must decide.
+</Aside>
+
+The overlap rule is a plain function, exported as `isPlacementAllowed`, so the server can run exactly the rule the browser used. Load the room's current bookings and call it before you write:
+
+```ts
+import { isPlacementAllowed } from "resource-scheduler";
+import type { Resource, SchedulerEvent } from "resource-scheduler";
+
+export function canBook(room: Resource, booking: SchedulerEvent) {
+  return isPlacementAllowed(
+    booking,
+    { resourceId: room.id, start: booking.startDate, end: booking.endDate },
+    [room], // the room with its current bookings, read inside your transaction
+    { eventOverlap: false }
+  );
+}
+```
+
+Return an error (HTTP 409 is the usual choice) when it is `false`, and let the client show "someone just booked that". Run the check and the insert in one database transaction, or add a database constraint, so two requests cannot both pass the check. The function takes only dates and ids, so it runs in any JavaScript runtime. See [Conflict control](/guides/conflict-control/).
+
+## Where next
+
+- The finished [room booking recipe](/recipes/room-booking/) is the same code with notes on business hours, capacity and recurring bookings.
+- [Keyboard and accessibility](/guides/keyboard-and-accessibility/) and [theming](/guides/theming/) are built in.
+- Bookings across time zones: see [Time zones](/guides/time-zones/).
+- Coming from another library? The [comparison](/compare/alternatives/) lists what each one includes.
