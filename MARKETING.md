@@ -34,6 +34,8 @@ The posts are copies of the docs pages made by `docs/scripts/tutorial-to-markdow
 
 Nothing has been posted to Show HN, Reddit, X, Bluesky, LinkedIn, Product Hunt, Medium or the newsletters below. The drafts for those are in `LAUNCH.md`.
 
+Tried on 2026-10-14: Reddit cannot be opened by the browser tools Claude uses (blocked for safety), and Hacker News was not signed in (new account creation was refused), so both are post-it-yourself. HN's guidelines also ask for human-written comments, so the first comment is yours to paste from `LAUNCH.md`. The GitHub repo description and homepage were set that day ("Free MIT resource timeline for React...").
+
 ## 2. When something changes
 
 **New release** (CONTRIBUTING.md has the flow):
