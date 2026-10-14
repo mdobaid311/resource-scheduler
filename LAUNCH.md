@@ -53,7 +53,7 @@ Read each sub's self-promotion rules first and post in the showcase thread. Disc
 
 **Body:**
 
-> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: <link>. Source: <link>. Missing for now: time zones and RRULE strings as input. Feedback welcome, especially on the API.
+> Gif of drag create, move, and a rejected double booking, then: it is a resource timeline (rows are people/rooms), like the paid FullCalendar and MUI X ones. MIT, works with React 18 and 19, install from npm or copy the source with shadcn. Docs and live demos: https://resource-scheduler-docs.vercel.app/ . Source: https://github.com/mdobaid311/resource-scheduler . Missing for now: RRULE strings as input and calendar sync. Feedback welcome, especially on the API.
 
 ## X / Bluesky thread
 
@@ -61,7 +61,7 @@ Read each sub's self-promotion rules first and post in the showcase thread. Disc
 2. "One prop: `eventOverlap={false}`. Add `businessHours` and `blockUnavailable` and closed hours and time off are protected too." (screenshot of the availability demo)
 3. "Keyboard and screen reader support from day one, tested with axe in CI. Pick up an event with Space, move it with the arrows."
 4. "Theme it with CSS variables. Dark mode is a second set of values." (screenshot of the theme demo)
-5. "npm install resource-scheduler, or `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` to own the source. Docs with live demos: <link>. Honest comparison with FullCalendar, MUI X, DayPilot included."
+5. "npm install resource-scheduler, or `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` to own the source. Docs with live demos: https://resource-scheduler-docs.vercel.app/ . Honest comparison with FullCalendar, MUI X, DayPilot included."
 
 ## dev.to / Hashnode article
 
