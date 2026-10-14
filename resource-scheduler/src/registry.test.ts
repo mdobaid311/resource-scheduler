@@ -118,6 +118,26 @@ describe("theme selectors in tokens.css", () => {
       fs.readFileSync(path.join(__dirname, "components/ResourceScheduler/ResourceScheduler.tsx"), "utf8")
     ).toContain("rounded-[var(--rs-radius)]");
   });
+
+  it("leaves the primary to the host in dark mode and reads it as text through a mix", () => {
+    const { cssVars } = parse(css);
+    for (const name of ["rs-primary", "rs-primary-foreground", "rs-ring"]) {
+      expect(cssVars.dark[name], name).toBeUndefined();
+    }
+    expect(cssVars.light["rs-primary-text-mix"]).toBe("100%");
+    expect(cssVars.dark["rs-primary-text-mix"]).toBe("60%");
+    expect(cssVars.theme["color-ocrs-primary-text"]).toBe(
+      "color-mix(in srgb, var(--rs-primary) var(--rs-primary-text-mix), var(--rs-foreground))"
+    );
+  });
+
+  it("has warning and unavailable tokens in both sets", () => {
+    const { cssVars } = parse(css);
+    expect(cssVars.light["rs-warning"]).toBeTruthy();
+    expect(cssVars.light["rs-unavailable"]).toBeTruthy();
+    expect(cssVars.dark["rs-unavailable"]).toBeTruthy();
+    expect(cssVars.theme["color-ocrs-warning"]).toBe("var(--rs-warning)");
+  });
 });
 
 describe("parseTokens", () => {
