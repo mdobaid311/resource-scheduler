@@ -3,6 +3,7 @@ import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { Resource } from "@scheduler/types";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { AMBER, BLUE, GREEN, ROSE, TEAL, VIOLET, week } from "./sample";
 import { useSchedule } from "./useSchedule";
 
@@ -65,7 +66,7 @@ const team = (): Resource[] => [
 ];
 
 /** showUtilization: booked against available time per resource, for whatever range is on screen. */
-export default function UtilizationDemo() {
+export default function UtilizationDemo({ density }: DemoProps = {}) {
   const { resources, move, resize, log } = useSchedule(team);
   const [show, setShow] = useState(true);
   const [totals, setTotals] = useState(false);
@@ -89,6 +90,7 @@ export default function UtilizationDemo() {
       caption="Drag or resize an event and the bars follow. Bob is over 100%, Chen is out Thursday and Friday, Dana works part time, the lab has two stations. Switch to the day or month view to measure another range. The column totals add up everyone's booked and available time per day."
     >
       <ResourceScheduler
+        density={density}
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Day, ViewType.Week, ViewType.Month]}

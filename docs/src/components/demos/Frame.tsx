@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+/** What the showcase passes to the recipe demos. */
+export type DemoProps = { density?: "compact" | "comfortable" };
+
 /** The border, optional controls row and caption around every live demo. */
 export function Frame({
   height = 440,

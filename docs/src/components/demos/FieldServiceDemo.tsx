@@ -5,6 +5,7 @@ import type { ResourceInput, ResourceSchedulerHandle, SchedulerEvent } from "@sc
 import { withEvents } from "@scheduler/utils/events";
 import { suggestResources } from "@scheduler/utils/suggest";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { AMBER, ROSE, TEAL, at } from "./sample";
 
 const everyDay = [0, 1, 2, 3, 4, 5, 6];
@@ -44,7 +45,7 @@ const when = (d: Date) =>
   d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
 /** A dispatch board: shifts, lunch, a queue of jobs and "earliest technician who can take it". */
-export default function FieldServiceDemo() {
+export default function FieldServiceDemo({ density }: DemoProps = {}) {
   const [events, setEvents] = useState<SchedulerEvent[]>(jobs);
   const [queue, setQueue] = useState(waiting);
   const [log, setLog] = useState("");
@@ -102,6 +103,7 @@ export default function FieldServiceDemo() {
       caption="Each button finds the earliest slot any technician has from now on, inside their shift and around lunch, training and their other jobs, and books it. Ann works 7 to 15, Ben 11 to 19, Cy 7 to 19 with training this afternoon. Drag or resize jobs: they cannot overlap or touch the grey."
     >
       <ResourceScheduler
+        density={density}
         ref={ref}
         resources={technicians}
         events={events}
