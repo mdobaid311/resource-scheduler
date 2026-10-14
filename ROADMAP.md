@@ -132,10 +132,10 @@ Effort tags are **(estimate)**: S under 1 day, M 1-3 days, L about a week, XL mu
 
 ### 6a. Prerequisites (do before announcing anything)
 1. **Docs site on its own domain** (Fumadocs / Starlight / Docusaurus): live playground (StackBlitz), prop explorer, recipes, theming gallery, changelog. Real `<title>`/meta description/OG image/sitemap. Current demo page exposes almost none.
-2. **README rewrite**: hero GIF of drag-create + move, 30-second quickstart, honest comparison table (vs FullCalendar Premium, MUI X, DayPilot Lite, react-big-scheduler), badges (npm, size, CI, license).
-3. **GitHub polish**: topics (`react`, `scheduler`, `resource-scheduler`, `timeline`, `calendar`, `shadcn`, `tailwindcss`, `typescript`, `booking`), social preview image, enable Discussions, public roadmap board, `good first issue` + `help wanted` labels, `hacktoberfest` topic (October is live; verify this year's rules), release notes on every tag.
-4. **npm polish**: keywords, provenance, `funding` field, small published bundle with a size badge.
-5. **Registry**: ship the shadcn `registry.json` and put the one-line `shadcn add` command in the README hero.
+2. [x] **README rewrite** (done 2026-10-14; hero GIF, quickstart, size badge, table incl. react-big-scheduler): hero GIF of drag-create + move, 30-second quickstart, honest comparison table (vs FullCalendar Premium, MUI X, DayPilot Lite, react-big-scheduler), badges (npm, size, CI, license).
+3. [~] **GitHub polish** (release-notes config done; owner still to do: topics, social preview upload, label creation, public roadmap board; Discussions are already on, `hacktoberfest` topic with the topics): topics (`react`, `scheduler`, `resource-scheduler`, `timeline`, `calendar`, `shadcn`, `tailwindcss`, `typescript`, `booking`), social preview image, enable Discussions, public roadmap board, `good first issue` + `help wanted` labels, `hacktoberfest` topic (October is live; verify this year's rules), release notes on every tag.
+4. [~] **npm polish** (keywords, provenance, size badge done; `funding` waits for the owner to enable GitHub Sponsors or another page, `github.com/sponsors/mdobaid311` redirects today): keywords, provenance, `funding` field, small published bundle with a size badge.
+5. [x] **Registry**: ship the shadcn `registry.json` and put the one-line `shadcn add` command in the README hero.
 
 ### 6b. Content engine (SEO + trust)
 Target long-tail queries (verify volumes with a keyword tool; I did not measure them):
