@@ -1,0 +1,191 @@
+---
+title: React shift planner (employee roster)
+description: Build a weekly employee shift planner in React with repeating shifts, contracted hours, leave, one-day cover, and a maximum hours per week rule that is checked before you drop.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ShiftRosterDemo from '../../../components/demos/ShiftRosterDemo';
+
+A shift planner has people down the side and days across the top. The standing rota repeats every week, people have contracted days and leave, someone covers a shift now and then, and there is a house rule about hours. This tutorial builds that with Resource Scheduler in six steps. It is the same component running below.
+
+<ShiftRosterDemo client:only="react" />
+
+Try three things. Drag Cy's Friday shift to Ann: she already works 32 hours, so the drop turns red and nothing moves. Drag Cy's Monday shift to Dee instead and it is covered for that day only. Click an empty day in Dee's row to add a shift with your own form.
+
+## 1. Install
+
+```bash
+npm install resource-scheduler
+```
+
+Works with React 18 and 19. Import the stylesheet once; it is scoped, so it does not restyle the rest of your page:
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css";
+```
+
+## 2. People are rows, with a contract and leave
+
+Each person is a resource. Their contracted days and hours are `businessHours`, and leave is `unavailable`. Both are shaded in the grid:
+
+```tsx
+import type { ResourceInput } from "resource-scheduler";
+
+const staff: ResourceInput[] = [
+  { id: "ann", name: "Ann Lee", businessHours: { daysOfWeek: [1, 2, 3, 4, 5], startHour: 7, endHour: 15 } },
+  {
+    id: "cy",
+    name: "Cy Ortiz",
+    businessHours: { daysOfWeek: [1, 2, 3, 4, 5], startHour: 7, endHour: 15 },
+    unavailable: [{ start: new Date(2026, 9, 7), end: new Date(2026, 9, 9) }], // leave
+  },
+  { id: "bo", name: "Bo Kim", businessHours: { daysOfWeek: [3, 4, 5, 6], startHour: 11, endHour: 19 } },
+];
+```
+
+`daysOfWeek` counts Sunday as 0, so `[1, 2, 3, 4, 5]` is Monday to Friday. In a database this is a `people` table with contract and leave columns.
+
+## 3. The standing rota is one row per series
+
+You do not store a shift for every week. A shift is one event with a weekly `recurrence`, and the component expands it into the weeks on screen. Give it the first occurrence and the weekdays it repeats on:
+
+```tsx
+import type { SchedulerEvent } from "resource-scheduler";
+
+const shifts: SchedulerEvent[] = [
+  {
+    id: "ann-early",
+    title: "Early",
+    resourceId: "ann",                              // the row it belongs to
+    startDate: new Date(2026, 8, 21, 7),            // the first Monday, 7:00
+    endDate: new Date(2026, 8, 21, 15),             // 15:00
+    recurrence: { freq: "weekly", byWeekday: [1, 2, 3, 4] },   // Monday to Thursday
+  },
+];
+```
+
+Events are a flat list that names its row with `resourceId`, so the list can come straight from one query. See [recurring events](/guides/recurring-events/) for ending a series and skipping days.
+
+## 4. Draw the week and refuse bad shifts
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+
+<div style={{ height: 530 }}>
+  <ResourceScheduler
+    resources={staff}
+    events={shifts}
+    initialView={ViewType.Week}
+    allowViewChange={false}
+    weekStartsOn={1}
+    showUtilization
+    blockUnavailable
+    eventOverlap={false}
+    ariaLabel="Shift roster"
+  />
+</div>
+```
+
+The component fills its parent, so the parent needs a height. Each prop is one rule:
+
+| Prop | What it does |
+|---|---|
+| `showUtilization` | A bar per person: rostered hours against contracted hours ([utilization](/guides/utilization/)) |
+| `blockUnavailable` | No shifts on days off or leave |
+| `eventOverlap={false}` | Nobody works two shifts at once |
+| `weekStartsOn={1}` | The week starts on Monday |
+
+## 5. Cover a shift for one day
+
+Dragging a shift hands your handler one occurrence of the series, with an id such as `ann-early::2026-10-07` and a `seriesId` of `ann-early`. Covering that one day means skipping it in the series and adding a one-off shift for the new person:
+
+```tsx
+onEventDrop={(shift, _fromId, toId, start, end) =>
+  setEvents((all) => {
+    if (!shift.seriesId) {
+      return all.map((e) => (e.id === shift.id ? { ...e, resourceId: toId, startDate: start, endDate: end } : e));
+    }
+    const skipped = all.map((e) =>
+      e.id === shift.seriesId
+        ? { ...e, recurrence: { ...e.recurrence!, exceptions: [...(e.recurrence!.exceptions ?? []), shift.startDate] } }
+        : e
+    );
+    return [...skipped, { ...shift, id: crypto.randomUUID(), seriesId: undefined, resourceId: toId, startDate: start, endDate: end }];
+  })
+}
+```
+
+A callback is the opt-in: without `onEventDrop` a dropped shift snaps back. To change the series for good instead, edit the original event.
+
+## 6. Add a rule: at most 32 hours a week
+
+`isValidDrop` is a final veto for anything the other props cannot say. It gets the event and where it would land, and returns `false` to refuse. A weekly cap needs the hours the person already has that week, so count the shifts you hold. `expandEvents` turns a series into real shifts for a date range, which is the expansion the grid uses:
+
+```tsx
+import { expandEvents, rangesOverlap } from "resource-scheduler";
+
+const MAX_WEEK_HOURS = 32; // four eight-hour shifts
+
+const hoursBetween = (start: Date, end: Date) => (end.getTime() - start.getTime()) / 36e5;
+
+// Hours already rostered for one person in the Monday to Sunday week containing `day`.
+const rosteredHours = (all: SchedulerEvent[], personId: string, day: Date, ignoreId?: string) => {
+  const from = new Date(day);
+  from.setHours(0, 0, 0, 0);
+  from.setDate(from.getDate() - ((from.getDay() + 6) % 7));
+  const to = new Date(from);
+  to.setDate(to.getDate() + 7);
+  return expandEvents(all.filter((e) => e.resourceId === personId), from, to)
+    .filter((e) => e.id !== ignoreId && rangesOverlap(e.startDate, e.endDate, from, to))
+    .reduce((sum, e) => sum + hoursBetween(e.startDate, e.endDate), 0);
+};
+```
+
+Then pass the rule. The shift being moved is left out of the count (`ignoreId`), so moving someone's own shift to another day in the same week is not charged twice:
+
+```tsx
+<ResourceScheduler
+  /* ... */
+  isValidDrop={(shift, { resourceId, start, end }) =>
+    rosteredHours(events, resourceId, start, shift.id) + hoursBetween(start, end) <= MAX_WEEK_HOURS
+  }
+/>
+```
+
+The refused place turns red before the drop. Ann has four eight-hour shifts, so any shift dropped on her week is refused; Dee has none, so she can take cover.
+
+<Aside type="note" title="New shifts come from your form">
+  In the week view a click selects a whole day, so the placement of a new shift is the day, not the eight hours your form will add. The demo therefore applies `isValidDrop` to moves of existing shifts, and checks a new shift in the form with the same `rosteredHours` before it adds it. The full code is in the [demo source](https://github.com/mdobaid311/resource-scheduler/blob/main/docs/src/components/demos/ShiftRosterDemo.tsx).
+</Aside>
+
+### Check it on the server too
+
+The browser check is a courtesy: anyone can call your API without the grid. The rule is a plain function of dates and ids, so the server can run exactly the same one before it saves. `isPlacementAllowed` applies `eventOverlap` and `isValidDrop` together:
+
+```ts
+import { isPlacementAllowed } from "resource-scheduler";
+import type { Resource, SchedulerEvent } from "resource-scheduler";
+
+export function canRoster(person: Resource, shift: SchedulerEvent) {
+  return isPlacementAllowed(
+    shift,
+    { resourceId: person.id, start: shift.startDate, end: shift.endDate },
+    [person], // the person with their current shifts, read inside your transaction
+    {
+      eventOverlap: false,
+      isValidDrop: (s, { resourceId, start, end }) =>
+        rosteredHours(person.events, resourceId, start, s.id) + hoursBetween(start, end) <= MAX_WEEK_HOURS,
+    }
+  );
+}
+```
+
+Return an error (HTTP 409 is the usual choice) when it is `false`, and run the check and the insert in one transaction. For rest rules, such as at least 11 hours between shifts, write the same kind of function against the neighbouring shifts. See [Conflict control](/guides/conflict-control/).
+
+## Where next
+
+- The finished [shift roster recipe](/recipes/shift-roster/) is the same code with notes on night shifts and time zones.
+- A site in another time zone: [Time zones](/guides/time-zones/).
+- Share the rota as a calendar file or a spreadsheet: [Export](/guides/export/).
+- Other builds: the [room booking tutorial](/tutorials/react-room-booking-calendar/) and the [free resource timeline](/tutorials/free-react-resource-timeline/).
+- Coming from another library? The [comparison](/compare/alternatives/) lists what each one includes.

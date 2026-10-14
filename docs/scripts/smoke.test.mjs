@@ -947,6 +947,56 @@ describe("room booking tutorial", () => {
   });
 });
 
+describe("shift planner tutorial", () => {
+  it("refuses cover past the weekly hours cap and allows it within", async () => {
+    const { page, context, errors } = await open("/tutorials/react-shift-planner/");
+    // The week view: a cell is a person's day. Today is Wednesday 7 October, so Monday is the 5th.
+    const day = async (rid, date) => {
+      const h = await page.evaluateHandle(
+        ([r, d]) =>
+          [...document.querySelectorAll("[data-rs-slot]")].find(
+            (el) => el.dataset.rsResource === r && new Date(Number(el.dataset.rsSlot)).getDate() === d
+          ),
+        [rid, date]
+      );
+      return h.asElement();
+    };
+    const home = () => page.locator(".rs-root .overflow-x-auto").first().evaluate((el) => el.scrollTo({ left: 0, behavior: "instant" }));
+    const drag = async (shiftId, rid, date) => {
+      await home();
+      await mouseDrag(page, await centerOf(event(page, shiftId)), await centerOf(await day(rid, date)));
+    };
+    const cyFriday = "cy-early::2026-10-09";
+    assert.match(await label(page, cyFriday), /Cy Ortiz/);
+
+    // Ann already works 32 hours that week: a fifth shift is refused and nothing moves.
+    await drag(cyFriday, "ann", 9);
+    assert.match(await label(page, cyFriday), /Cy Ortiz/);
+
+    // Dee has no shifts and works Tuesdays: she covers Ann for that day only, which frees 8 hours.
+    await drag("ann-early::2026-10-06", "dee", 6);
+    assert.equal(await log(page), "Moved Early to Dee Park");
+    assert.equal(await event(page, "ann-early::2026-10-06").count(), 0);
+    assert.match(await label(page, "ann-early::2026-10-07"), /Ann Lee/); // the rest of the series stays
+
+    // The same drop is now allowed: Ann is at 24 hours.
+    await drag(cyFriday, "ann", 9);
+    assert.equal(await log(page), "Moved Early to Ann Lee");
+    assert.equal(await event(page, cyFriday).count(), 0); // now a one-off shift on Ann's row
+
+    // The form applies the same cap to a new shift: Ann is full again, and Tuesday is free in her row.
+    await home();
+    const free = await centerOf(await day("ann", 6));
+    await page.mouse.click(free.x, free.y);
+    await page.waitForSelector(".demo-form");
+    await page.click('.demo-form button[type="submit"]');
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), "Ann Lee would pass 32 hours this week");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("tutorial", () => {
   it("moves a booking to another row and refuses an overlap", async () => {
     const { page, context, errors } = await open("/tutorials/free-react-resource-timeline/");
