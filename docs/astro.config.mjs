@@ -109,6 +109,7 @@ export default defineConfig({
             { label: "React room booking calendar", slug: "tutorials/react-room-booking-calendar" },
             { label: "React shift planner", slug: "tutorials/react-shift-planner" },
             { label: "React clinic appointment board", slug: "tutorials/react-clinic-appointment-board" },
+            { label: "React equipment rental calendar", slug: "tutorials/react-equipment-rental-calendar" },
           ],
         },
         {

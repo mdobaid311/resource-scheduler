@@ -1051,6 +1051,68 @@ describe("clinic appointment board tutorial", () => {
   });
 });
 
+describe("equipment rental tutorial", () => {
+  it("refuses a full pool and a service day, rents through the form, and finds free days", async () => {
+    const { page, context, errors } = await open("/tutorials/react-equipment-rental-calendar/");
+    // The week view: a cell is an item's day. Today is Wednesday 7 October, so Monday is the 5th.
+    const day = async (rid, date) => {
+      const h = await page.evaluateHandle(
+        ([r, d]) =>
+          [...document.querySelectorAll("[data-rs-slot]")].find(
+            (el) => el.dataset.rsResource === r && new Date(Number(el.dataset.rsSlot)).getDate() === d
+          ),
+        [rid, date]
+      );
+      return h.asElement();
+    };
+    const home = () => page.locator(".rs-root .overflow-x-auto").first().evaluate((el) => el.scrollTo({ left: 0, behavior: "instant" }));
+    const drag = async (rentalId, rid, date) => {
+      await home();
+      await mouseDrag(page, await centerOf(event(page, rentalId)), await centerOf(await day(rid, date)));
+    };
+    const delivery = "r8"; // the van, Thursday
+    assert.match(await label(page, delivery), /Van/);
+
+    // Tuesday: all three projectors are out, so a fourth booking is refused and nothing moves.
+    await drag(delivery, "projector", 6);
+    assert.match(await label(page, delivery), /Van/);
+
+    // Wednesday is the PA system's service day: refused too.
+    await drag(delivery, "pa", 7);
+    assert.match(await label(page, delivery), /Van/);
+
+    // Monday on the projectors has room (one of three out): allowed.
+    await drag(delivery, "projector", 5);
+    assert.equal(await log(page), "Moved Delivery to Projector (3 units)");
+    assert.match(await label(page, delivery), /Projector/);
+
+    // A service day cannot be selected: no form.
+    await home();
+    let free = await centerOf(await day("pa", 7));
+    await page.mouse.click(free.x, free.y);
+    assert.equal(await page.locator(".demo-form").count(), 0);
+
+    // A free day can: rent the van on Wednesday through the form.
+    free = await centerOf(await day("van", 7));
+    await page.mouse.click(free.x, free.y);
+    await page.waitForSelector(".demo-form");
+    await page.fill('.demo-form input[aria-label="Customer"]', "Garcia");
+    await page.click('.demo-form button[type="submit"]');
+    await page.waitForTimeout(250);
+    assert.equal(await log(page), "Rented Van");
+    assert.equal(await page.locator(".demo-form").count(), 0);
+
+    // Three free days for the PA system: Wednesday is serviced and the wedding runs from Friday, so the 12th.
+    await page.selectOption('select[aria-label="Days"]', "3");
+    await page.selectOption('select[aria-label="Item"]', "pa");
+    await page.click(".demo-controls button");
+    await page.waitForTimeout(250);
+    assert.match(await log(page), /^PA system is free for 3 days from .*12/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
 describe("tutorial", () => {
   it("moves a booking to another row and refuses an overlap", async () => {
     const { page, context, errors } = await open("/tutorials/free-react-resource-timeline/");
