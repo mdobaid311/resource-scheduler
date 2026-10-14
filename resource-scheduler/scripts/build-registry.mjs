@@ -72,9 +72,11 @@ export const parseTokens = (cssText) => {
 
   for (const { selector, body } of parseBlocks(css)) {
     if (selector === ":root") cssVars.light = withoutDashes(parseDeclarations(body));
-    else if (selector === ".dark") cssVars.dark = withoutDashes(parseDeclarations(body));
+    else if (/^\.dark(,\s*\[data-theme="dark"\])?$/.test(selector)) cssVars.dark = withoutDashes(parseDeclarations(body));
     else if (selector === "@theme inline") cssVars.theme = withoutDashes(parseDeclarations(body));
     else if (selector.startsWith("@utility ")) rules[selector] = parseDeclarations(body);
+    // shadcn has no way to say "only for data-theme=system"; the item keeps .dark.
+    else if (selector === "@media (prefers-color-scheme: dark)") continue;
     else if (selector === "@layer base" || selector === "@media print") {
       rules[selector] = Object.fromEntries(
         parseBlocks(body).map((b) => [b.selector.replace(/\s+/g, " "), parseDeclarations(b.body)])
