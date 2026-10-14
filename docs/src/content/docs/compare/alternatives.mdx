@@ -13,7 +13,7 @@ A **resource timeline** has resources (people, rooms, machines) down the side an
 
 | | Resource timeline | Cost | Notes |
 |---|---|---|---|
-| **Resource Scheduler** (this) | Included | Free, MIT | Recurring events, row and column virtualization and nested resource groups included; a `timeZone` prop; no RRULE strings as input yet |
+| **Resource Scheduler** (this) | Included | Free, MIT | Recurring events, row and column virtualization and nested resource groups included; a `timeZone` prop; RRULE strings in and out |
 | **FullCalendar** | Premium add-on | Premium starts at $480 per developer | Mature, broad feature set, official React connector |
 | **MUI X Scheduler** | Event Timeline is Premium | Community is free (MIT, beta); Premium is per developer | Recurring events are also Premium |
 | **DayPilot Lite** | Included (horizontal) | Free, Apache 2.0 | Resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
@@ -30,7 +30,7 @@ A **resource timeline** has resources (people, rooms, machines) down the side an
 
 Be honest about the gaps. If any of these are must-haves, use a more mature library:
 
-- **Recurring rules beyond the basics.** Daily, weekly, monthly and yearly repeats with exceptions are built in; RRULE strings, hourly repeats and time-zone rules are not.
+- **Recurring rules beyond the basics.** Hourly to yearly repeats (the last Friday, the first and last day of the month) with exceptions are built in, and `parseRRule` / `toRRule` read and write iCalendar `RRULE` strings; a rule with its own time zone, `BYMONTH` lists and week numbers are not.
 - **Far more than tens of thousands of events.** Rows and columns are virtualized: 2,500 resources with 50,000 events draw in under a second and drag smoothly ([benchmark](/guides/performance/)), a year view across 50 resources draws in 0.15 s. Beyond several thousand resources, load a window from your server.
 - **A resource tree with its own data.** Nested groups (departments inside divisions, with collapsing headers and a utilization total per group) are built in; drag to reorder and loading a branch on demand are not.
 - **Gantt dependencies**, critical path, utilization charts and resource levelling. Bryntum is the specialist.

@@ -123,7 +123,11 @@ expandRecurrence(standup, from, to);   // the occurrences touching from..to (to 
 expandEvents(events, from, to);        // expands the recurring ones in a list, passes the rest through
 ```
 
+## RRULE strings
+
+[`parseRRule` and `toRRule`](/guides/export/#rrule-strings) turn an iCalendar `RRULE` into this rule and back, for storage or an API that speaks iCalendar: `parseRRule("FREQ=MONTHLY;BYDAY=-1FR")` is `{ freq: "monthly", byWeekday: [5], bySetPos: [-1] }`. `icsToEvents` and `eventsToICS` use them.
+
 ## Not supported yet
 
-- iCalendar `RRULE` strings as input to the rule. The fields above cover the common cases; `BYMONTH` other than the start month, `BYYEARDAY`, `BYWEEKNO`, `WKST`, and minutely or secondly frequencies are not supported.
+- Rules beyond the fields above: `BYMONTH` other than the month the series starts in, `BYYEARDAY`, `BYWEEKNO`, `WKST` other than Monday, minutely and secondly frequencies. `parseRRule` throws a `RangeError` that names the part.
 - Time zones in the rule. A series repeats at the same wall-clock time; with the `timeZone` prop that is the time in the zone (see [Time zones](/guides/time-zones/)).

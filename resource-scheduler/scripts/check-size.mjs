@@ -31,13 +31,18 @@
 // each). 31.0 KB was used before keyboard paging, so about 5% of headroom is
 // left; the next feature should look for what to take out before it raises
 // this again.
+//
+// The exchange entry went from 5 KB to 6.5 KB for parseRRule and toRRule (the
+// RRULE reader and writer that icsToEvents and eventsToICS now share, with the
+// month day, position and hourly rules and an error message for every part it
+// cannot show): 4.5 KB before, 5.8 KB used.
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
 const BUDGET = {
   "dist/index.esm.js": 33_000,
-  "dist/exchange.esm.js": 5_000,
+  "dist/exchange.esm.js": 6_500,
   "dist/headless.esm.js": 11_000,
   "dist/resource-scheduler.css": 7_000,
 };

@@ -5,3 +5,5 @@ export { eventsToCSV, eventsToICS } from "./components/ResourceScheduler/utils/e
 export type { ExportOptions } from "./components/ResourceScheduler/utils/exportEvents";
 export { icsToEvents } from "./components/ResourceScheduler/utils/importEvents";
 export type { ImportOptions } from "./components/ResourceScheduler/utils/importEvents";
+export { parseRRule, toRRule } from "./components/ResourceScheduler/utils/rrule";
+export type { RRuleOptions } from "./components/ResourceScheduler/utils/rrule";

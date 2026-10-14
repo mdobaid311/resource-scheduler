@@ -340,10 +340,10 @@ describe("import", () => {
     const frame = page.locator(".demo-frame").nth(1);
     await frame.scrollIntoViewIfNeeded();
 
-    // The sample has three events; the monthly "second Tuesday" rule cannot be shown, so it is imported once.
+    // The sample has three events; the yearly "day 100" rule cannot be shown, so it is imported once.
     assert.equal(await frame.locator(".demo-log").textContent(), "3 events imported");
     assert.equal(await frame.locator("[data-rs-event]").count(), 3);
-    assert.match(await frame.getByLabel("Import warnings").textContent(), /retro@example\.com.*BYDAY=2TU/);
+    assert.match(await frame.getByLabel("Import warnings").textContent(), /retro@example\.com.*BYYEARDAY/);
 
     // Edit the file and import again: a floating 3 PM event in the room named by LOCATION.
     await frame.getByLabel("Calendar file").fill(

@@ -1,6 +1,7 @@
 // src/components/ResourceScheduler/utils/importEvents.ts
 import { format, startOfDay } from "date-fns";
-import type { Recurrence, ResourceInput, SchedulerEvent } from "../types";
+import type { ResourceInput, SchedulerEvent } from "../types";
+import { parseRRule } from "./rrule";
 import { wallToInstant } from "./timeZone";
 
 export interface ImportOptions {
@@ -138,66 +139,6 @@ const addDuration = (start: Date, allDay: boolean, value: string) => {
   return new Date(start.getTime() + (((day * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000);
 };
 
-// --- Recurrence -----------------------------------------------------------------
-
-const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-const FREQUENCIES: Record<string, Recurrence["freq"]> = {
-  DAILY: "daily",
-  WEEKLY: "weekly",
-  MONTHLY: "monthly",
-  YEARLY: "yearly",
-};
-const KNOWN = new Set(["FREQ", "INTERVAL", "COUNT", "UNTIL", "BYDAY", "BYMONTHDAY", "BYMONTH", "WKST"]);
-
-// The rule as a `Recurrence`, or what in it cannot be shown as one: the scheduler
-// repeats every n days, weeks, months or years, on chosen weekdays for weeks.
-const parseRule = (value: string, start: Date, warn: Warn): Recurrence | string => {
-  const parts = new Map<string, string>();
-  for (const part of value.toUpperCase().split(";")) {
-    const eq = part.indexOf("=");
-    if (eq > 0) parts.set(part.slice(0, eq), part.slice(eq + 1));
-  }
-
-  const freq = FREQUENCIES[parts.get("FREQ") ?? ""];
-  if (!freq) return `FREQ=${parts.get("FREQ") ?? ""}`;
-  for (const key of parts.keys()) if (!KNOWN.has(key)) return key;
-  const rule: Recurrence = { freq };
-
-  const count = (key: string) => {
-    const text = parts.get(key);
-    return text === undefined ? undefined : /^[1-9]\d*$/.test(text) ? Number(text) : NaN;
-  };
-  const interval = count("INTERVAL");
-  if (Number.isNaN(interval)) return "INTERVAL";
-  if (interval && interval > 1) rule.interval = interval;
-  const total = count("COUNT");
-  if (Number.isNaN(total)) return "COUNT";
-  if (total) rule.count = total;
-
-  const until = parts.get("UNTIL");
-  if (until !== undefined) {
-    const day = parseDate(until, {}, warn);
-    if (!day) return "UNTIL";
-    rule.until = startOfDay(day.date);
-  }
-
-  const byDay = parts.get("BYDAY");
-  if (byDay !== undefined) {
-    const days = byDay.split(",").map((d) => WEEKDAYS.indexOf(d));
-    if (freq !== "weekly" || days.includes(-1)) return `BYDAY=${byDay}`;
-    rule.byWeekday = days;
-  }
-  // Only the day of the month or the month the series starts on is what it repeats on.
-  const monthDay = parts.get("BYMONTHDAY");
-  if (monthDay !== undefined && !((freq === "monthly" || freq === "yearly") && monthDay === String(start.getDate()))) {
-    return `BYMONTHDAY=${monthDay}`;
-  }
-  const month = parts.get("BYMONTH");
-  if (month !== undefined && !(freq === "yearly" && month === String(start.getMonth() + 1))) return `BYMONTH=${month}`;
-
-  return rule;
-};
-
 // --- Events ---------------------------------------------------------------------
 
 /**
@@ -208,9 +149,11 @@ const parseRule = (value: string, start: Date, warn: Warn): Recurrence | string 
  *   floating become moments; dates become whole local days. A zone that is not
  *   an IANA name (Outlook's "Eastern Standard Time") is read as local time.
  * - An event without an end lasts an hour, or a day when it has a date only.
- * - `RRULE` and `EXDATE` become `recurrence`, for daily, weekly (with `BYDAY`),
- *   monthly and yearly rules on the start's own day. A rule that cannot be shown
- *   as one (the second Tuesday, every hour) is imported as a single event.
+ * - `RRULE` and `EXDATE` become `recurrence`: hourly to yearly rules, with
+ *   `BYDAY` (also "the last Friday"), `BYMONTHDAY` and `BYSETPOS` (what
+ *   `parseRRule` reads). A rule that cannot be shown as one (a `BYMONTH` that is
+ *   not the start month, `BYYEARDAY`, minutely, ...) is imported as a single
+ *   event, with a warning that names the part.
  * - A changed occurrence (`RECURRENCE-ID`) becomes its own event and its day
  *   is skipped in the series. Cancelled events and occurrences are left out.
  * - Alarms, tasks and everything else are ignored.
@@ -290,14 +233,19 @@ export const icsToEvents = (
 
     const rrule = get("RRULE");
     if (rrule) {
-      const rule = parseRule(rrule.value, start.date, warn);
-      if (typeof rule === "string") {
-        warn(`Event ${uid} repeats in a way the scheduler cannot show (${rule}): it was imported once.`);
-      } else {
+      let rule: ReturnType<typeof parseRRule> | undefined;
+      try {
+        rule = parseRRule(rrule.value, { start: start.date });
+      } catch (error) {
+        warn(`Event ${uid} repeats in a way the scheduler cannot show (${(error as Error).message}): it was imported once.`);
+      }
+      if (rule) {
+        // A skipped day, or for an hourly series the exact moment.
+        const hourly = rule.freq === "hourly";
         const skipped = props
           .filter((line) => line.name === "EXDATE")
           .flatMap((line) => line.value.split(",").map((v) => parseDate(v, line.params, warn)))
-          .flatMap((day) => (day ? [startOfDay(day.date)] : []));
+          .flatMap((day) => (day ? [hourly ? day.date : startOfDay(day.date)] : []));
         if (skipped.length) rule.exceptions = skipped;
         event.recurrence = rule;
       }
@@ -317,7 +265,7 @@ export const icsToEvents = (
     const recurrenceId = get("RECURRENCE-ID");
     if (recurrenceId) {
       const day = parseDate(recurrenceId.value, recurrenceId.params, warn);
-      changed.push({ props, uid, day: day && startOfDay(day.date) });
+      changed.push({ props, uid, day: day?.date });
       return;
     }
     if (get("STATUS")?.value.trim().toUpperCase() === "CANCELLED") return;
@@ -329,10 +277,12 @@ export const icsToEvents = (
 
   for (const { props, uid, day } of changed) {
     const master = series.get(uid);
-    if (day && master?.recurrence) master.recurrence.exceptions = [...(master.recurrence.exceptions ?? []), day];
+    const hourly = master?.recurrence?.freq === "hourly";
+    const skipped = day && (hourly ? day : startOfDay(day));
+    if (skipped && master?.recurrence) master.recurrence.exceptions = [...(master.recurrence.exceptions ?? []), skipped];
     if (props.find((line) => line.name === "STATUS")?.value.trim().toUpperCase() === "CANCELLED") continue;
     const base = master?.id ?? (uid.replace(/@resource-scheduler$/, "") || "event");
-    const event = build(props, uid || "(no UID)", unique(day ? `${base}#${format(day, "yyyy-MM-dd")}` : base));
+    const event = build(props, uid || "(no UID)", unique(skipped ? `${base}#${format(skipped, hourly ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd")}` : base));
     if (event) events.push(event);
   }
 

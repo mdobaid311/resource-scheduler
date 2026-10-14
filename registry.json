@@ -240,6 +240,11 @@
           "target": "@components/resource-scheduler/utils/rowWindow.ts"
         },
         {
+          "path": "resource-scheduler/src/components/ResourceScheduler/utils/rrule.ts",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/utils/rrule.ts"
+        },
+        {
           "path": "resource-scheduler/src/components/ResourceScheduler/utils/schedulerStore.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/utils/schedulerStore.ts"
