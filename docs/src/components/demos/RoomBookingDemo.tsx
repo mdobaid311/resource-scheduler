@@ -3,12 +3,13 @@ import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { SlotSelection } from "@scheduler/types";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { rooms } from "./sample";
 import { SlotForm } from "./SlotForm";
 import { useSchedule } from "./useSchedule";
 
 /** Meeting rooms: no double booking, your own booking form, 30 minute slots. */
-export default function RoomBookingDemo() {
+export default function RoomBookingDemo({ density }: DemoProps = {}) {
   const { resources, addEvent, move, resize, log, setLog } = useSchedule(rooms);
   const [draft, setDraft] = useState<SlotSelection | null>(null);
 
@@ -32,6 +33,7 @@ export default function RoomBookingDemo() {
       )}
       <div style={{ height: draft ? 360 : 420 }}>
         <ResourceScheduler
+          density={density}
           resources={resources}
           initialView={ViewType.Day}
           allowViewChange={false}

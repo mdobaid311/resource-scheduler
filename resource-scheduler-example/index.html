@@ -1,12 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="system">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/obaid-code-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      Resource Scheduler
-    </title>
+    <title>Resource Scheduler Showcase</title>
+    <meta
+      name="description"
+      content="A React resource timeline with drag, resize, availability and utilization. Try room booking, shift rosters, equipment rental, field service and project allocation, in any theme and density."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Resource Scheduler" />
+    <meta property="og:title" content="Resource Scheduler Showcase" />
+    <meta
+      property="og:description"
+      content="Five working recipes on one page: drag, resize, book, assign. Switch theme and density live."
+    />
+    <meta property="og:image" content="https://resource-scheduler-demo.vercel.app/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Resource Scheduler Showcase" />
+    <meta name="twitter:image" content="https://resource-scheduler-demo.vercel.app/og.png" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Apply the saved theme before first paint so there is no flash.
+      try {
+        var s = JSON.parse(localStorage.getItem("rs-showcase") || "{}");
+        if (s.theme === "light" || s.theme === "dark" || s.theme === "system")
+          document.documentElement.dataset.theme = s.theme;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

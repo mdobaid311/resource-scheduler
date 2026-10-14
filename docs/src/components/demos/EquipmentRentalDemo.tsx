@@ -11,6 +11,7 @@ import { findAvailableSlots } from "@scheduler/utils/availability";
 import { withEvents } from "@scheduler/utils/events";
 import { rangesOverlap } from "@scheduler/utils/placement";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { AMBER, BLUE, GREEN, ROSE, TEAL, VIOLET, weekDay } from "./sample";
 
 // `capacity` is how many units are in stock: a pool is one row, however many units it holds.
@@ -57,7 +58,7 @@ const startOfToday = () => {
 };
 
 /** Equipment pools with a capacity, whole-day rentals, a service day, and "find me N free days". */
-export default function EquipmentRentalDemo() {
+export default function EquipmentRentalDemo({ density }: DemoProps = {}) {
   const [events, setEvents] = useState<SchedulerEvent[]>(initial);
   const [draft, setDraft] = useState<SlotSelection | null>(null);
   const [customer, setCustomer] = useState("");
@@ -135,6 +136,7 @@ export default function EquipmentRentalDemo() {
       )}
       <div style={{ height: draft ? 630 : 690 }}>
         <ResourceScheduler
+          density={density}
           ref={ref}
           resources={items}
           events={events}

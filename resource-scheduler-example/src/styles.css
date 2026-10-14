@@ -1,0 +1,266 @@
+/* Page chrome. It reads the scheduler's own --rs-* tokens, so it follows the theme and accent too. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    color-scheme: dark;
+  }
+}
+body {
+  margin: 0;
+  background: var(--rs-background);
+  color: var(--rs-foreground);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--rs-primary);
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+}
+
+.hero {
+  padding: 56px 0 28px;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--rs-muted-foreground);
+}
+.hero h1 {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.lede {
+  max-width: 60ch;
+  margin: 16px 0 0;
+  color: var(--rs-muted-foreground);
+  font-size: 1.1rem;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 20px;
+}
+.links a {
+  font-weight: 500;
+  text-decoration: none;
+}
+.links a:hover {
+  text-decoration: underline;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--rs-border);
+  border-radius: 12px;
+  background: var(--rs-muted);
+}
+.group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rs-muted-foreground);
+}
+.group-body {
+  display: flex;
+  gap: 6px;
+}
+.choice {
+  padding: 5px 12px;
+  border: 1px solid var(--rs-border);
+  border-radius: 8px;
+  background: var(--rs-background);
+  color: inherit;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.choice[aria-pressed="true"] {
+  border-color: var(--rs-primary);
+  background: var(--rs-primary);
+  color: var(--rs-primary-foreground);
+}
+.swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid var(--rs-background);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--rs-border);
+}
+.swatch[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--rs-foreground);
+}
+button:focus-visible {
+  outline: 2px solid var(--rs-ring);
+  outline-offset: 2px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--rs-border);
+}
+.tabs button {
+  flex: none;
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--rs-muted-foreground);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tabs button:hover {
+  color: var(--rs-foreground);
+}
+.tabs button[aria-selected="true"] {
+  border-bottom-color: var(--rs-primary);
+  color: var(--rs-foreground);
+}
+
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 16px 0 4px;
+}
+.panel-head p {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--rs-muted-foreground);
+}
+.panel-head a {
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The recipe demos' frame, controls and log (the docs style them with Starlight's variables). */
+.demo-frame {
+  margin: 12px 0 0;
+  border: 1px solid var(--rs-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--rs-background);
+}
+.demo-frame figcaption,
+.demo-log {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  color: var(--rs-muted-foreground);
+  border-top: 1px solid var(--rs-border);
+}
+.demo-log {
+  min-height: 2.25rem;
+}
+.demo-controls,
+.demo-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rs-border);
+  font-size: 0.875rem;
+}
+.demo-form {
+  background: var(--rs-accent);
+  color: var(--rs-accent-foreground);
+}
+.demo-controls label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.demo-controls button,
+.demo-controls select,
+.demo-form input[type="text"] {
+  padding: 3px 10px;
+  border: 1px solid var(--rs-border);
+  border-radius: 6px;
+  background: var(--rs-background);
+  color: var(--rs-foreground);
+  font: inherit;
+  font-size: 0.8rem;
+}
+.demo-controls button {
+  cursor: pointer;
+}
+.demo-form button {
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--rs-primary);
+  color: var(--rs-primary-foreground);
+  font: inherit;
+  cursor: pointer;
+}
+.demo-form button.secondary {
+  background: transparent;
+  color: inherit;
+  border: 1px solid currentColor;
+}
+
+footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rs-border);
+  color: var(--rs-muted-foreground);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 32px;
+  }
+  .group {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .choice,
+  .tabs button {
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+}

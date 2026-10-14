@@ -3,6 +3,7 @@ import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { ResourceInput, SchedulerEvent, SlotSelection } from "@scheduler/types";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { AMBER, BLUE, VIOLET, weekDay } from "./sample";
 
 // Your three tables: people, projects (with a window) and allocations of one person to one project.
@@ -52,7 +53,7 @@ const initial = (): Allocation[] => [
 ];
 
 /** Whole-day allocations of people to projects, with project windows, leave and a bench bar. */
-export default function ProjectAllocationDemo() {
+export default function ProjectAllocationDemo({ density }: DemoProps = {}) {
   const [allocations, setAllocations] = useState<Allocation[]>(initial);
   const [projectId, setProjectId] = useState("apollo");
   const [log, setLog] = useState("");
@@ -94,6 +95,7 @@ export default function ProjectAllocationDemo() {
       caption="Bars show allocated working days against available ones: Ed is on the bench at 0%, Di's leave next week is not counted, and nobody can be placed outside a project's dates (Cassini ends in two weeks). Weekends are hidden; an allocation continues over them."
     >
       <ResourceScheduler
+        density={density}
         resources={people}
         events={events}
         initialView={ViewType.Month}

@@ -3,6 +3,7 @@ import { ResourceScheduler } from "@scheduler";
 import { ViewType } from "@scheduler/types";
 import type { ResourceInput, SchedulerEvent, SlotSelection } from "@scheduler/types";
 import { Frame } from "./Frame";
+import type { DemoProps } from "./Frame";
 import { AMBER, VIOLET, weekDay } from "./sample";
 
 // Contracted hours are each person's business hours: the days and hours they may be rostered.
@@ -48,7 +49,7 @@ const initial = (): SchedulerEvent[] => [
 ];
 
 /** A weekly rota: recurring shifts, contracted hours, leave, and a form to add a shift. */
-export default function ShiftRosterDemo() {
+export default function ShiftRosterDemo({ density }: DemoProps = {}) {
   const [events, setEvents] = useState<SchedulerEvent[]>(initial);
   const [draft, setDraft] = useState<SlotSelection | null>(null);
   const [template, setTemplate] = useState<Template>("Early");
@@ -120,6 +121,7 @@ export default function ShiftRosterDemo() {
       )}
       <div style={{ height: draft ? 480 : 530 }}>
         <ResourceScheduler
+          density={density}
           resources={staff}
           events={events}
           initialView={ViewType.Week}

@@ -1,0 +1,8 @@
+/*
+ * The scheduler's stylesheet, pulled in from the package source (not the npm
+ * build), plus the Tailwind source paths it needs. Same setup as docs.
+ */
+@import "../../resource-scheduler/src/styles/global.css";
+
+/* Tailwind only scans this folder by default; the component classes live in the package. */
+@source "../../resource-scheduler/src/components";
