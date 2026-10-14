@@ -24,6 +24,23 @@ const atDay = (day: Date, time: Date) =>
     time.getMilliseconds()
   );
 
+// The clock reading of a Date as milliseconds in UTC, which a clock change of
+// the machine cannot move, and back to a Date with that reading.
+const toWall = (d: Date) =>
+  Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+const fromWall = (ms: number) => {
+  const u = new Date(ms);
+  return new Date(
+    u.getUTCFullYear(),
+    u.getUTCMonth(),
+    u.getUTCDate(),
+    u.getUTCHours(),
+    u.getUTCMinutes(),
+    u.getUTCSeconds(),
+    u.getUTCMilliseconds()
+  );
+};
+
 // The days of one month that a monthly or yearly rule picks, in order:
 // `byMonthDay` and `byWeekday` narrow the month, then `bySetPos` picks from what is left.
 // With neither, it is the day of the month the series starts on (none when the month is shorter).
@@ -63,12 +80,16 @@ function* occurrenceDays(first: Date, rule: Recurrence, skipTo?: Date): Generato
   const date = firstDay.getDate();
 
   if (rule.freq === "hourly") {
-    // Elapsed time, not wall-clock time: "every 2 hours" is 2 real hours apart,
-    // so the clock reading shifts by an hour across a daylight saving change.
+    // Steps of the clock, like every other frequency: "every 4 hours" from 08:00
+    // is 08:00, 12:00, 16:00 on every day, also on a day the clocks change (the
+    // scheduler works on wall-clock Dates, so this is the clock of its time zone).
+    // A reading the machine's clock skips (02:30 when the clocks go forward) is
+    // not an occurrence, as in iCalendar, and is not counted.
     const step = interval * HOUR;
-    const t0 = first.getTime();
-    for (let i = skipTo ? Math.max(0, Math.floor((skipTo.getTime() - t0) / step)) : 0; ; i++) {
-      yield new Date(t0 + i * step);
+    const w0 = toWall(first);
+    for (let i = skipTo ? Math.max(0, Math.floor((toWall(skipTo) - w0) / step)) : 0; ; i++) {
+      const day = fromWall(w0 + i * step);
+      if (toWall(day) === w0 + i * step) yield day;
     }
   } else if (rule.freq === "daily") {
     for (let i = 0; ; i++) yield addDays(firstDay, i * interval);
@@ -103,7 +124,7 @@ const startAt = (event: SchedulerEvent, rule: Recurrence, day: Date) =>
 
 const endAt = (event: SchedulerEvent, rule: Recurrence, day: Date) =>
   isHourly(rule)
-    ? new Date(day.getTime() + (event.endDate.getTime() - event.startDate.getTime()))
+    ? fromWall(toWall(day) + (toWall(event.endDate) - toWall(event.startDate)))
     : atDay(addDays(day, differenceInCalendarDays(event.endDate, event.startDate)), event.endDate);
 
 const isSkipped = (rule: Recurrence, day: Date) =>
@@ -118,13 +139,13 @@ const isBefore = (rule: Recurrence, exception: Date, day: Date) =>
   (isHourly(rule) ? exception : startOfDay(exception)) < day;
 
 const idPart = (rule: Recurrence, day: Date) =>
-  format(day, isHourly(rule) ? "yyyy-MM-dd'T'HH:mmxxx" : "yyyy-MM-dd");
+  format(day, isHourly(rule) ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd");
 
 /**
  * The occurrences of `event` that touch `from` to `to` (end exclusive). An
  * event without a `recurrence` comes back as is, or not at all when it is
  * outside the window. Each occurrence gets the id `<id>::<yyyy-MM-dd>` (hourly:
- * `<id>::<yyyy-MM-dd>T<HH:mm><offset>`) and a `seriesId`, keeps the time of
+ * `<id>::<yyyy-MM-dd>T<HH:mm>`) and a `seriesId`, keeps the time of
  * day and the length, and has no `recurrence`.
  */
 export const expandRecurrence = (
@@ -142,7 +163,7 @@ export const expandRecurrence = (
   // Without a count nothing depends on the occurrences before the window.
   const skipTo =
     isHourly(rule) && rule.count === undefined
-      ? new Date(from.getTime() - (event.endDate.getTime() - event.startDate.getTime()))
+      ? fromWall(toWall(from) - (toWall(event.endDate) - toWall(event.startDate)))
       : undefined;
 
   for (const day of occurrenceDays(event.startDate, rule, skipTo)) {

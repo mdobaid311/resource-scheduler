@@ -33,7 +33,7 @@ const standup = {
 - The event's own `startDate` and `endDate` are the first occurrence. Its time of day and length repeat, including multi-day events.
 - `until`, `count` and `exceptions` are all optional. With neither `until` nor `count` it repeats for ever.
 - Monthly and yearly keep the day of the month. A month without that day is skipped, as in iCalendar (31 January repeats in March, not on 28 February). The same goes for 29 February.
-- Times follow the wall clock, so 9:00 stays 9:00 across a daylight saving change. The exception is `hourly`, which counts elapsed time (see below).
+- Times follow the wall clock, so 9:00 stays 9:00 across a daylight saving change. With the `timeZone` prop that is the wall clock of that zone, whatever zone the viewer's machine is in (see [Time zones](/guides/time-zones/#recurring-events)).
 - Weeks start on Monday for `interval` and `byWeekday`, as in iCalendar.
 - `exceptions` are matched by calendar day and do not change `count`. For `hourly` they are matched by the exact start of the occurrence.
 
@@ -63,7 +63,7 @@ const standup = {
 - Yearly does the same in the month the series starts in: `{ freq: "yearly", byWeekday: [5], bySetPos: [-1] }` from 5 October is the last Friday of every October.
 - The series starts at the first matching day on or after `startDate`. If `startDate` itself does not match (a Monday start with "last Friday"), it is not an occurrence, as for weekly `byWeekday`.
 - `byMonthDay` and `bySetPos` are ignored by `hourly`, `daily` and `weekly`; `byWeekday` is ignored by `hourly` and `daily`.
-- **Hourly counts elapsed time.** Every 2 hours means 2 real hours apart, so across a daylight saving change the clock time of the occurrences moves by an hour, and an occurrence keeps the real duration of the event. The ids carry the time and the offset, `"<id>::2026-10-05T09:00+02:00"`, so the two occurrences in the repeated hour at the end of daylight saving time stay distinct. `until` is the last moment it may start at, `exceptions` and the date you pass to `splitRecurrence` and `editOccurrence` are the exact start of an occurrence, and a split ends the first series 1 ms before the split point.
+- **Hourly steps the clock**, like every other frequency: every 4 hours from 08:00 is 08:00, 12:00, 16:00 ... on every day, also on a day the clocks change (so it is not always 4 real hours apart, and a day with 25 hours has the same occurrences as any other). A reading the clock skips, 02:30 when the clocks go forward, is not an occurrence and is not counted, as in iCalendar. The ids carry the time, `"<id>::2026-10-05T09:00"`. `until` is the last moment it may start at, `exceptions` and the date you pass to `splitRecurrence` and `editOccurrence` are the exact start of an occurrence, and a split ends the first series 1 ms before the split point.
 
 Recurring events work wherever events do: in `resource.events`, or in the flat [`events` prop](/guides/data-model/).
 

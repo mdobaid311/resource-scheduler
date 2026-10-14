@@ -122,8 +122,7 @@ try {
 - **Not guessed:** anything else makes `parseRRule` throw a `RangeError` that names the part (`BYYEARDAY is not supported`), rather than dropping it and returning a rule that means something else. The same for values out of range and for a part the frequency cannot take (a `BYDAY` on a daily rule, `BYMONTHDAY` on a weekly one).
 - **`start`** is the first occurrence (`DTSTART`). A yearly rule repeats in the month it starts in, so `parseRRule` checks `BYMONTH` against it and `toRRule` writes it for a yearly rule with weekdays or month days. `DTSTART` and `EXDATE` are not part of the rule: `exceptions` are written and read as `EXDATE`.
 - **`UNTIL`** is a calendar day, as for `recurrence.until`. For an hourly rule it is the moment. `toRRule` writes the end of that day in UTC, or a date with `{ allDay: true }`.
-- **Hourly** repeats count elapsed time. A client that counts wall-clock hours in a zone with daylight saving can place occurrences after the change an hour apart from the scheduler.
-- The output was checked against ical.js: the same occurrences for the last Friday, the second Tuesday, the last weekday, month days, Friday the 13th, yearly rules, hourly, `COUNT` and `UNTIL`.
+- The output was checked against ical.js: the same occurrences (hourly included, which steps the clock as iCalendar does) for the last Friday, the second Tuesday, the last weekday, month days, Friday the 13th, yearly rules, hourly, `COUNT` and `UNTIL`.
 
 ## Not included
 
