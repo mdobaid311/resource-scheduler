@@ -417,7 +417,7 @@ export const formatRangeLabel = (
     : `${fmt.fullDayMonth(start)} ${labels.to} ${fmt.fullDate(lastDay)}`;
 };
 
-// "9:30 AM - 11:00 AM", or "All day" for events that start and end at midnight.
+// "9:30 AM – 11:00 AM", or "All day" for events that start and end at midnight.
 export const formatEventTime = (
   event: SchedulerEvent,
   { fmt, labels } = defaultI18n
@@ -425,7 +425,7 @@ export const formatEventTime = (
   const atMidnight = (d: Date) => startOfDay(d).getTime() === d.getTime();
   return atMidnight(event.startDate) && atMidnight(event.endDate)
     ? labels.allDay
-    : `${fmt.time(event.startDate)} - ${fmt.time(event.endDate)}`;
+    : `${fmt.time(event.startDate)} – ${fmt.time(event.endDate)}`;
 };
 
 // The title of the period on screen: "October 7, 2026", "Oct 5 – Oct 9, 2026",

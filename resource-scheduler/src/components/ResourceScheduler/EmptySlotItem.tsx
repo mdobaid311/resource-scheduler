@@ -48,19 +48,20 @@ export const EmptySlotItem: React.FC<EmptySlotItemProps> = ({
       data-rs-unavailable={isUnavailable ? "" : undefined}
       data-rs-footprint={inFootprint ? "" : undefined}
       className={withClass(`border-b border-e cursor-pointer overflow-hidden ${
-        isActive ? "ring-2 ring-inset ring-ocrs-ring " : ""
+        // The keyboard cursor shows only while the grid has keyboard focus, not after a click.
+        isActive ? "group-focus-visible/grid:ring-2 group-focus-visible/grid:ring-inset group-focus-visible/grid:ring-ocrs-ring " : ""
       }${
         rejected
-          ? "bg-ocrs-destructive/15 outline outline-1 -outline-offset-1 outline-ocrs-destructive"
+          ? "bg-ocrs-destructive/10 outline outline-2 -outline-offset-2 outline-ocrs-destructive"
           : inFootprint
-          ? "bg-ocrs-accent outline outline-1 -outline-offset-1 outline-ocrs-primary"
+          ? "bg-ocrs-primary/15 outline outline-1 -outline-offset-1 outline-ocrs-primary"
           : isSelected
-          ? "bg-ocrs-blue-50"
+          ? "bg-ocrs-primary/15"
           : isUnavailable
-          ? "bg-ocrs-muted-foreground/15"
+          ? "ocrs-hatch"
           : isToday
-          ? "bg-ocrs-blue-50"
-          : "hover:bg-ocrs-gray-50"
+          ? "bg-ocrs-blue-50 hover:bg-ocrs-gray-100"
+          : "hover:bg-ocrs-gray-100"
       }`, classNames.slot)}
       style={{
         gridRow: rowIndex + 2,

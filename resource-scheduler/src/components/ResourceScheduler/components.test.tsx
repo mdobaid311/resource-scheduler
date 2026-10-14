@@ -66,7 +66,7 @@ describe("components", () => {
       expect(card.getAttribute("aria-label")).toContain("9:00 AM to 10:00 AM");
       expect(card.querySelectorAll("[data-rs-resize]")).toHaveLength(2);
       // The default text of the card is gone.
-      expect(within(card).queryByText("9:00 AM - 10:00 AM")).toBeNull();
+      expect(within(card).queryByText("9:00 AM – 10:00 AM")).toBeNull();
     });
 
     it("can use hooks, and keeps its state when the scheduler re-renders", () => {
@@ -276,6 +276,6 @@ describe("components", () => {
     view();
     expect(screen.getByRole("button", { name: "Previous period" })).toBeTruthy();
     expect(screen.getByText("Ann")).toBeTruthy();
-    expect(within(eventButton()).getByText("9:00 AM - 10:00 AM")).toBeTruthy();
+    expect(within(eventButton()).getByText("9:00 AM – 10:00 AM")).toBeTruthy();
   });
 });

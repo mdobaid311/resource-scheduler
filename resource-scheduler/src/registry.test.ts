@@ -59,19 +59,20 @@ describe("registry.json", () => {
         "date-fns",
         "lucide-react",
         "@radix-ui/react-popover",
-        "@radix-ui/react-select",
         "class-variance-authority",
         "clsx",
         "tailwind-merge",
       ])
     );
     expect(item().dependencies).not.toContain("react");
+    // The view switch is a row of buttons; nothing imports a select any more.
+    expect(item().dependencies).not.toContain("@radix-ui/react-select");
   });
 
   it("carries the design tokens without touching the host theme", () => {
     const { cssVars, css } = item();
     expect(cssVars.light["rs-background"]).toBe("#ffffff");
-    expect(cssVars.dark["rs-background"]).toBe("#171717");
+    expect(cssVars.dark["rs-background"]).toBe("#0f1626");
     expect(cssVars.theme["color-ocrs-background"]).toBe("var(--rs-background)");
     // Nothing unprefixed such as --background / --primary that would clobber shadcn's.
     for (const name of Object.keys({ ...cssVars.light, ...cssVars.dark }))
@@ -111,7 +112,7 @@ describe("theme selectors in tokens.css", () => {
   });
 
   it("has a radius token, left out of the dark set, that the root uses", () => {
-    expect(parse(css).cssVars.light["rs-radius"]).toBe("0.5rem");
+    expect(parse(css).cssVars.light["rs-radius"]).toBe("0.75rem");
     expect(parse(css).cssVars.dark["rs-radius"]).toBeUndefined();
     expect(
       fs.readFileSync(path.join(__dirname, "components/ResourceScheduler/ResourceScheduler.tsx"), "utf8")

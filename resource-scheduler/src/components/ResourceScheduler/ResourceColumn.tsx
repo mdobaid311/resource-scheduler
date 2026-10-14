@@ -10,7 +10,7 @@ import { useI18n } from "./i18n";
 import type { ResourceColumnProps } from "./types";
 import { isGroupRow } from "./utils/groups";
 import type { ReorderDrag } from "./utils/reorder";
-import type { Utilization } from "./utils/utilization";
+import { type Utilization, utilizationTone } from "./utils/utilization";
 
 const KEYS = "Alt+ArrowUp Alt+ArrowDown";
 
@@ -36,6 +36,9 @@ const Handle: React.FC<{ onPointerDown: (event: React.PointerEvent) => void; cla
 
 const hours = (minutes: number) => Math.round(minutes / 6) / 10;
 
+// The bar's colour: primary, amber from 90%, red above 100%.
+const BAR = { normal: "bg-ocrs-primary", high: "bg-ocrs-warning", over: "bg-ocrs-destructive" } as const;
+
 // A bar and a percentage; the bar stops at 100% and turns red above it.
 const UtilizationBar: React.FC<{ value: Utilization }> = ({ value }) => {
   const { labels } = useI18n();
@@ -52,15 +55,19 @@ const UtilizationBar: React.FC<{ value: Utilization }> = ({ value }) => {
       aria-valuemax={100}
       aria-valuenow={filled}
       title={label}
-      className="flex w-full items-center gap-2"
+      className="mt-1 flex w-full items-center gap-2"
     >
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ocrs-secondary">
         <div
-          className={`h-full ${percent !== null && percent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+          className={`h-full rounded-full ${BAR[utilizationTone(percent)]}`}
           style={{ width: filled + "%" }}
         />
       </div>
-      <span className="w-9 text-end text-xs tabular-nums text-ocrs-muted-foreground">
+      <span
+        className={`w-9 text-end text-xs tabular-nums ${
+          utilizationTone(percent) === "over" ? "font-semibold text-ocrs-foreground" : "text-ocrs-muted-foreground"
+        }`}
+      >
         {percent === null ? "–" : percent + "%"}
       </span>
     </div>
@@ -104,11 +111,12 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
   return (
     <div
       ref={rootRef}
-      className="rs-resources bg-ocrs-white z-20 sticky start-0 shrink-0"
+      // The `after` line carries the column's edge down past the last row.
+      className="rs-resources bg-ocrs-white z-20 sticky start-0 shrink-0 after:pointer-events-none after:absolute after:inset-y-0 after:end-0 after:w-px after:bg-ocrs-border"
       style={{ width: resourceColumnWidth }}
     >
-      <div className="rs-resources-head border-e bg-ocrs-background sticky top-0 z-10 bg-ocrs-gray-50 p-2 text-center border-b h-14 flex items-center justify-center">
-        <span className="text-sm font-medium text-ocrs-muted-foreground">{labels.resources}</span>
+      <div className="rs-resources-head border-e sticky top-0 z-10 bg-ocrs-muted px-4 border-b h-14 flex items-center">
+        <span className="text-xs font-semibold uppercase tracking-wide text-ocrs-muted-foreground">{labels.resources}</span>
       </div>
       {before > 0 && <div aria-hidden="true" style={{ height: before + "px" }} />}
       {resources.slice(start, end).map((resource, i) => {
@@ -123,7 +131,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             ? `${labels.group(name, count)}, ${labels.utilization(hours(total.bookedMinutes), hours(total.availableMinutes))}`
             : labels.group(name, count);
           // Each level of nesting steps in; the first level keeps the default padding.
-          const indent = depth ? { paddingInlineStart: 12 + depth * 16 } : undefined;
+          const indent = depth ? { paddingInlineStart: 16 + depth * 16 } : undefined;
           const drag: ReorderDrag = { kind: "group", key };
           const grip = control?.groups;
           const body = (
@@ -138,7 +146,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
                 <span aria-hidden="true" className="ms-auto flex items-center gap-2 text-xs font-normal text-ocrs-muted-foreground">
                   <span className="h-1.5 w-12 overflow-hidden rounded-full bg-ocrs-secondary">
                     <span
-                      className={`block h-full ${totalPercent !== null && totalPercent > 100 ? "bg-ocrs-destructive" : "bg-ocrs-primary"}`}
+                      className={`block h-full rounded-full ${BAR[utilizationTone(totalPercent)]}`}
                       style={{ width: Math.min(totalPercent ?? 0, 100) + "%" }}
                     />
                   </span>
@@ -151,7 +159,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             </>
           );
           // Dragged rows dim; a resource dropped on a header gets a ring, as it joins that group.
-          const cell = `border-b border-e bg-ocrs-muted text-sm font-medium flex items-center gap-2 overflow-hidden${
+          const cell = `border-b border-e bg-ocrs-muted text-sm font-semibold text-ocrs-foreground flex items-center gap-2 overflow-hidden${
             isDragged(resource) ? " opacity-50" : ""
           }${active?.target?.header === resource.id ? " ring-2 ring-inset ring-ocrs-primary" : ""}`;
           return onToggleGroup ? (
@@ -168,7 +176,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
                 onKeyDown: keys(drag),
               })}
               className={withClass(
-                `${cell} w-full px-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`,
+                `${cell} w-full px-4 text-start outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring`,
                 classNames.groupHeader
               )}
               style={{ height: rowHeight + "px", ...indent }}
@@ -179,7 +187,7 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             <div
               key={resource.id}
               aria-label={label}
-              className={withClass(`${cell} px-3`, classNames.groupHeader)}
+              className={withClass(`${cell} px-4`, classNames.groupHeader)}
               style={{ height: rowHeight + "px", ...indent }}
             >
               {body}
@@ -202,23 +210,28 @@ export const ResourceColumn: React.FC<ResourceColumnProps> = ({
             })}
             className={withClass(
               `${
-                value ? "p-2 flex-col gap-1" : density === "compact" ? "px-3 py-1" : "p-3"
-              } border-b border-e flex items-center justify-center text-center overflow-hidden bg-ocrs-white hover:bg-ocrs-accent text-sm${
-                grip ? " relative ps-6 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring" : ""
+                value ? "py-0.5" : density === "compact" ? "py-1" : "py-2"
+              } px-4 border-b border-e flex flex-col justify-center text-start overflow-hidden bg-ocrs-white text-sm${
+                grip ? " relative ps-7 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring" : ""
               }${isDragged(resource) ? " opacity-50" : ""}`,
               classNames.resourceCell
             )}
             style={{ height: rowHeight + "px" }}
           >
-            {grip && <Handle onPointerDown={press(drag)} className="absolute start-1 top-1/2 -translate-y-1/2" />}
+            {grip && <Handle onPointerDown={press(drag)} className="absolute start-2 top-1/2 -translate-y-1/2" />}
             {ResourceHeader ? (
               <ResourceHeader resource={resource} />
             ) : renderResourceHeader ? (
               renderResourceHeader(resource)
             ) : (
-              <span className="w-full block break-words whitespace-pre-line">
-                {resource.name}
-              </span>
+              <>
+                <span className="line-clamp-2 break-words whitespace-pre-line font-medium leading-5 text-ocrs-foreground">
+                  {resource.name}
+                </span>
+                {resource.role && (
+                  <span className="block truncate text-xs leading-4 text-ocrs-muted-foreground">{resource.role}</span>
+                )}
+              </>
             )}
             {value && <UtilizationBar value={value} />}
           </div>

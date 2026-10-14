@@ -151,7 +151,7 @@ describe("getSelectionBounds", () => {
 describe("formatEventTime", () => {
   it("shows the time range of a timed event", () => {
     expect(formatEventTime(ev(d(3, 10, 9, 30), d(3, 10, 11)))).toBe(
-      "9:30 AM - 11:00 AM"
+      "9:30 AM – 11:00 AM"
     );
   });
 

@@ -135,3 +135,10 @@ export const getUtilization = (
   range: VisibleRange,
   options: { businessHours?: BusinessHours } = {}
 ): Utilization => columnUtilization([resource], [range], options)[0];
+
+/**
+ * How full a bar looks: `over` above 100%, `high` from 90%, else `normal`.
+ * The bars use it to turn amber and then red.
+ */
+export const utilizationTone = (percent: number | null): "over" | "high" | "normal" =>
+  percent === null ? "normal" : percent > 100 ? "over" : percent >= 90 ? "high" : "normal";

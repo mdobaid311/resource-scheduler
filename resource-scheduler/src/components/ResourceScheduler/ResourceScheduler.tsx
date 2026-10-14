@@ -516,7 +516,7 @@ const SchedulerView = forwardRef<
       <div
         dir={i18n.dir}
         className={withClass(
-          "rs-root flex flex-col h-full bg-ocrs-gray-50 w-full rounded-[var(--rs-radius)] overflow-hidden",
+          "rs-root flex flex-col h-full bg-ocrs-white text-ocrs-foreground w-full rounded-[var(--rs-radius)] overflow-hidden",
           classNames?.root
         )}
         style={
@@ -552,7 +552,7 @@ const SchedulerView = forwardRef<
 
         <div
           ref={scrollRef}
-          className="rs-scroll flex flex-1 bg-ocrs-white rounded-b-lg ocrs-shadow-sm overflow-x-auto"
+          className="rs-scroll flex flex-1 bg-ocrs-white overflow-x-auto"
         >
           <ResourceColumn
             resources={resources}
@@ -569,7 +569,7 @@ const SchedulerView = forwardRef<
             reorderHelpId={reorderHelpId}
           />
 
-          <div className="rs-timeline flex-1">
+          <div className="rs-timeline flex flex-1 flex-col">
             <TimelineHeader
               viewType={viewType}
               timeColumnWidth={timeColumnWidth}
