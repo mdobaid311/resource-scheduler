@@ -1,13 +1,13 @@
 # Launch kit
 
-Drafts to edit and post yourself. Nothing here has been sent anywhere. The plan and reasoning are in [ROADMAP.md](ROADMAP.md) section 6; this file is the copy.
+Drafts to edit and post yourself. Nothing here has been sent anywhere. The plan and reasoning are in [ROADMAP.md](ROADMAP.md) section 6; this file is the copy. What is already published, and where else to post, is tracked in [MARKETING.md](MARKETING.md).
 
 Every claim below can be checked in the repo or the docs. Keep it that way: replace numbers with your own once you have them, and do not add a benchmark claim until you have published one.
 
 ## Before you post anything
 
-- [ ] Publish v1.3.0 with a GitHub Release. It is the first release since 1.1.1, which crashes under React 18.
-- [ ] Docs deployed (Vercel, Root Directory `docs`) and `https://resource-scheduler-docs.vercel.app/` serves them. Check `/og.png`, `/llms.txt`, `/sitemap-index.xml`.
+- [x] Publish a GitHub Release (done: v1.4.0 on 2026-10-14; the first release since 1.1.1, which crashes under React 18).
+- [x] Docs deployed (Vercel, Root Directory `docs`, done 2026-10-14) and `https://resource-scheduler-docs.vercel.app/` serves them. Check `/og.png`, `/llms.txt`, `/sitemap-index.xml`.
 - [ ] README hero GIF renders on the GitHub page (it loads from `main`).
 - [ ] GitHub: repo description, topics (`react`, `scheduler`, `resource-scheduler`, `timeline`, `calendar`, `shadcn`, `tailwindcss`, `typescript`), social preview image (use `docs/public/og.png`), Discussions on, a few `good first issue` labels.
 - [ ] `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` works in a fresh app (it resolves from `main`).
