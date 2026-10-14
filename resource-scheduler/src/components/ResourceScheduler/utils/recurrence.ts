@@ -112,3 +112,99 @@ export const expandEvents = (
   events.some((e) => e.recurrence)
     ? events.flatMap((e) => (e.recurrence ? expandRecurrence(e, from, to) : [e]))
     : events;
+
+// The day of `occurrence` in the series and how many occurrences come before
+// it (exceptions count). Throws when it is not an occurrence of the event.
+const locate = (event: SchedulerEvent, occurrence: Date) => {
+  const rule = event.recurrence;
+  if (!rule) throw new RangeError("The event does not recur");
+  const target = startOfDay(occurrence);
+  const lastDay = rule.until ? startOfDay(rule.until) : null;
+  let before = 0;
+  for (const day of occurrenceDays(event.startDate, rule)) {
+    if (day > target || (lastDay && day > lastDay)) break;
+    if (rule.count !== undefined && before >= rule.count) break;
+    if (isSameDay(day, target)) {
+      if (rule.exceptions?.some((skipped) => isSameDay(skipped, day))) break;
+      return { rule, day, before };
+    }
+    if (++before > MAX_OCCURRENCES) break;
+  }
+  throw new RangeError("The date is not an occurrence of the event");
+};
+
+// What `edits` leave of the occurrence on `day`: the same time of day and length.
+const occurrenceOn = (event: SchedulerEvent, day: Date, edits: Partial<SchedulerEvent>) => ({
+  startDate: atDay(day, event.startDate),
+  endDate: atDay(addDays(day, differenceInCalendarDays(event.endDate, event.startDate)), event.endDate),
+  ...edits,
+});
+
+const isoDay = (day: Date) => format(day, "yyyy-MM-dd");
+
+/**
+ * "Edit this and following": splits a recurring `event` at `occurrence` (any
+ * time on that day; it must be an occurrence). `before` is the original
+ * series ended the day before through `until` (its `count` is dropped), or
+ * `null` when `occurrence` is the first one and nothing is left of it, so
+ * remove the original. `after` is a new series that starts at the occurrence
+ * with `edits` applied. It gets the id `<id>::from-<yyyy-MM-dd>` (or
+ * `edits.id`), the rest of the `count`, and the exceptions from the split on.
+ * Pass `edits.recurrence` to change the rule too, and both dates to move it.
+ */
+export const splitRecurrence = (
+  event: SchedulerEvent,
+  occurrence: Date,
+  edits: Partial<SchedulerEvent> = {}
+): { before: SchedulerEvent | null; after: SchedulerEvent } => {
+  const { rule, day, before } = locate(event, occurrence);
+  const { count, exceptions, ...kept } = rule;
+  const later = exceptions?.filter((skipped) => startOfDay(skipped) >= day);
+  const earlier = exceptions?.filter((skipped) => startOfDay(skipped) < day);
+  return {
+    before: before
+      ? {
+          ...event,
+          recurrence: {
+            ...kept,
+            until: addDays(day, -1),
+            ...(earlier?.length ? { exceptions: earlier } : {}),
+          },
+        }
+      : null,
+    after: {
+      ...event,
+      ...occurrenceOn(event, day, edits),
+      id: edits.id ?? `${event.id}::from-${isoDay(day)}`,
+      recurrence: edits.recurrence ?? {
+        ...kept,
+        ...(count !== undefined ? { count: count - before } : {}),
+        ...(later?.length ? { exceptions: later } : {}),
+      },
+    },
+  };
+};
+
+/**
+ * "Edit this occurrence only": `series` is the event with `occurrence` added
+ * to its exceptions, and `changed` is a one-off event for that day with
+ * `edits` applied. It gets the id `<id>::edit-<yyyy-MM-dd>` (or `edits.id`)
+ * and a `seriesId`. The occurrence must exist, as for `splitRecurrence`.
+ */
+export const editOccurrence = (
+  event: SchedulerEvent,
+  occurrence: Date,
+  edits: Partial<SchedulerEvent> = {}
+): { series: SchedulerEvent; changed: SchedulerEvent } => {
+  const { rule, day } = locate(event, occurrence);
+  return {
+    series: { ...event, recurrence: { ...rule, exceptions: [...(rule.exceptions ?? []), day] } },
+    changed: {
+      ...event,
+      ...occurrenceOn(event, day, edits),
+      id: edits.id ?? `${event.id}::edit-${isoDay(day)}`,
+      recurrence: edits.recurrence,
+      seriesId: event.id,
+    },
+  };
+};

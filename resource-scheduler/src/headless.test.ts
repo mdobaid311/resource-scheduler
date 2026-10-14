@@ -24,6 +24,8 @@ const VALUES = [
   "withEvents",
   "expandRecurrence",
   "expandEvents",
+  "splitRecurrence",
+  "editOccurrence",
   "getVisibleEvents",
   "getVisibleResources",
   "withGroups",

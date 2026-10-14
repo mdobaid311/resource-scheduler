@@ -25,7 +25,7 @@ export { getColumnRange, getColumns } from "./components/ResourceScheduler/utils
 // Resources, events, recurrence and groups
 export { getVisibleEvents } from "./components/ResourceScheduler/utils/dateUtils";
 export { getVisibleResources, withEvents } from "./components/ResourceScheduler/utils/events";
-export { expandEvents, expandRecurrence } from "./components/ResourceScheduler/utils/recurrence";
+export { editOccurrence, expandEvents, expandRecurrence, splitRecurrence } from "./components/ResourceScheduler/utils/recurrence";
 export { GROUP_ROW_HEIGHT, isGroupRow, withGroups } from "./components/ResourceScheduler/utils/groups";
 export type { GroupRow } from "./components/ResourceScheduler/utils/groups";
 
