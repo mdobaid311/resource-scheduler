@@ -419,6 +419,8 @@ const SchedulerView = forwardRef<
   );
 
   const handleViewChange = (newView: ViewType) => {
+    // The pressed view button is clickable too; nothing changes, so nothing resets.
+    if (newView === viewType) return;
     setViewType(newView);
     onViewChange?.(newView);
 

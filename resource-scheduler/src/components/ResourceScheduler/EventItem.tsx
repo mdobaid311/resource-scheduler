@@ -72,7 +72,7 @@ export const EventItem: React.FC<EventItemProps> = ({
   const color = event.color || "var(--rs-primary)";
   const allDay = formatEventTime(event, i18n) === i18n.labels.allDay;
   // A booking over several whole days shows its dates, which say more than "All day".
-  const lastDay = new Date(event.endDate.getTime() - 1);
+  const lastDay = new Date(Math.max(event.startDate.getTime(), event.endDate.getTime() - 1));
   const time =
     allDay && !isSameDay(event.startDate, lastDay)
       ? `${i18n.fmt.titleDateStart(event.startDate)} – ${i18n.fmt.titleDateStart(lastDay)}`

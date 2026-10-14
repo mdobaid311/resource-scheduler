@@ -77,11 +77,11 @@ type Density = "comfortable" | "compact";
 const PRESETS = {
   Default: null,
   Violet: { primary: "#7c3aed", accent: ["#ede9fe", "#2e1f5e"], today: ["#f8f6ff", "#1d1840"] },
-  Emerald: { primary: "#059669", accent: ["#d1fae5", "#0f3b2e"], today: ["#f2fbf7", "#10261f"] },
+  Emerald: { primary: "#047857", accent: ["#d1fae5", "#0f3b2e"], today: ["#f2fbf7", "#10261f"] },
   Rose: { primary: "#e11d48", accent: ["#ffe4e6", "#4c1a2a"], today: ["#fff5f6", "#2a1520"] },
   Slate: { primary: "#475569", accent: ["#e2e8f0", "#263247"], today: ["#f6f8fa", "#172033"] },
 } as const;
-const SWATCH = { Default: "#2563eb", Violet: "#7c3aed", Emerald: "#059669", Rose: "#e11d48", Slate: "#475569" };
+const SWATCH = { Default: "#2563eb", Violet: "#7c3aed", Emerald: "#047857", Rose: "#e11d48", Slate: "#475569" };
 type Preset = keyof typeof PRESETS;
 
 const KEY = "rs-showcase";

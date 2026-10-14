@@ -172,8 +172,6 @@
   }
   .rs-root button {
     background-color: transparent;
-    border-width: 0;
-    border-style: solid;
     color: inherit;
     font: inherit;
   }
@@ -216,6 +214,12 @@
   .rs-totals,
   .rs-totals-label {
     position: static;
+  }
+  /* The divider drawn by .rs-resources::after is positioned; static it would
+     escape to the page edge. The nav group's buttons are hidden, its box too. */
+  .rs-resources::after,
+  .rs-nav {
+    display: none;
   }
   .rs-scroll {
     overflow: visible;

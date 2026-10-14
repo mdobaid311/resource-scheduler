@@ -70,10 +70,10 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           type="button"
           aria-pressed={view === viewType}
           onClick={() => onViewChange(view)}
-          className={`h-7 shrink-0 rounded-md px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring ${
+          className={`h-7 shrink-0 rounded-md border-0 px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocrs-ring ${
             view === viewType
               ? "bg-ocrs-white text-ocrs-primary-text ocrs-shadow-xs"
-              : "text-ocrs-muted-foreground hover:text-ocrs-foreground"
+              : "text-ocrs-muted-foreground hover:bg-ocrs-accent hover:text-ocrs-accent-foreground"
           }`}
         >
           {labels.views[view]}
@@ -82,7 +82,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
     </div>
   );
 
-  const step = "rs-no-print h-8 rounded-none px-2 text-ocrs-muted-foreground hover:bg-ocrs-gray-100 hover:text-ocrs-foreground";
+  const step = "rs-no-print h-8 rounded-none px-2 text-ocrs-muted-foreground";
 
   return (
     <div
@@ -100,7 +100,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center overflow-hidden rounded-lg border bg-ocrs-white ocrs-shadow-xs">
+        <div className="rs-nav inline-flex items-center overflow-hidden rounded-lg border bg-ocrs-white ocrs-shadow-xs">
           <Button
             variant="ghost"
             size="sm"
@@ -113,7 +113,7 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="rs-no-print h-8 rounded-none border-x px-3 font-medium text-ocrs-foreground hover:bg-ocrs-gray-100"
+            className="rs-no-print h-8 rounded-none border-x px-3 font-medium text-ocrs-foreground"
             aria-label={labels.today}
             onClick={onGoToToday}
           >

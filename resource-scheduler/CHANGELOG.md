@@ -14,6 +14,9 @@
   - Buttons inside the scheduler had no focus ring colour (`ring-ring` is not a colour in the `ocrs` namespace); they use `--rs-ring` now.
 - **Showcase app.** `resource-scheduler-example` is a dashboard: a white app shell on a soft blue backdrop, a sidebar with the six recipes and the project links, a top bar with theme, density and accent controls, a page header with the recipe and its guide, and the demo in a card. Poppins, a folded layout below 1024px, and the copy says six recipes.
 
+### Fixed
+- **Review fixes for the new look.** Clicking the pressed view button no longer resets the date to today or fires `onViewChange` / `onDateChange`. The column totals row keeps its height (`shrink-0`) and its label sits level with it, with few rows or many. A resource with a `role` shows its name on one line, so no line is cut through. On paper the resource column's divider and the empty nav group box are hidden. A zero-length event at midnight no longer shows a reversed range ("Oct 14 – Oct 13"). The base rule no longer strips borders from your own `<button>`s inside a popover or a custom toolbar (the library's buttons reset their own border). The toolbar hover reads `--rs-accent` again, as documented. The Emerald accent in the showcase and the theme demo is `#047857` (4.5:1 on white), and the theming guide says `--rs-primary` should reach 4.5:1.
+
 ## [1.4.0] - 2026-10-14
 
 
