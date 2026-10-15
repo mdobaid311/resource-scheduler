@@ -29,7 +29,7 @@ Accounts: dev.to `mdobaid311`, Hashnode blog `mdobaid311.hashnode.dev` (free pla
 | React equipment rental calendar | /tutorials/react-equipment-rental-calendar/ | https://dev.to/mdobaid311/react-equipment-rental-calendar-47fe | https://mdobaid311.hashnode.dev/react-equipment-rental-calendar |
 | Room booking app with Next.js and Prisma | /tutorials/react-room-booking-nextjs-prisma/ | https://dev.to/mdobaid311/room-booking-app-with-nextjs-and-prisma-36j4 | https://mdobaid311.hashnode.dev/room-booking-app-with-next-js-and-prisma |
 
-The posts are copies of the docs pages made by `docs/scripts/tutorial-to-markdown.mjs` (`npm run cross-post` in `docs/`): the demo becomes a "See it running live" link, relative links become absolute, and `title="..."` code fences become a bold file name. They do not update by themselves.
+The posts are copies of the docs pages made by `docs/scripts/tutorial-to-markdown.mjs` (`npm run cross-post` in `docs/`): the demo becomes a "See it running live" link, relative links become absolute, and `title="..."` code fences become a bold file name. They do not update by themselves. On 2026-10-15 all 12 posts got the launch-video poster link as their first line (typed into the editor; on dev.to focus the textarea first, on Hashnode switch to Markdown mode and use Update). The npm page gets the video only after the next release.
 
 ### Not posted anywhere yet
 
