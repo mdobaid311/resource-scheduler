@@ -15,7 +15,7 @@
     "next": "15.5.27",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "resource-scheduler": "^1.4.0"
+    "resource-scheduler": "^1.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -8,7 +8,7 @@ Where Resource Scheduler is published, what has to change when it is updated, an
 
 | Place | URL | Notes |
 |---|---|---|
-| npm package | https://www.npmjs.com/package/resource-scheduler | Latest 1.4.0, published through the GitHub Release `v1.4.0` (`release.yml`, provenance) |
+| npm package | https://www.npmjs.com/package/resource-scheduler | Latest 1.5.0, published through the GitHub Release `v1.5.0` (`release.yml`, provenance) |
 | GitHub repo | https://github.com/mdobaid311/resource-scheduler | MIT. Release notes on https://github.com/mdobaid311/resource-scheduler/releases |
 | Docs site | https://resource-scheduler-docs.vercel.app | Vercel project `resource-scheduler-docs`, Root Directory `docs`, Install Command `npm --prefix ../resource-scheduler ci && npm ci`. Redeploys on every push to `main`. `llms.txt` and the sitemap are served from it |
 | Launch video | https://resource-scheduler-docs.vercel.app/launch.mp4 | 42 s, 1920x1080, 7.7 MB, from `demo/launch` (Remotion). Poster: `/launch-poster.png`. Source files `docs/public/launch.mp4` and `launch-poster.png`. Used in both READMEs (npm shows it after the next release), the docs home page and the top of every cross-post. **Use it in every new post:** link the poster to the mp4 (dev.to and Hashnode cannot embed mp4; upload to YouTube to get a real embed, and X, Bluesky, LinkedIn and Reddit take the file directly) |
@@ -29,7 +29,7 @@ Accounts: dev.to `mdobaid311`, Hashnode blog `mdobaid311.hashnode.dev` (free pla
 | React equipment rental calendar | /tutorials/react-equipment-rental-calendar/ | https://dev.to/mdobaid311/react-equipment-rental-calendar-47fe | https://mdobaid311.hashnode.dev/react-equipment-rental-calendar |
 | Room booking app with Next.js and Prisma | /tutorials/react-room-booking-nextjs-prisma/ | https://dev.to/mdobaid311/room-booking-app-with-nextjs-and-prisma-36j4 | https://mdobaid311.hashnode.dev/room-booking-app-with-next-js-and-prisma |
 
-The posts are copies of the docs pages made by `docs/scripts/tutorial-to-markdown.mjs` (`npm run cross-post` in `docs/`): the demo becomes a "See it running live" link, relative links become absolute, and `title="..."` code fences become a bold file name. They do not update by themselves. On 2026-10-15 all 12 posts got the launch-video poster link as their first line (typed into the editor; on dev.to focus the textarea first, on Hashnode switch to Markdown mode and use Update). The npm page gets the video only after the next release.
+The posts are copies of the docs pages made by `docs/scripts/tutorial-to-markdown.mjs` (`npm run cross-post` in `docs/`): the demo becomes a "See it running live" link, relative links become absolute, and `title="..."` code fences become a bold file name. They do not update by themselves. On 2026-10-15 all 12 posts got the launch-video poster link as their first line (typed into the editor; on dev.to focus the textarea first, on Hashnode switch to Markdown mode and use Update). The npm page has had it since 1.5.0 (2026-10-15).
 
 ### Not posted anywhere yet
 
@@ -42,7 +42,7 @@ Tried on 2026-10-14: Reddit cannot be opened by the browser tools Claude uses (b
 **New release** (CONTRIBUTING.md has the flow):
 1. Merge the version PR, then publish a GitHub Release `v<version>`. Check that npm shows it.
 2. Docs redeploy on their own. Check `docs/public/llms.txt` lists any new API.
-3. Look for version claims in the posts: the Next.js tutorial has a "Versions" note (Next.js 15, Prisma 6); the starter's `package.json` depends on `resource-scheduler@^1.4.0`.
+3. Look for version claims in the posts: the Next.js tutorial has a "Versions" note (Next.js 15, Prisma 6); the starter's `package.json` depends on `resource-scheduler@^1.5.0`.
 4. If a tutorial changed, regenerate its markdown with `npm run cross-post -- <slug>` in `docs/` (output in `docs/.cross-post/`, no slug means all), then paste it into the dev.to and Hashnode copies (dev.to: the post's Edit button; Hashnode: Dashboard, then the article; Hashnode has a Markdown mode). Keep the canonical URL.
 5. Add a row to the tables above if a new place was used, and note the date.
 
