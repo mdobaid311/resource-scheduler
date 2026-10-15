@@ -57,7 +57,7 @@ Read each sub's self-promotion rules first and post in the showcase thread. Disc
 
 ## X / Bluesky thread
 
-1. GIF of the hero. "I made a free, MIT resource timeline for React. Drag to create, move, resize. Double bookings get a red outline and never reach your code."
+1. The 40-second video (`docs/public/launch.mp4`; X, Bluesky and LinkedIn take mp4 up to their size limits) or the hero GIF. "I made a free, MIT resource timeline for React. Drag to create, move, resize. Double bookings get a red outline and never reach your code."
 2. "One prop: `eventOverlap={false}`. Add `businessHours` and `blockUnavailable` and closed hours and time off are protected too." (screenshot of the availability demo)
 3. "Keyboard and screen reader support from day one, tested with axe in CI. Pick up an event with Space, move it with the arrows."
 4. "Theme it with CSS variables. Dark mode is a second set of values." (screenshot of the theme demo)
