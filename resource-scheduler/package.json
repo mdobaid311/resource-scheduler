@@ -1,6 +1,6 @@
 {
   "name": "resource-scheduler",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A free, MIT resource timeline for React: drag, resize, conflict rules, keyboard support, virtualized rows. Install from npm or copy it in with the shadcn CLI.",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-15
+
 ### Changed
 - **A new default look.** Light: navy text on white, a pale blue band for the header and the resource column head, light grid lines and soft blue-tinted shadows. Dark: navy surfaces instead of neutral grey. `--rs-radius` is now 0.75rem.
   - **Event tiles** are a solid tint of the event colour (13% over the surface, so grid lines and today's column no longer show through) with a 3px strip of the colour on top and the title in the colour mixed toward the text colour. A tile narrower than about 90px shows its title alone, a booking over several whole days shows its dates instead of "All day", and the resize grips show when the pointer is over the tile. The default popover gets a colour dot, the description, and a correct range for events over several days.
