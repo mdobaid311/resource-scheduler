@@ -24,6 +24,11 @@
   <img src="docs/public/hero.gif" alt="Creating, moving and resizing events on a resource timeline; dropping an event onto a busy slot turns red and is refused" width="880" />
 </p>
 
+<p align="center">
+  <a href="https://resource-scheduler-docs.vercel.app/launch.mp4"><img src="docs/public/launch-poster.png" alt="Watch the 40-second tour: room booking, shift rosters, field dispatch and utilization on one scheduler" width="880" /></a><br />
+  <a href="https://resource-scheduler-docs.vercel.app/launch.mp4">Watch the 40-second tour</a>
+</p>
+
 ## Why this one?
 
 In most calendar libraries the resource timeline is a paid tier. Here it is free, and complete:

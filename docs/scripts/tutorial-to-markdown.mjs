@@ -31,7 +31,8 @@ export function convert(mdx, canonical) {
   s = s.replace(/\]\((\/[^)\s]*)\)/g, (_, path) => `](${SITE}${path})`);
   s = s.replace(/^```(\w+) title="([^"]+)"$/gm, (_, lang, file) => `**\`${file}\`**\n\n\`\`\`${lang}`);
   s = s.replace(/^\n+/, "").trimEnd();
-  return { title, body: `${s}\n\n---\n\n*Originally published at [${canonical}](${canonical}).*\n` };
+  const tour = `[![Watch the 40-second tour](${SITE}/launch-poster.png)](${SITE}/launch.mp4)\n\n`;
+  return { title, body: `${tour}${s}\n\n---\n\n*Originally published at [${canonical}](${canonical}).*\n` };
 }
 
 const all = readdirSync(SRC).filter((f) => f.endsWith(".mdx")).map((f) => f.slice(0, -4));
