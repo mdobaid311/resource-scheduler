@@ -48,7 +48,7 @@ export default function WeekDemo() {
         availableViews={[ViewType.Week, ViewType.Month]}
         weekStartsOn={weekStartsOn}
         hideWeekends={hideWeekends}
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         dateColumnWidth="110px"
       />
     </Frame>

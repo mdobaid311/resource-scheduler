@@ -24,10 +24,16 @@ export function Frame({
       <div style={{ height }}>{children}</div>
       {log !== undefined && (
         <div className="demo-log" role="status" aria-live="polite">
-          {log || "Try it: drag, resize or click."}
+          {log || (caption ? "What you do shows up here." : "Try it: drag, resize or click.")}
         </div>
       )}
-      {caption && <figcaption>{caption}</figcaption>}
+      {caption && (
+        <figcaption>
+          {caption}
+          {/* Shown only on touch screens (CSS), where a drag across empty time scrolls instead. */}
+          <span className="touch-hint"> On touch: press and hold an empty slot, then drag.</span>
+        </figcaption>
+      )}
     </figure>
   );
 }

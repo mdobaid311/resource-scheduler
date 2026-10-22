@@ -56,7 +56,7 @@ export default function ReorderDemo() {
         dayStartHour={8}
         dayEndHour={18}
         timeColumnWidth="80px"
-        resourceColumnWidth="190px"
+        resourceColumnWidth="clamp(104px, 30vw, 190px)"
         ariaLabel="Meeting rooms by floor"
         eventOverlap={false}
         defaultCollapsedGroups={["Annex"]}

@@ -20,7 +20,7 @@ export default function HeroDemo({
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week, ViewType.Month]}
-        resourceColumnWidth={compact ? "150px" : "170px"}
+        resourceColumnWidth={compact ? "clamp(104px, 30vw, 150px)" : "clamp(104px, 30vw, 170px)"}
         dateColumnWidth={compact ? "100px" : "120px"}
         eventOverlap={false}
         onEventCreate={(event, resourceId) => addEvent(resourceId, event)}

@@ -28,7 +28,7 @@ export default function KeyboardDemo() {
         dayStartHour={8}
         dayEndHour={18}
         timeColumnWidth="80px"
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         eventOverlap={false}
         onEventCreate={(event, resourceId) => {
           addEvent(resourceId, event);

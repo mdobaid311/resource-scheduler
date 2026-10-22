@@ -113,7 +113,7 @@ export default function FieldServiceDemo({ density }: DemoProps = {}) {
         dayStartHour={7}
         dayEndHour={19}
         timeColumnWidth="70px"
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         ariaLabel="Technician schedule"
         showUtilization
         nowIndicator

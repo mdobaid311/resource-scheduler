@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
 import type { DemoProps } from "../components/demos/Frame";
-import { ALL_DEMOS, GROUPS } from "./recipes";
+import { ALL_DEMOS, GROUPS, TRY } from "./recipes";
 import { ArrowRight, Book, Box, Code, Drop, Logo, Monitor, Moon, Sun } from "./icons";
 
 // The showcase lives in the docs site, so links stay on whatever origin and base it is served from.
@@ -90,15 +90,29 @@ export default function App() {
     }
   }, [theme, preset, density, tab]);
 
-  // On narrow screens the recipes are a row that scrolls; keep the open one in view.
+  // The sidebar list scrolls on short screens; keep the open demo in view when it changes from a link or Back.
   useEffect(() => {
     document.getElementById(`tab-${tab}`)?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
   }, [tab]);
 
+  // pushState, so Back steps through the demos you opened; hashchange covers links and Back.
   const select = (id: string) => {
+    if (id === tab) return;
     setTab(id);
-    history.replaceState(null, "", `#${id}`);
+    history.pushState(null, "", `#${id}`);
   };
+  useEffect(() => {
+    const onHash = () => {
+      const id = location.hash.slice(1);
+      if (ALL_DEMOS.some((d) => d.id === id)) setTab(id);
+    };
+    addEventListener("hashchange", onHash);
+    addEventListener("popstate", onHash);
+    return () => {
+      removeEventListener("hashchange", onHash);
+      removeEventListener("popstate", onHash);
+    };
+  }, []);
 
   // The list is a column on wide screens and a row on narrow ones, so both pairs of arrows work.
   const onTabKey = (e: KeyboardEvent, index: number) => {
@@ -116,12 +130,35 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <a className="brand" href={BASE} aria-label="Resource Scheduler docs home">
-          <Logo />
-          <span>
-            Resource<b>Scheduler</b>
-          </span>
-        </a>
+        <div className="brand-row">
+          <a className="brand" href={BASE} aria-label="Resource Scheduler docs home">
+            <Logo />
+            <span>
+              Resource<b>Scheduler</b>
+            </span>
+          </a>
+          {/* The project links are hidden on narrow screens; this keeps a way back to the docs. */}
+          <a className="docs-link" href={BASE}>
+            <Book />
+            Docs
+          </a>
+        </div>
+
+        {/* Narrow screens: 28 demos in a sideways row are hard to scan, so a native picker replaces it. */}
+        <label className="nav-select">
+          <span>Demo</span>
+          <select value={tab} onChange={(e) => select(e.target.value)}>
+            {GROUPS.map((g) => (
+              <optgroup key={g.id} label={g.label}>
+                {g.demos.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
 
         <div className="nav" role="tablist" aria-label="Demos" aria-orientation="vertical">
           {GROUPS.map((g) => (
@@ -214,11 +251,22 @@ export default function App() {
             <div>
               <h1>{active.label}</h1>
               <p>{active.blurb}</p>
+              {TRY[active.id] && (
+                <p className="try">
+                  <b>Try:</b> {TRY[active.id]}
+                </p>
+              )}
             </div>
-            <a className="primary-button" href={`${BASE}${active.doc}/`}>
-              Read the guide
-              <ArrowRight />
-            </a>
+            <div className="page-actions">
+              <a className="primary-button" href={`${BASE}${active.doc}/`}>
+                Read the guide
+                <ArrowRight />
+              </a>
+              <a className="text-link" href={`${REPO}/blob/main/docs/src/components/demos/${active.demo}.tsx`}>
+                <Code />
+                View code
+              </a>
+            </div>
           </div>
           {/* A new key resets the recipe's data when you switch. */}
           <Suspense fallback={<p className="demo-loading" role="status">Loading demo…</p>}>

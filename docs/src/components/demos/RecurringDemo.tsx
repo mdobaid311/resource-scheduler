@@ -129,7 +129,7 @@ export default function RecurringDemo() {
         events={events}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week, ViewType.Month]}
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         dateColumnWidth="110px"
         onEventDrop={(event, _from, to, start, end) => change(event, to, start, end)}
         onEventResize={(event, resourceId, start, end) => change(event, resourceId, start, end)}
