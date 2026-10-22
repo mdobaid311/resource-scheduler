@@ -100,7 +100,7 @@ The four steps of [Build your own UI](/guides/build-your-own-ui/), kept up to da
 
 | Name | Call | What it does |
 | --- | --- | --- |
-| `createSchedulerStore` | `createSchedulerStore({ resources, events?, initialDate?, initialView?, ...options })` | Returns a `SchedulerStore`. The input is `SchedulerStoreInput`: the data (`resources`, flat `events`, `collapsedGroups`), the day and week options (`slotDuration`, `dayStartHour`, `dayEndHour`, `weekStartsOn`, `hideWeekends`), `businessHours`, `density` and `showUtilization`. Starts on `initialDate` (default now) in `initialView` (default the day view). |
+| `createSchedulerStore` | `createSchedulerStore({ resources, events?, initialDate?, initialView?, ...options })` | Returns a `SchedulerStore`. The input is `SchedulerStoreInput`: the data (`resources`, flat `events`, `collapsedGroups`), the day and week options (`slotDuration`, `dayStartHour`, `dayEndHour`, `weekStartsOn`, `hideWeekends`), `businessHours`, `density` and `showUtilization`. Starts on `initialDate` (default now) in `initialView` (default the week view). |
 
 A `SchedulerStore` has:
 

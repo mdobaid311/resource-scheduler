@@ -101,7 +101,7 @@ describe("the base reset", () => {
       screen.getByRole("button", { name: "Week" }),
       screen.getByLabelText("Previous period"),
       screen.getByLabelText("Next period"),
-      screen.getByLabelText("Today"),
+      screen.getByRole("button", { name: "Today" }),
     ]) {
       expect(el.className).toMatch(/(^|\s)border-0(\s|$)/);
     }
@@ -128,5 +128,82 @@ describe("the column totals", () => {
     expect(document.querySelector(".rs-totals")!.className).toContain("shrink-0");
     const label = document.querySelector(".rs-totals-label")!;
     expect(label.previousElementSibling!.hasAttribute("data-rs-spacer")).toBe(true);
+  });
+});
+
+describe("first-run defaults", () => {
+  const ann = [{ id: "a", name: "Ann", events: [] }];
+  const pressed = () => screen.getByRole("group", { name: "View" }).querySelector('[aria-pressed="true"]');
+
+  it("opens on the week view when no view is given", () => {
+    render(<ResourceScheduler resources={ann} />);
+    expect(pressed()?.textContent).toBe("Week");
+  });
+
+  it("keeps the shown date when the view changes, instead of jumping to today", () => {
+    const onDateChange = vi.fn();
+    render(
+      <ResourceScheduler
+        resources={ann}
+        initialView={ViewType.Month}
+        initialDate={new Date(2026, 11, 16)}
+        onDateChange={onDateChange}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Week" }));
+    expect(pressed()?.textContent).toBe("Week");
+    expect(document.querySelector(".rs-toolbar")?.textContent).toMatch(/Dec 13/);
+    expect(onDateChange).not.toHaveBeenCalled();
+  });
+
+  it("says so when there are no resources, in the labels' language", () => {
+    const { rerender } = render(<ResourceScheduler resources={[]} />);
+    expect(screen.getByText("No resources to show")).toBeTruthy();
+    rerender(<ResourceScheduler resources={[]} labels={{ noResources: "Keine Ressourcen" }} />);
+    expect(screen.getByText("Keine Ressourcen")).toBeTruthy();
+    rerender(<ResourceScheduler resources={ann} />);
+    expect(screen.queryByText("No resources to show")).toBeNull();
+  });
+
+  it("names a dragged-out event with the newEvent label", () => {
+    const onEventCreate = vi.fn();
+    render(
+      <ResourceScheduler
+        resources={ann}
+        initialView={ViewType.Day}
+        labels={{ newEvent: "Neuer Termin" }}
+        onEventCreate={onEventCreate}
+      />
+    );
+    const slot = document.querySelector("[data-rs-slot]")!;
+    fireEvent.mouseDown(slot, { button: 0 });
+    fireEvent.mouseUp(window);
+    expect(onEventCreate).toHaveBeenCalledTimes(1);
+    expect(onEventCreate.mock.calls[0][0].title).toBe("Neuer Termin");
+  });
+
+  it("shows resize handles on touch screens, where there is no hover", () => {
+    render(
+      <ResourceScheduler
+        resources={[
+          {
+            id: "a",
+            name: "Ann",
+            events: [{ id: "e", title: "Standup", startDate: new Date(2026, 9, 14, 9), endDate: new Date(2026, 9, 14, 10) }],
+          },
+        ]}
+        initialView={ViewType.Day}
+        onEventResize={() => {}}
+      />
+    );
+    const handles = document.querySelectorAll("[data-rs-resize]");
+    expect(handles.length).toBeGreaterThan(0);
+    handles.forEach((h) => expect(h.className).toContain("pointer-coarse:opacity-100"));
+  });
+
+  it("does not repeat the Today button's text as its accessible name", () => {
+    render(<ResourceScheduler resources={ann} />);
+    const today = screen.getByRole("button", { name: "Today" });
+    expect(today.hasAttribute("aria-label")).toBe(false);
   });
 });

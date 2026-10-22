@@ -114,7 +114,6 @@ export const SchedulerControls: React.FC<SchedulerControlsProps> = ({
             variant="ghost"
             size="sm"
             className="rs-no-print h-8 rounded-none border-x px-3 font-medium text-ocrs-foreground"
-            aria-label={labels.today}
             onClick={onGoToToday}
           >
             {labels.today}
