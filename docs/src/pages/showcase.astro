@@ -12,11 +12,12 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resource Scheduler Showcase</title>
+    <title>React Resource Timeline Demos | Resource Scheduler</title>
     <meta
       name="description"
-      content="A React resource timeline with drag, resize, availability and utilization. Try room booking, shift rosters, equipment rental, field service and project allocation, in any theme and density."
+      content="Live React resource timeline demos: room booking, shift rosters, equipment rental, field service and project allocation. Drag, resize, switch theme and density."
     />
+    <link rel="canonical" href={new URL(base.slice(1) + "showcase/", Astro.site).href} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Resource Scheduler" />

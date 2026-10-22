@@ -65,6 +65,7 @@ export default defineConfig({
             content: new URL("og.png", site + base.replace(/\/?$/, "/")).href,
           },
         },
+        { tag: "meta", attrs: { property: "og:type", content: "website" } },
         { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
         {
           tag: "script",
