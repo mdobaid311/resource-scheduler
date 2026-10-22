@@ -934,7 +934,7 @@ describe("room booking tutorial", () => {
     // Free time on Borealis opens the form; submitting books it.
     await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
     await page.waitForSelector(".demo-form");
-    await page.fill('.demo-form input[aria-label="Event title"]', "Design review");
+    await page.locator(".demo-form").getByLabel("Title").fill("Design review");
     await page.click('.demo-form button[type="submit"]');
     await page.waitForTimeout(250);
     assert.equal(await log(page), 'Booked "Design review"');
@@ -1127,7 +1127,7 @@ describe("Next.js and Prisma tutorial", () => {
     // Free time on Borealis opens the form; submitting books it.
     await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
     await page.waitForSelector(".demo-form");
-    await page.fill('.demo-form input[aria-label="Event title"]', "Standup");
+    await page.locator(".demo-form").getByLabel("Title").fill("Standup");
     await page.click('.demo-form button[type="submit"]');
     await page.waitForTimeout(250);
     assert.equal(await log(page), 'Booked "Standup"');
