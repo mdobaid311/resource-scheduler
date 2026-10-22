@@ -33,3 +33,5 @@ graphify-out/
 
 # Vercel
 .vercel/
+demo
+.claude

@@ -57,7 +57,7 @@ export default function SlotsDemo() {
           }}
         />
       )}
-      <div style={{ height: draft ? 360 : 420 }}>
+      <div style={{ height: 420 }}>
         <ResourceScheduler
           resources={resources}
           initialView={ViewType.Day}
@@ -67,7 +67,7 @@ export default function SlotsDemo() {
           dayStartHour={from}
           dayEndHour={to}
           timeColumnWidth="80px"
-          resourceColumnWidth="150px"
+          resourceColumnWidth="clamp(104px, 30vw, 150px)"
           onSlotSelect={setDraft}
           onEventDrop={move}
           onEventResize={resize}

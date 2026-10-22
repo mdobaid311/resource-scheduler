@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. The library lives in [`resource-scheduler/`](resource-scheduler) and a demo app in [`resource-scheduler-example/`](resource-scheduler-example).
+Thanks for helping. The library lives in [`resource-scheduler/`](resource-scheduler) and the docs site, with its showcase page, in [`docs/`](docs).
 
 ## Setup
 

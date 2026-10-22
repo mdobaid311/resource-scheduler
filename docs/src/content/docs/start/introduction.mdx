@@ -22,7 +22,7 @@ Be honest with yourself before you pick it:
 
 - **Recurring rules are not the whole of iCalendar.** Hourly to yearly repeats (the last Friday, the first and last day of the month) with exceptions are built in, and `RRULE` strings can be read and written; `BYMONTH` lists, week numbers and per-series time zones are not.
 - **Several thousand resources is the ceiling.** Rows and columns are virtualized: 2,500 resources with 50,000 events and a year view across many resources are fine ([benchmark](/guides/performance/)), but the first render still does work for every resource, so beyond that load a window of resources from your server.
-- **Groups are collapsible headers only**: they nest and show a utilization total, but there is no drag to reorder and no lazy loading of a branch. No two-way calendar sync (`.ics` import and export, and CSV export, are built), no Gantt dependencies.
+- **Groups are collapsible headers only**: they nest, show a utilization total and can be dragged to a new place (`onGroupReorder`, `onResourceReorder`), but there is no lazy loading of a branch. No two-way calendar sync (`.ics` import and export, and CSV export, are built), no Gantt dependencies.
 - **Not yet tried with a real screen reader** (it passes axe and keyboard tests). See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).
 
 The [roadmap](https://github.com/mdobaid311/resource-scheduler/blob/main/ROADMAP.md) lists what is planned. If you need Gantt dependencies or tens of thousands of events today, look at the [alternatives](/compare/alternatives/).

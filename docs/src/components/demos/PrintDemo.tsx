@@ -96,7 +96,7 @@ export default function PrintDemo() {
         initialView={ViewType.Week}
         businessHours={{}}
         virtualize
-        resourceColumnWidth="190px"
+        resourceColumnWidth="clamp(104px, 30vw, 190px)"
         dateColumnWidth="120px"
         onViewChange={(v) => (view.current = v)}
         onEventDrop={move}

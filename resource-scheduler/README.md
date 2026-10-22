@@ -159,7 +159,7 @@ import "resource-scheduler/dist/resource-scheduler.css"
 | `resources` | `Resource[]` | **Required** | Array of resources to display. Each may hold its own `events` |
 | `events` | `SchedulerEvent[]` | `undefined` | The same events as one flat list: each names its resource with `resourceId` (or `resourceIds`). Added to what the resources hold, so `resources` can be just `{ id, name }` |
 | `initialDate` | `Date` | `new Date()` | Initial date to display |
-| `initialView` | `ViewType` | `ViewType.Day` | Initial view type |
+| `initialView` | `ViewType` | `ViewType.Week` | Initial view type |
 | `onEventClick` | `(event: Event, resource: Resource) => void` | `undefined` | Callback when event is clicked |
 | `onDateChange` | `(date: Date) => void` | `undefined` | Callback when date changes |
 | `onViewChange` | `(view: ViewType) => void` | `undefined` | Callback when view type changes |

@@ -117,7 +117,7 @@ export default function ComponentsDemo() {
         components={components}
         initialView={ViewType.Week}
         availableViews={[ViewType.Day, ViewType.Week]}
-        resourceColumnWidth="190px"
+        resourceColumnWidth="clamp(104px, 30vw, 190px)"
         dateColumnWidth="120px"
         onEventDrop={move}
         onEventResize={resize}

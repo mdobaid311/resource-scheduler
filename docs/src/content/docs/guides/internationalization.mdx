@@ -47,6 +47,8 @@ The toolbar, the resource column header, the view names, the "unavailable" and "
   labels={{
     resources: "Ressourcen",
     today: "Heute",
+    newEvent: "Neuer Termin", // title of an event made by dragging
+    noResources: "Keine Ressourcen",
     previousPeriod: "Vorheriger Zeitraum",
     nextPeriod: "Nächster Zeitraum",
     views: { day: "Tag", week: "Woche", month: "Monat", quarter: "Quartal", year: "Jahr" },
@@ -66,6 +68,7 @@ Messages that need a number or a name are functions, so each language can word a
 | Label | What it is |
 |---|---|
 | `resources`, `today`, `previousPeriod`, `nextPeriod`, `view`, `gridName` | Toolbar, header and accessible names |
+| `newEvent`, `noResources` | The title of an event made by dragging ("New Event"), and the line shown when `resources` is empty ("No resources to show") |
 | `views` | `{ day, week, month, quarter, year }` names in the selector |
 | `viewTitle(view)` | The small line under the period title |
 | `allDay`, `unavailable`, `to` | Event and slot text. `to` joins a range read aloud: "9:00 AM to 10:00 AM" |

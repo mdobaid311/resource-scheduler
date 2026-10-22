@@ -110,7 +110,7 @@ const memo = <A extends unknown[], R>(fn: (...args: A) => R) => {
  */
 export const createSchedulerStore = ({
   initialDate = new Date(),
-  initialView = ViewType.Day,
+  initialView = ViewType.Week,
   ...initialInput
 }: SchedulerStoreInput): SchedulerStore => {
   let input: SchedulerInput = initialInput;

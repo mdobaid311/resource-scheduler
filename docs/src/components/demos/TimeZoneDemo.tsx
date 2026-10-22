@@ -71,7 +71,7 @@ export default function TimeZoneDemo() {
         nowIndicator
         businessHours={{ startHour: 9, endHour: 17 }}
         timeColumnWidth="64px"
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         onEventDrop={(event, from, to, start, end) => {
           move(event, from, to, start, end);
           setLog(`Moved "${event.title}": store ${start.toISOString()}`);

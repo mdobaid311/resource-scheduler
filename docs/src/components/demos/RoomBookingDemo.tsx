@@ -31,7 +31,7 @@ export default function RoomBookingDemo({ density }: DemoProps = {}) {
           }}
         />
       )}
-      <div style={{ height: draft ? 360 : 420 }}>
+      <div style={{ height: 420 }}>
         <ResourceScheduler
           density={density}
           resources={resources}
@@ -41,7 +41,7 @@ export default function RoomBookingDemo({ density }: DemoProps = {}) {
           dayStartHour={8}
           dayEndHour={18}
           timeColumnWidth="80px"
-          resourceColumnWidth="170px"
+          resourceColumnWidth="clamp(104px, 30vw, 170px)"
           ariaLabel="Meeting room bookings"
           eventOverlap={false}
           onSlotSelect={setDraft}

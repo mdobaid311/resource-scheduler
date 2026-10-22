@@ -55,7 +55,7 @@ export const EventItem: React.FC<EventItemProps> = ({
             key={edge}
             aria-hidden="true"
             data-rs-resize={edge}
-            className={`rs-no-print absolute inset-y-0 z-10 w-2 cursor-ew-resize opacity-0 transition-opacity group-hover/event:opacity-100 after:absolute after:inset-y-2 after:w-0.5 after:rounded-full after:bg-current after:opacity-40 ${
+            className={`rs-no-print absolute inset-y-0 z-10 w-2 cursor-ew-resize opacity-0 transition-opacity group-hover/event:opacity-100 pointer-coarse:opacity-100 after:absolute after:inset-y-2 after:w-0.5 after:rounded-full after:bg-current after:opacity-40 ${
               edge === "start" ? "start-0 after:start-[3px]" : "end-0 after:end-[3px]"
             }`}
             style={{ touchAction: "none" }}

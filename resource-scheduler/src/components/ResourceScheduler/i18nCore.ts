@@ -9,6 +9,10 @@ export interface SchedulerLabels {
   /** Header of the resource column. */
   resources: string;
   today: string;
+  /** Title of an event made by dragging across empty time, before you rename it. */
+  newEvent: string;
+  /** Shown above the grid when `resources` is empty: "No resources to show". */
+  noResources: string;
   previousPeriod: string;
   nextPeriod: string;
   /** Name of the view selector. */
@@ -66,6 +70,8 @@ const slots = (n: number) => `${n} slot${n === 1 ? "" : "s"}`;
 export const defaultLabels: SchedulerLabels = {
   resources: "Resources",
   today: "Today",
+  newEvent: "New Event",
+  noResources: "No resources to show",
   previousPeriod: "Previous period",
   nextPeriod: "Next period",
   view: "View",

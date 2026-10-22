@@ -134,7 +134,7 @@ export default function EquipmentRentalDemo({ density }: DemoProps = {}) {
           </button>
         </form>
       )}
-      <div style={{ height: draft ? 630 : 690 }}>
+      <div style={{ height: 690 }}>
         <ResourceScheduler
           density={density}
           ref={ref}
@@ -145,7 +145,7 @@ export default function EquipmentRentalDemo({ density }: DemoProps = {}) {
           weekStartsOn={1}
           showUtilization
           blockUnavailable
-          resourceColumnWidth="190px"
+          resourceColumnWidth="clamp(104px, 30vw, 190px)"
           dateColumnWidth="110px"
           ariaLabel="Equipment rentals"
           onSlotSelect={setDraft}

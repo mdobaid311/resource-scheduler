@@ -52,9 +52,9 @@ describe("createSchedulerStore state", () => {
     expect(state.utilization).toBeUndefined();
   });
 
-  it("defaults to today in the day view", () => {
+  it("defaults to today in the week view", () => {
     const state = createSchedulerStore({ resources: [] }).getState();
-    expect(state.view).toBe(ViewType.Day);
+    expect(state.view).toBe(ViewType.Week);
     expect(state.date.toDateString()).toBe(new Date().toDateString());
   });
 

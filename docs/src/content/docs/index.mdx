@@ -9,18 +9,24 @@ hero:
     - text: Quick start
       link: /start/quick-start/
       icon: right-arrow
+    - text: Try 28 live demos
+      link: /showcase/
+      icon: rocket
+      variant: secondary
     - text: View on GitHub
       link: https://github.com/mdobaid311/resource-scheduler
       icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 import HeroDemo from '../../components/demos/HeroDemo';
 
-<HeroDemo client:only="react" />
-
 This is the real component, running live. Drag across empty days to create an event, drag an event to move it, grab an edge to resize it. Try dropping one on top of another: it turns red and is refused.
+
+<HeroDemo client:only="react">
+  <div slot="fallback" class="demo-frame not-content" style="height:462px" aria-busy="true"></div>
+</HeroDemo>
 
 ## 40-second tour
 
@@ -64,4 +70,17 @@ This is the real component, running live. Drag across empty days to create an ev
   <Card title="Copy the source" icon="laptop">
     Prefer to own the code? The shadcn CLI copies it into your project and adds the styles to your Tailwind CSS.
   </Card>
+</CardGrid>
+
+## Every demo, live
+
+28 live demos on one page, with a sidebar to switch between them and theme, density and accent controls. Each one links to the guide that explains how it is built.
+
+<CardGrid>
+  <LinkCard title="Recipes" description="Room booking, shift roster, equipment, field service, project allocation and a clinic board." href="/showcase/#room-booking" />
+  <LinkCard title="Drag, resize and rules" description="Conflicts, slots, week view, recurring events and keyboard editing." href="/showcase/#conflict-control" />
+  <LinkCard title="Availability and capacity" description="Business hours, free-slot suggestions, utilization and time zones." href="/showcase/#availability" />
+  <LinkCard title="Rows and groups" description="Resource groups, reordering and a flat timeline." href="/showcase/#groups" />
+  <LinkCard title="Data in and out" description="Export, import and print calendar files." href="/showcase/#export" />
+  <LinkCard title="Make it yours" description="Theming, replaceable parts, headless, custom timeline and translations." href="/showcase/#theming" />
 </CardGrid>

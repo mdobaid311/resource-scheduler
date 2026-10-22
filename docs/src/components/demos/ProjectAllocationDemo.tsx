@@ -106,7 +106,7 @@ export default function ProjectAllocationDemo({ density }: DemoProps = {}) {
         showUtilization
         blockUnavailable
         eventOverlap={false}
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         dateColumnWidth="46px"
         ariaLabel="Project allocations"
         onSlotSelect={create}

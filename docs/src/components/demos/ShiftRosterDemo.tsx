@@ -147,7 +147,7 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
           </button>
         </form>
       )}
-      <div style={{ height: draft ? 480 : 530 }}>
+      <div style={{ height: 530 }}>
         <ResourceScheduler
           density={density}
           resources={staff}
@@ -158,7 +158,7 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
           showUtilization
           blockUnavailable
           eventOverlap={false}
-          resourceColumnWidth="170px"
+          resourceColumnWidth="clamp(104px, 30vw, 170px)"
           dateColumnWidth="110px"
           ariaLabel="Shift roster"
           onSlotSelect={setDraft}

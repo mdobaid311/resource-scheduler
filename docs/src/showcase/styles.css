@@ -38,7 +38,7 @@ body {
     radial-gradient(circle at 92% 88%, var(--page-glow-2) 0, transparent 42%),
     var(--page-backdrop);
   color: var(--rs-foreground);
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -66,16 +66,73 @@ code {
   border-radius: 20px;
   background: var(--rs-background);
   box-shadow: var(--shell-shadow);
-  overflow: hidden;
+  /* clip, not hidden: the sidebar below stays sticky. */
+  overflow: clip;
+  /* The headless demos are styled with the docs' Starlight variables; map them to the scheduler's. */
+  --sl-color-bg: var(--rs-background);
+  --sl-color-text: var(--rs-foreground);
+  --sl-color-gray-2: var(--rs-foreground);
+  --sl-color-gray-3: var(--rs-muted-foreground);
+  --sl-color-gray-5: var(--rs-border);
+  --sl-color-gray-6: var(--rs-surface-muted);
+  --sl-color-accent: var(--rs-primary);
+  --sl-color-accent-low: var(--rs-accent);
 }
 
 /* Sidebar */
 .sidebar {
+  position: sticky;
+  top: 32px;
+  align-self: start;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 28px 16px 24px;
   border-inline-end: 1px solid var(--rs-border);
+}
+.brand-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* Narrow screens only (see the media query below). */
+.docs-link,
+.nav-select {
+  display: none;
+}
+.docs-link {
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  color: var(--rs-muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.docs-link:hover {
+  color: var(--rs-foreground);
+}
+.nav-select {
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  color: var(--rs-muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+.nav-select select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--rs-input);
+  border-radius: 8px;
+  background: var(--rs-background);
+  color: var(--rs-foreground);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
 }
 .brand {
   display: flex;
@@ -93,6 +150,27 @@ code {
 }
 .brand b {
   color: var(--primary-text);
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-group + .nav-group {
+  margin-top: 14px;
+}
+.demo-loading {
+  display: grid;
+  place-items: center;
+  min-height: 24rem;
+  margin: 0;
+  border: 1px dashed var(--rs-border);
+  border-radius: 16px;
+  color: var(--rs-muted-foreground);
+}
+footer a {
+  display: inline-block;
+  padding-block: 8px;
 }
 .nav-label {
   margin: 0 0 6px;
@@ -169,9 +247,6 @@ code {
 }
 .tagline {
   margin: 0;
-  padding: 8px 14px;
-  border: 1px solid var(--rs-border);
-  border-radius: 10px;
   color: var(--rs-muted-foreground);
   font-size: 13px;
 }
@@ -194,8 +269,8 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 30px;
+  min-width: 36px;
+  height: 36px;
   padding: 0 12px;
   border: 0;
   border-radius: 8px;
@@ -219,12 +294,12 @@ code {
 }
 .swatches {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 0 4px;
 }
 .swatch {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 2px solid var(--rs-background);
   border-radius: 50%;
@@ -232,7 +307,16 @@ code {
   box-shadow: 0 0 0 1px var(--rs-border);
 }
 .swatch[aria-pressed="true"] {
-  box-shadow: 0 0 0 2px var(--rs-foreground);
+  box-shadow: 0 0 0 3px var(--rs-foreground);
+}
+.swatch[aria-pressed="true"]::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff;
 }
 
 main {
@@ -259,6 +343,28 @@ main {
   max-width: 68ch;
   color: var(--rs-muted-foreground);
   text-wrap: pretty;
+}
+.page-head .try {
+  margin-top: 8px;
+  color: var(--rs-foreground);
+}
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.text-link:hover {
+  text-decoration: underline;
 }
 .primary-button {
   display: inline-flex;
@@ -337,6 +443,19 @@ main {
   border-color: var(--rs-primary);
   color: var(--rs-primary);
 }
+.demo-controls button:active {
+  transform: translateY(1px);
+}
+.demo-controls button:disabled,
+.demo-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.demo-form .field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .demo-form button {
   height: 32px;
   padding: 0 16px;
@@ -398,6 +517,9 @@ footer {
     min-height: calc(100vh - 32px);
   }
   .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
     padding: 16px 16px 0;
     border-inline-end: 0;
     border-bottom: 1px solid var(--rs-border);
@@ -405,22 +527,16 @@ footer {
   .brand {
     padding-bottom: 12px;
   }
-  .nav-label,
   .links {
     display: none;
   }
+  /* The demo list becomes a native picker, grouped like the sidebar. */
   .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* A fade at the edge says the list scrolls. */
-    mask-image: linear-gradient(90deg, #000 85%, transparent);
-    padding-bottom: 12px;
+    display: none;
   }
-  .nav button {
-    width: auto;
-    flex: none;
-    padding: 8px 12px;
+  .nav-select,
+  .docs-link {
+    display: flex;
   }
   .topbar,
   main,
@@ -437,6 +553,17 @@ footer {
     border-radius: 0;
     min-height: 100vh;
   }
+  /* Content first: the appearance controls drop below the demo. */
+  main {
+    order: 1;
+  }
+  .topbar {
+    order: 2;
+    padding-block: 12px;
+  }
+  footer {
+    order: 3;
+  }
   .page-head h1 {
     font-size: 20px;
   }
@@ -447,5 +574,27 @@ footer {
   .segmented button,
   .demo-controls button {
     transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+}
+
+/* The create form opens below the board, so the board never moves or resizes under the pointer. */
+.demo-frame > div:has(> .demo-form) {
+  display: flex;
+  flex-direction: column;
+  height: auto !important;
+}
+.demo-frame > div:has(> .demo-form) > .demo-form {
+  order: 1;
+  border-top: 1px solid var(--rs-border, var(--sl-color-gray-5));
+  border-bottom: 0;
+}
+
+/* Touch-only tip in demo captions: a drag across empty time scrolls on a phone. */
+.touch-hint {
+  display: none;
+}
+@media (pointer: coarse) {
+  .touch-hint {
+    display: inline;
   }
 }

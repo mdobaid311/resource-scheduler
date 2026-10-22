@@ -64,7 +64,7 @@ export default function I18nDemo() {
         hour12={hour12}
         dir={dir}
         labels={labels}
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         timeColumnWidth="80px"
         dateColumnWidth="110px"
         onEventDrop={move}

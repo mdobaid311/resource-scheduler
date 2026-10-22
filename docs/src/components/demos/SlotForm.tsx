@@ -26,14 +26,10 @@ export function SlotForm({
       <span>
         {nameOf(slot.resourceId)}, {time(slot.start)} to {time(slot.end)}
       </span>
-      <input
-        autoFocus
-        type="text"
-        placeholder="Title"
-        aria-label="Event title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      <label className="field">
+        Title
+        <input autoFocus type="text" placeholder="Untitled" value={title} onChange={(e) => setTitle(e.target.value)} />
+      </label>
       <button type="submit">Create</button>
       <button type="button" className="secondary" onClick={onCancel}>
         Cancel

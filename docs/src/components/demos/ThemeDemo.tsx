@@ -58,7 +58,7 @@ export default function ThemeDemo() {
         availableViews={[ViewType.Week]}
         density={compact ? "compact" : undefined}
         classNames={square ?{ event: "rounded-none", slot: "border-dashed", dateHeader: "uppercase" } : undefined}
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         dateColumnWidth="110px"
         onEventDrop={move}
         onEventResize={resize}

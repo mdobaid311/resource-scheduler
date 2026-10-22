@@ -26,7 +26,8 @@ const CHROME = [
 if (!CHROME) throw new Error("Set CHROME_PATH to a Chrome or Chromium executable.");
 
 const NOW = new Date("2026-10-07T10:30:00");
-const IDLE_LOG = "Try it: drag, resize or click.";
+// What a demo log says before anything happens (every demo these tests open has a caption).
+const IDLE_LOG = "What you do shows up here.";
 
 let browser;
 before(async () => {
@@ -36,9 +37,9 @@ after(() => browser?.close());
 
 // A fresh page on a docs route, scrolled to its first demo. Console errors are
 // collected so a test can assert there were none.
-async function open(route, { touch = false, fromStart = true, ready = "[data-rs-slot]" } = {}) {
+async function open(route, { touch = false, fromStart = true, ready = "[data-rs-slot]", viewport = { width: 1280, height: 1100 } } = {}) {
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 1100 },
+    viewport,
     hasTouch: touch,
   });
   const page = await context.newPage();
@@ -934,7 +935,7 @@ describe("room booking tutorial", () => {
     // Free time on Borealis opens the form; submitting books it.
     await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
     await page.waitForSelector(".demo-form");
-    await page.fill('.demo-form input[aria-label="Event title"]', "Design review");
+    await page.locator(".demo-form").getByLabel("Title").fill("Design review");
     await page.click('.demo-form button[type="submit"]');
     await page.waitForTimeout(250);
     assert.equal(await log(page), 'Booked "Design review"');
@@ -1127,7 +1128,7 @@ describe("Next.js and Prisma tutorial", () => {
     // Free time on Borealis opens the form; submitting books it.
     await mouseDrag(page, await centerOf(await cell(page, "borealis", 13)), await centerOf(await cell(page, "borealis", 13, 30)));
     await page.waitForSelector(".demo-form");
-    await page.fill('.demo-form input[aria-label="Event title"]', "Standup");
+    await page.locator(".demo-form").getByLabel("Title").fill("Standup");
     await page.click('.demo-form button[type="submit"]');
     await page.waitForTimeout(250);
     assert.equal(await log(page), 'Booked "Standup"');
@@ -1164,6 +1165,47 @@ describe("tutorial", () => {
     await mouseDrag(page, await centerOf(event(page, "1")), await centerOf(await slot("chen", 5)));
     assert.equal(await log(page), 'Moved "Standup"');
     assert.match(await label(page, "1"), /Chen Wu/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+});
+
+describe("showcase", () => {
+  const heading = (page) => page.locator("main h1").textContent();
+  const headingIs = (page, text) =>
+    page.waitForFunction((t) => document.querySelector("main h1")?.textContent === t, text);
+
+  it("follows the address: a hash link and Back switch the demo", async () => {
+    const { page, context, errors } = await open("/showcase/#room-booking", { fromStart: false });
+    assert.equal(await heading(page), "Room booking");
+
+    await page.evaluate(() => (location.hash = "conflict-control"));
+    await headingIs(page, "Conflict control");
+    await page.goBack();
+    await headingIs(page, "Room booking");
+
+    // Picking from the sidebar adds a history entry, so Back returns to the demo before it.
+    await page.getByRole("tab", { name: "Week view" }).click();
+    await headingIs(page, "Week view");
+    await page.goBack();
+    await headingIs(page, "Room booking");
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  it("picks a demo from a grouped list on a phone, with a way back to the docs", async () => {
+    const { page, context, errors } = await open("/showcase/#room-booking", {
+      fromStart: false,
+      viewport: { width: 375, height: 812 },
+    });
+    assert.equal(await page.getByRole("tablist").isVisible(), false);
+    assert.equal(await page.getByRole("link", { name: "Docs", exact: true }).isVisible(), true);
+
+    const picker = page.getByRole("combobox", { name: "Demo" });
+    assert.equal(await picker.locator("optgroup").count(), 6);
+    await picker.selectOption("utilization");
+    await headingIs(page, "Utilization");
+    assert.match(page.url(), /#utilization$/);
     assert.deepEqual(errors, []);
     await context.close();
   });
