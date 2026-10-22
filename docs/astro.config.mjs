@@ -42,6 +42,7 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/mdobaid311/resource-scheduler/edit/main/docs/",
       },
+      components: { Footer: "./src/components/Footer.astro" },
       customCss: ["./src/styles/scheduler.css", "./src/styles/custom.css"],
       head: [
         { tag: "meta", attrs: { name: "theme-color", content: "#2563eb" } },
