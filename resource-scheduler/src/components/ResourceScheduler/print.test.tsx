@@ -237,11 +237,11 @@ describe("print stylesheet", () => {
 
 describe("print hooks in the markup", () => {
   it("marks the controls, the title stays", () => {
-    render(<ResourceScheduler resources={many(2)} initialDate={new Date(2026, 9, 7)} />);
+    render(<ResourceScheduler resources={many(2)} initialView={ViewType.Day} initialDate={new Date(2026, 9, 7)} />);
     const toolbar = document.querySelector(".rs-toolbar")!;
     const hidden = [...toolbar.querySelectorAll(".rs-no-print")];
     // Previous, next, Today and the view select.
-    expect(hidden.map((el) => el.getAttribute("aria-label"))).toEqual(
+    expect(hidden.map((el) => el.getAttribute("aria-label") ?? el.textContent)).toEqual(
       expect.arrayContaining(["Previous period", "Next period", "Today", "View"])
     );
     expect(hidden).toHaveLength(4);
@@ -279,6 +279,7 @@ describe("print hooks in the markup", () => {
           },
         ]}
         nowIndicator
+        initialView={ViewType.Day}
         onEventResize={() => {}}
         initialDate={new Date(2026, 9, 7)}
       />

@@ -17,11 +17,11 @@ Only `resources` is required.
 ## Starting state and views
 
 - **`initialDate`**: `Date`, default `new Date()`. The date to show first.
-- **`initialView`**: `ViewType`, default `ViewType.Day`.
+- **`initialView`**: `ViewType`, default `ViewType.Week`.
 - **`availableViews`**: `ViewType[]`, default all five. Views offered in the selector.
 - **`allowViewChange`**: `boolean`, default `true`. Set `false` to hide the selector.
 - **`onDateChange`**: `(date: Date) => void`. The user navigated.
-- **`onViewChange`**: `(view: ViewType) => void`. The user changed view.
+- **`onViewChange`**: `(view: ViewType) => void`. The user changed view. The shown date stays the same.
 - **`weekStartsOn`**: `0 | 1 | 2 | 3 | 4 | 5 | 6`, default `0` (Sunday). First day of the week.
 - **`hideWeekends`**: `boolean`, default `false`. Leaves Saturday and Sunday out of the week, month, quarter and year views.
 - **`onRangeChange`**: `({ start, end, view }) => void`. Fires when the grid first shows and whenever the visible range changes. `end` is exclusive. Use it to load only what is on screen.

@@ -71,7 +71,7 @@ const SchedulerView = forwardRef<
   resources: resourcesProp,
   events,
   initialDate = new Date(),
-  initialView = ViewType.Day,
+  initialView = ViewType.Week,
   onEventClick,
   onDateChange,
   onViewChange,
@@ -374,7 +374,7 @@ const SchedulerView = forwardRef<
     handleMouseUp,
     cancelSelection,
     commitRange,
-  } = useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes);
+  } = useEventCreation(handleCreate, viewType, checkPlacement, slotMinutes, i18n.labels.newEvent);
 
   const resourceColumnWidth =
     propResourceColumnWidth || (isMobile ? "140px" : "220px");
@@ -421,12 +421,9 @@ const SchedulerView = forwardRef<
   const handleViewChange = (newView: ViewType) => {
     // The pressed view button is clickable too; nothing changes, so nothing resets.
     if (newView === viewType) return;
+    // The date stays: switching from a later month to its weeks keeps you in that month.
     setViewType(newView);
     onViewChange?.(newView);
-
-    const todaysDate = readClock();
-    setCurrentDate(todaysDate);
-    onDateChange?.(todaysDate);
   };
 
   const handleNavigate = (direction: "prev" | "next") => {
@@ -551,6 +548,11 @@ const SchedulerView = forwardRef<
           weekStartsOn={firstDay}
           hideWeekends={hideWeekends}
         />
+
+        {/* Without it an empty list looks like a board that failed to load. */}
+        {allResources.length === 0 && (
+          <p className="rs-empty border-b px-4 py-3 text-sm text-ocrs-muted-foreground">{i18n.labels.noResources}</p>
+        )}
 
         <div
           ref={scrollRef}

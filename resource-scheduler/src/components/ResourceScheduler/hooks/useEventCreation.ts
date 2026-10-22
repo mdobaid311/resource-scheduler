@@ -8,7 +8,8 @@ export const useEventCreation = (
   onEventCreate?: (event: Omit<SchedulerEvent, "id">, resourceId: string) => void,
   viewType: ViewType = ViewType.Day,
   checkPlacement?: (event: SchedulerEvent, placement: Placement) => boolean,
-  slotMinutes = 60
+  slotMinutes = 60,
+  newEventTitle = "New Event"
 ) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{
@@ -52,7 +53,7 @@ export const useEventCreation = (
       );
 
       const newEvent: Omit<SchedulerEvent, "id"> = {
-        title: "New Event",
+        title: newEventTitle,
         startDate: start,
         endDate: end,
         color: `#${Math.floor(Math.random() * 16777215)
@@ -67,7 +68,7 @@ export const useEventCreation = (
         ) ?? true;
       if (allowed) onEventCreate(newEvent, resourceId);
     },
-    [onEventCreate, viewType, checkPlacement, slotMinutes]
+    [onEventCreate, viewType, checkPlacement, slotMinutes, newEventTitle]
   );
 
   const handleMouseUp = useCallback(() => {

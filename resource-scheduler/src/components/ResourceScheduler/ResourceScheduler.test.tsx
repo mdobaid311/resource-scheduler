@@ -937,7 +937,7 @@ describe("ResourceScheduler", () => {
         "Oktober 2026"
       );
       expect(screen.getByText("Ressourcen")).toBeTruthy();
-      expect(screen.getByLabelText("Heute")).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Heute" })).toBeTruthy();
       expect(screen.getByLabelText("Nächster Zeitraum")).toBeTruthy();
       expect(screen.getByText("Ansicht Monat")).toBeTruthy();
     });
