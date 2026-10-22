@@ -30,3 +30,6 @@ dist-ssr
 
 # graphify knowledge-graph output
 graphify-out/
+
+demo
+.claude

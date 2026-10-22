@@ -57,7 +57,7 @@ export default function SlotsDemo() {
           }}
         />
       )}
-      <div style={{ height: draft ? 360 : 420 }}>
+      <div style={{ height: 420 }}>
         <ResourceScheduler
           resources={resources}
           initialView={ViewType.Day}

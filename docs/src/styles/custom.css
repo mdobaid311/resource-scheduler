@@ -1,20 +1,137 @@
-/* Starlight theme tweaks: a blue accent that matches the scheduler's own palette. */
+/*
+ * The docs wear the showcase's look: Poppins, a soft blue backdrop, rounded
+ * surfaces, an accent wash on the active item. Same palette as the scheduler's
+ * own --rs-* tokens, so the demos and the page around them read as one thing.
+ */
 :root {
-  --sl-color-accent-low: #dbeafe;
-  --sl-color-accent: #2563eb;
-  --sl-color-accent-high: #1e3a8a;
+  --sl-font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sl-text-body: 0.9375rem;
+  --docs-radius: 16px;
+  --docs-backdrop: #e4eef9;
+  --docs-glow: #f5f9ff;
+  --docs-glow-2: #cfe1f4;
+  --docs-shadow: 0 1px 2px rgb(16 38 84 / 0.04), 0 24px 64px -24px rgb(16 38 84 / 0.25);
+  --docs-card: #ffffff;
+}
+
+/* Dark (Starlight's default): the showcase's navy. */
+:root,
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #172554;
+  --sl-color-accent: #3b82f6;
+  --sl-color-accent-high: #bfdbfe;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e6ebf5;
+  --sl-color-gray-2: #cdd6e6;
+  --sl-color-gray-3: #8e9bb4;
+  --sl-color-gray-4: #5a6886;
+  --sl-color-gray-5: #243049;
+  --sl-color-gray-6: #151e33;
+  --sl-color-gray-7: #0f1626;
+  --sl-color-black: #0f1626;
+  --docs-backdrop: #080d18;
+  --docs-glow: #111b33;
+  --docs-glow-2: #0c1426;
+  --docs-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 24px 64px -24px rgb(0 0 0 / 0.7);
+  --docs-card: #0f1626;
 }
 
 :root[data-theme="light"] {
   --sl-color-accent-low: #dbeafe;
   --sl-color-accent: #2563eb;
   --sl-color-accent-high: #1e3a8a;
+  --sl-color-white: #1f2a44;
+  --sl-color-gray-1: #2b3856;
+  --sl-color-gray-2: #3a4766;
+  --sl-color-gray-3: #5b677d;
+  --sl-color-gray-4: #8793a8;
+  --sl-color-gray-5: #e6ebf3;
+  --sl-color-gray-6: #eef2f8;
+  --sl-color-gray-7: #f6f8fc;
+  --sl-color-black: #ffffff;
+  --docs-backdrop: #e4eef9;
+  --docs-glow: #f5f9ff;
+  --docs-glow-2: #cfe1f4;
+  --docs-shadow: 0 1px 2px rgb(16 38 84 / 0.04), 0 24px 64px -24px rgb(16 38 84 / 0.25);
+  --docs-card: #ffffff;
 }
 
-:root[data-theme="dark"] {
-  --sl-color-accent-low: #172554;
-  --sl-color-accent: #3b82f6;
-  --sl-color-accent-high: #bfdbfe;
+/* The backdrop: soft light from the corners, like the showcase. */
+body {
+  background:
+    radial-gradient(circle at 12% 8%, var(--docs-glow) 0, transparent 38%),
+    radial-gradient(circle at 92% 88%, var(--docs-glow-2) 0, transparent 42%),
+    var(--docs-backdrop);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+header.header {
+  background: color-mix(in srgb, var(--docs-card) 82%, transparent);
+  backdrop-filter: blur(12px);
+}
+.sidebar-pane {
+  background: var(--docs-card);
+}
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+/* The open page in the sidebar: a wash of the accent that fades out to the right. */
+.sidebar-content a {
+  border-radius: 10px;
+  font-weight: 500;
+}
+.sidebar-content a[aria-current="page"] {
+  color: var(--sl-color-accent-high);
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--sl-color-accent-low), transparent);
+}
+:root[data-theme="light"] .sidebar-content a[aria-current="page"] {
+  color: var(--sl-color-accent);
+}
+.sidebar-content .large {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+/* Surfaces: cards, code, asides and the search box get the shell's radius. */
+.card,
+starlight-tabs,
+.expressive-code .frame,
+.starlight-aside,
+details {
+  border-radius: 12px;
+}
+.sl-markdown-content .card {
+  background: var(--docs-card);
+  border-color: var(--sl-color-gray-5);
+  box-shadow: var(--docs-shadow);
+}
+.expressive-code .frame {
+  overflow: hidden;
+}
+.sl-link-button.primary {
+  border-radius: 10px;
+  font-weight: 600;
+}
+.sl-link-button.minimal {
+  border-radius: 10px;
+}
+site-search button[data-open-modal] {
+  border-radius: 10px;
+}
+
+/* Home hero. */
+.hero h1 {
+  background: linear-gradient(120deg, var(--sl-color-white) 30%, var(--sl-color-accent) 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.03em;
 }
 
 /* Starlight marks dark mode with data-theme, the scheduler with a .dark ancestor. */
@@ -138,4 +255,16 @@
   background: transparent;
   color: var(--sl-color-text);
   border: 1px solid var(--sl-color-gray-4);
+}
+
+/* The create form opens below the board, so the board never moves or resizes under the pointer. */
+.demo-frame > div:has(> .demo-form) {
+  display: flex;
+  flex-direction: column;
+  height: auto !important;
+}
+.demo-frame > div:has(> .demo-form) > .demo-form {
+  order: 1;
+  border-top: 1px solid var(--rs-border, var(--sl-color-gray-5));
+  border-bottom: 0;
 }

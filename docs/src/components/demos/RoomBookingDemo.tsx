@@ -31,7 +31,7 @@ export default function RoomBookingDemo({ density }: DemoProps = {}) {
           }}
         />
       )}
-      <div style={{ height: draft ? 360 : 420 }}>
+      <div style={{ height: 420 }}>
         <ResourceScheduler
           density={density}
           resources={resources}

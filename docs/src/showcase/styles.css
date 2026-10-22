@@ -38,7 +38,7 @@ body {
     radial-gradient(circle at 92% 88%, var(--page-glow-2) 0, transparent 42%),
     var(--page-backdrop);
   color: var(--rs-foreground);
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -66,11 +66,26 @@ code {
   border-radius: 20px;
   background: var(--rs-background);
   box-shadow: var(--shell-shadow);
-  overflow: hidden;
+  /* clip, not hidden: the sidebar below stays sticky. */
+  overflow: clip;
+  /* The headless demos are styled with the docs' Starlight variables; map them to the scheduler's. */
+  --sl-color-bg: var(--rs-background);
+  --sl-color-text: var(--rs-foreground);
+  --sl-color-gray-2: var(--rs-foreground);
+  --sl-color-gray-3: var(--rs-muted-foreground);
+  --sl-color-gray-5: var(--rs-border);
+  --sl-color-gray-6: var(--rs-surface-muted);
+  --sl-color-accent: var(--rs-primary);
+  --sl-color-accent-low: var(--rs-accent);
 }
 
 /* Sidebar */
 .sidebar {
+  position: sticky;
+  top: 32px;
+  align-self: start;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -93,6 +108,27 @@ code {
 }
 .brand b {
   color: var(--primary-text);
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-group + .nav-group {
+  margin-top: 14px;
+}
+.demo-loading {
+  display: grid;
+  place-items: center;
+  min-height: 24rem;
+  margin: 0;
+  border: 1px dashed var(--rs-border);
+  border-radius: 16px;
+  color: var(--rs-muted-foreground);
+}
+footer a {
+  display: inline-block;
+  padding-block: 8px;
 }
 .nav-label {
   margin: 0 0 6px;
@@ -169,9 +205,6 @@ code {
 }
 .tagline {
   margin: 0;
-  padding: 8px 14px;
-  border: 1px solid var(--rs-border);
-  border-radius: 10px;
   color: var(--rs-muted-foreground);
   font-size: 13px;
 }
@@ -194,8 +227,8 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 30px;
+  min-width: 36px;
+  height: 36px;
   padding: 0 12px;
   border: 0;
   border-radius: 8px;
@@ -219,12 +252,12 @@ code {
 }
 .swatches {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 0 4px;
 }
 .swatch {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 2px solid var(--rs-background);
   border-radius: 50%;
@@ -232,7 +265,16 @@ code {
   box-shadow: 0 0 0 1px var(--rs-border);
 }
 .swatch[aria-pressed="true"] {
-  box-shadow: 0 0 0 2px var(--rs-foreground);
+  box-shadow: 0 0 0 3px var(--rs-foreground);
+}
+.swatch[aria-pressed="true"]::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff;
 }
 
 main {
@@ -337,6 +379,19 @@ main {
   border-color: var(--rs-primary);
   color: var(--rs-primary);
 }
+.demo-controls button:active {
+  transform: translateY(1px);
+}
+.demo-controls button:disabled,
+.demo-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.demo-form .field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .demo-form button {
   height: 32px;
   padding: 0 16px;
@@ -398,6 +453,9 @@ footer {
     min-height: calc(100vh - 32px);
   }
   .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
     padding: 16px 16px 0;
     border-inline-end: 0;
     border-bottom: 1px solid var(--rs-border);
@@ -405,7 +463,6 @@ footer {
   .brand {
     padding-bottom: 12px;
   }
-  .nav-label,
   .links {
     display: none;
   }
@@ -421,6 +478,23 @@ footer {
     width: auto;
     flex: none;
     padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .nav-group {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    margin: 0 !important;
+  }
+  .nav-group + .nav-group {
+    margin-left: 8px !important;
+    padding-left: 12px;
+    border-left: 1px solid var(--rs-border);
+  }
+  .nav-label {
+    margin: 0 4px 0 0;
+    padding: 0;
+    white-space: nowrap;
   }
   .topbar,
   main,
@@ -437,6 +511,17 @@ footer {
     border-radius: 0;
     min-height: 100vh;
   }
+  /* Content first: the appearance controls drop below the demo. */
+  main {
+    order: 1;
+  }
+  .topbar {
+    order: 2;
+    padding-block: 12px;
+  }
+  footer {
+    order: 3;
+  }
   .page-head h1 {
     font-size: 20px;
   }
@@ -448,4 +533,16 @@ footer {
   .demo-controls button {
     transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
   }
+}
+
+/* The create form opens below the board, so the board never moves or resizes under the pointer. */
+.demo-frame > div:has(> .demo-form) {
+  display: flex;
+  flex-direction: column;
+  height: auto !important;
+}
+.demo-frame > div:has(> .demo-form) > .demo-form {
+  order: 1;
+  border-top: 1px solid var(--rs-border, var(--sl-color-gray-5));
+  border-bottom: 0;
 }

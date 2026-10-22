@@ -147,7 +147,7 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
           </button>
         </form>
       )}
-      <div style={{ height: draft ? 480 : 530 }}>
+      <div style={{ height: 530 }}>
         <ResourceScheduler
           density={density}
           resources={staff}

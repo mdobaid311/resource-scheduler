@@ -1,4 +1,13 @@
-<!doctype html>
+---
+// The showcase: every recipe in one dashboard. A standalone page (not Starlight) so its
+// own chrome and theme switch do not fight the docs layout.
+import "../styles/scheduler.css";
+import "../showcase/styles.css";
+import App from "../showcase/App";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+---
+
 <html lang="en" data-theme="system">
   <head>
     <meta charset="UTF-8" />
@@ -8,7 +17,7 @@
       name="description"
       content="A React resource timeline with drag, resize, availability and utilization. Try room booking, shift rosters, equipment rental, field service and project allocation, in any theme and density."
     />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Resource Scheduler" />
     <meta property="og:title" content="Resource Scheduler Showcase" />
@@ -16,18 +25,11 @@
       property="og:description"
       content="Six working recipes on one page: drag, resize, book, assign. Switch theme and density live."
     />
-    <meta property="og:image" content="https://resource-scheduler-docs.vercel.app/og.png" />
+    <meta property="og:image" content={new URL("og.png", Astro.site + base.slice(1)).href} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Resource Scheduler Showcase" />
-    <meta name="twitter:image" content="https://resource-scheduler-docs.vercel.app/og.png" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-    />
-    <script>
+    <script is:inline>
       // Apply the saved theme before first paint so there is no flash.
       try {
         var s = JSON.parse(localStorage.getItem("rs-showcase") || "{}");
@@ -37,7 +39,11 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <App client:only="react">
+      <div slot="fallback" class="app" aria-busy="true">
+        <aside class="sidebar"></aside>
+        <div class="main"><main><div class="page-head"><h1>Resource Scheduler</h1><p>Loading the live recipes…</p></div></main></div>
+      </div>
+    </App>
   </body>
 </html>

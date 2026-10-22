@@ -1,73 +1,17 @@
-import { useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
-import EquipmentRentalDemo from "@demos/EquipmentRentalDemo";
-import FieldServiceDemo from "@demos/FieldServiceDemo";
-import ProjectAllocationDemo from "@demos/ProjectAllocationDemo";
-import RoomBookingDemo from "@demos/RoomBookingDemo";
-import ShiftRosterDemo from "@demos/ShiftRosterDemo";
-import UtilizationDemo from "@demos/UtilizationDemo";
-import type { DemoProps } from "@demos/Frame";
-import { ArrowRight, Book, Box, Chart, Clock, Code, Door, Drop, Gantt, Logo, Monitor, Moon, Pin, Sun } from "./icons";
+import { Suspense, lazy, useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
+import type { DemoProps } from "../components/demos/Frame";
+import { ALL_DEMOS, GROUPS } from "./recipes";
+import { ArrowRight, Book, Box, Code, Drop, Logo, Monitor, Moon, Sun } from "./icons";
 
-const DOCS = "https://resource-scheduler-docs.vercel.app";
+// The showcase lives in the docs site, so links stay on whatever origin and base it is served from.
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const REPO = "https://github.com/mdobaid311/resource-scheduler";
 
-const RECIPES: {
-  id: string;
-  label: string;
-  blurb: string;
-  doc: string;
-  Icon: ComponentType;
-  Demo: ComponentType<DemoProps>;
-}[] = [
-  {
-    id: "room-booking",
-    label: "Room booking",
-    blurb: "Meeting rooms in 30 minute slots, booked through your own form, with no double booking.",
-    doc: "recipes/room-booking",
-    Icon: Door,
-    Demo: RoomBookingDemo,
-  },
-  {
-    id: "shift-roster",
-    label: "Shift roster",
-    blurb: "Staff on shifts with their own hours. Time off is blocked, and each row shows how full it is.",
-    doc: "recipes/shift-roster",
-    Icon: Clock,
-    Demo: ShiftRosterDemo,
-  },
-  {
-    id: "equipment-rental",
-    label: "Equipment",
-    blurb: "Stock with several units, rented for days. Find the next free stretch, and never overbook.",
-    doc: "recipes/equipment-rental",
-    Icon: Box,
-    Demo: EquipmentRentalDemo,
-  },
-  {
-    id: "field-service",
-    label: "Field service",
-    blurb: "Dispatch jobs to technicians. One click picks the technician who can take it first.",
-    doc: "recipes/field-service-dispatch",
-    Icon: Pin,
-    Demo: FieldServiceDemo,
-  },
-  {
-    id: "project-allocation",
-    label: "Project allocation",
-    blurb: "Plan people across projects by the month. An allocation can't leave its project's dates.",
-    doc: "recipes/project-allocation",
-    Icon: Gantt,
-    Demo: ProjectAllocationDemo,
-  },
-  {
-    id: "utilization",
-    label: "Utilization",
-    blurb: "Booked against available time for every person, from their hours and capacity.",
-    doc: "guides/utilization",
-    Icon: Chart,
-    Demo: UtilizationDemo,
-  },
-];
+// Each demo loads on demand, so opening the showcase does not bundle all of them up front.
+const loaders = import.meta.glob<{ default: ComponentType<DemoProps> }>("../components/demos/*Demo.tsx");
+const DEMOS = Object.fromEntries(
+  Object.entries(loaders).map(([path, load]) => [path.split("/").pop()!.replace(".tsx", ""), lazy(load)])
+);
 
 type Theme = "light" | "dark" | "system";
 type Density = "comfortable" | "compact";
@@ -104,7 +48,7 @@ export default function App() {
   const [preset, setPreset] = useState<Preset>(() => pick(saved.preset, Object.keys(PRESETS) as Preset[], "Default"));
   const [density, setDensity] = useState<Density>(() => pick(saved.density, DENSITIES, "comfortable"));
   const [tab, setTab] = useState(() =>
-    pick(location.hash.slice(1) || saved.tab, RECIPES.map((r) => r.id), RECIPES[0].id)
+    pick(location.hash.slice(1) || saved.tab, ALL_DEMOS.map((d) => d.id), ALL_DEMOS[0].id)
   );
   const [systemDark, setSystemDark] = useState(() => matchMedia("(prefers-color-scheme: dark)").matches);
 
@@ -161,52 +105,59 @@ export default function App() {
     const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const next = RECIPES[(index + step + RECIPES.length) % RECIPES.length].id;
+    const next = ALL_DEMOS[(index + step + ALL_DEMOS.length) % ALL_DEMOS.length].id;
     select(next);
     document.getElementById(`tab-${next}`)?.focus();
   };
 
-  const active = RECIPES.find((r) => r.id === tab) ?? RECIPES[0];
-  const Demo = active.Demo;
+  const active = ALL_DEMOS.find((d) => d.id === tab) ?? ALL_DEMOS[0];
+  const Demo = DEMOS[active.demo];
 
   return (
     <div className="app">
       <aside className="sidebar">
-        <a className="brand" href={REPO} aria-label="resource-scheduler on GitHub">
+        <a className="brand" href={BASE} aria-label="Resource Scheduler docs home">
           <Logo />
           <span>
             Resource<b>Scheduler</b>
           </span>
         </a>
 
-        <p className="nav-label" id="recipes-label">
-          Recipes
-        </p>
-        <div className="nav" role="tablist" aria-labelledby="recipes-label" aria-orientation="vertical">
-          {RECIPES.map((r, i) => (
-            <button
-              key={r.id}
-              id={`tab-${r.id}`}
-              type="button"
-              role="tab"
-              aria-selected={tab === r.id}
-              aria-controls="panel"
-              tabIndex={tab === r.id ? 0 : -1}
-              onClick={() => select(r.id)}
-              onKeyDown={(e) => onTabKey(e, i)}
-            >
-              <r.Icon />
-              {r.label}
-            </button>
+        <div className="nav" role="tablist" aria-label="Demos" aria-orientation="vertical">
+          {GROUPS.map((g) => (
+            <div className="nav-group" role="presentation" key={g.id}>
+              <p className="nav-label" role="presentation">
+                {g.label}
+              </p>
+              {g.demos.map((d) => (
+                <button
+                  key={d.id}
+                  id={`tab-${d.id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === d.id}
+                  aria-controls="panel"
+                  tabIndex={tab === d.id ? 0 : -1}
+                  onClick={() => select(d.id)}
+                  onKeyDown={(e) => onTabKey(e, ALL_DEMOS.indexOf(d))}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 
         <nav className="links" aria-label="Project links">
-          <a href={`${DOCS}/start/quick-start/`}>
+          <a href={BASE}>
+            <Book />
+            Docs home
+          </a>
+          <a href={`${BASE}start/quick-start/`}>
             <Book />
             Quick start
           </a>
-          <a href={`${DOCS}/guides/theming/`}>
+          <a href={`${BASE}guides/theming/`}>
             <Drop />
             Theming guide
           </a>
@@ -224,7 +175,7 @@ export default function App() {
       <div className="main">
         <header className="topbar">
           <p className="tagline">
-            A free, MIT resource timeline for React. Six live recipes, one component.
+            {`A free, MIT resource timeline for React. ${ALL_DEMOS.length} live demos, one component.`}
           </p>
           <section className="appearance" aria-label="Appearance">
             <Group label="Theme">
@@ -264,18 +215,20 @@ export default function App() {
               <h1>{active.label}</h1>
               <p>{active.blurb}</p>
             </div>
-            <a className="primary-button" href={`${DOCS}/${active.doc}/`}>
+            <a className="primary-button" href={`${BASE}${active.doc}/`}>
               Read the guide
               <ArrowRight />
             </a>
           </div>
           {/* A new key resets the recipe's data when you switch. */}
-          <Demo key={active.id} density={density} />
+          <Suspense fallback={<p className="demo-loading" role="status">Loading demo…</p>}>
+            <Demo key={active.id} density={density} />
+          </Suspense>
         </main>
 
         <footer>
           Built from the package source on <code>main</code>, so this is the current code, not the last release.{" "}
-          <a href={`${REPO}/tree/main/resource-scheduler-example`}>See how this page is made</a>. MIT licensed.
+          <a href={`${REPO}/tree/main/docs/src/showcase`}>See how this page is made</a>. MIT licensed.
         </footer>
       </div>
     </div>
