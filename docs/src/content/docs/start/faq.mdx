@@ -1,0 +1,94 @@
+---
+title: FAQ and troubleshooting
+description: Short answers to common questions about Resource Scheduler for React (install, licence, SSR, double bookings, time zones, recurring events) and fixes for a blank board, missing styles and hydration mismatches.
+---
+
+Each answer starts with the short version and links to the guide that has the detail. Checked against version 1.6.
+
+## Questions
+
+### What is Resource Scheduler?
+
+A free, MIT-licensed React component that shows resources (people, rooms, machines, vehicles) as rows and time as columns. Users create, move and resize events by mouse, touch or keyboard. See the [introduction](/start/introduction/).
+
+### Is it really free? Is there a paid tier?
+
+Yes, it is free under the MIT licence, and everything in these docs is in the free package. There is no paid tier. Compare it with paid options in [Alternatives](/compare/alternatives/).
+
+### How do I install it?
+
+Run `npm install resource-scheduler`, then import the stylesheet once with `import "resource-scheduler/dist/resource-scheduler.css"`. It needs React 18 or 19 and no Tailwind setup. To own the source instead, run `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` (needs Tailwind v4). See [Installation](/start/installation/).
+
+### Which React and Node versions are supported?
+
+React 18 and 19 (`react` and `react-dom` are peer dependencies). The package declares Node 18 or newer.
+
+### Does it work with Next.js and server components?
+
+Yes. The bundle starts with `"use client"`, so you can import it from a server component, but your handlers are functions, so keep them in a client component. Pure logic such as `isPlacementAllowed` and `findAvailableSlots` is also available from `resource-scheduler/headless` for server code. See [Next.js and SSR](/guides/nextjs-and-ssr/).
+
+### How do I stop double bookings?
+
+Pass `eventOverlap={false}` to forbid overlapping events on one resource, and add `isValidDrop` for your own rule. The same rules apply to drag, resize and create, and rejected places show in red before the drop. Run the same check on your server with the headless helpers. See [Conflict control](/guides/conflict-control/).
+
+### Does it keep my data?
+
+No. It keeps no copy: you pass `resources` (and optionally a flat `events` list) and update your own state in `onEventCreate`, `onEventDrop` and `onEventResize`. See the [data model](/guides/data-model/).
+
+### How do I open my own "create event" dialog?
+
+Pass `onSlotSelect`. It receives `{ resourceId, start, end }` and replaces the built-in creation, so you can show any form. See [Creating events](/guides/creating-events/).
+
+### How do I show times in another time zone?
+
+Pass `timeZone="Europe/Paris"` (an IANA name). Events are stored as instants and drawn at their wall-clock time in that zone, and handlers receive instants ready to store. See [Time zones](/guides/time-zones/).
+
+### Does it support recurring events?
+
+Yes: hourly, daily, weekly, monthly and yearly repeats (including "the last Friday" and "the last day of the month") with exceptions, and `RRULE` strings can be read and written. `BYMONTH` lists, week numbers and per-series time zones are not supported. See [Recurring events](/guides/recurring-events/).
+
+### How many resources and events can it handle?
+
+Rows and columns are virtualized. In the [benchmark](/guides/performance/), 2,500 resources with 50,000 events draw in under a second. Beyond several thousand resources, load a window of resources from your server.
+
+### Is it accessible?
+
+It has an ARIA grid, named cells, live announcements and full keyboard equivalents for drag, resize and create, and it passes axe and keyboard tests. It has not yet been tried with a real screen reader. See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).
+
+### Can I export to a calendar file?
+
+Yes: `eventsToICS` and `eventsToCSV` write iCalendar and CSV, and `icsToEvents` reads an `.ics` file back. Two-way calendar sync is not built. See [Export](/guides/export/).
+
+### How is it different from FullCalendar or MUI X?
+
+The resource timeline, recurring events and keyboard support are in the free package, where FullCalendar and MUI X put the resource timeline in a paid tier. For Gantt dependencies and very large plans, a specialist such as Bryntum is the better fit. See [Alternatives](/compare/alternatives/).
+
+## Troubleshooting
+
+### The board is blank or has no height
+
+The scheduler fills its parent, so the parent needs a height. Give the wrapper a fixed height (for example `height: 600px`) or make a flex or grid parent stretch. Virtualized rows also need a fixed-height container.
+
+### It renders but looks unstyled
+
+With the npm package, import `resource-scheduler/dist/resource-scheduler.css` once. With the shadcn install, skip that import: the styles are already in your CSS, which must be Tailwind v4. See [Installation](/start/installation/).
+
+### "Hydration failed" or a text mismatch in Next.js
+
+The "today" highlight and slots depend on the current time, so the server and client can differ. Pass `initialDate` explicitly, or render the scheduler only on the client with `next/dynamic` and `ssr: false`. See [Next.js and SSR](/guides/nextjs-and-ssr/#hydration).
+
+### Events from my server do not appear, or `startDate.getTime is not a function`
+
+Dates become strings after JSON. Convert `startDate` and `endDate` back with `new Date(...)` when you build state. See [Dates cross the server boundary as strings](/guides/nextjs-and-ssr/#dates-cross-the-server-boundary-as-strings).
+
+### An all-day event shows one day too long
+
+`endDate` is exclusive: an all-day event ends at midnight of the next day. See the [data model](/guides/data-model/).
+
+### Dragging does nothing
+
+Resize handles need `onEventResize`, and a move needs `onEventDrop` to update your state. The scheduler never edits your data itself, so if your handler does not store the new dates, the event snaps back.
+
+## Still stuck?
+
+Open an issue on [GitHub](https://github.com/mdobaid311/resource-scheduler/issues) with the version and a minimal reproduction.
