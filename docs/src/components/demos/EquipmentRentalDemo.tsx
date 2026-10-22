@@ -134,7 +134,7 @@ export default function EquipmentRentalDemo({ density }: DemoProps = {}) {
           </button>
         </form>
       )}
-      <div style={{ height: draft ? 630 : 690 }}>
+      <div style={{ height: 690 }}>
         <ResourceScheduler
           density={density}
           ref={ref}

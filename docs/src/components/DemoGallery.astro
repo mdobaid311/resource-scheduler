@@ -1,0 +1,109 @@
+---
+// Every live demo on the docs site, grouped, on the home page. Each one mounts when it
+// scrolls into view (LazyDemo), so the page does not start 28 schedulers at once. They are
+// not server rendered: the package source and the docs would resolve two copies of React there.
+
+import LazyDemo from "./LazyDemo";
+import { RECIPE_INFO as R } from "../showcase/recipes";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+
+const groups = [
+  {
+    id: "recipes",
+    label: "Recipes",
+    intro: "Whole screens you can copy: a data shape, rules and a form for each. Try them with theme, density and accent controls on the Showcase page.",
+    demos: [
+      { title: R["room-booking"].label, blurb: R["room-booking"].blurb, demo: "RoomBookingDemo", doc: R["room-booking"].doc + "/" },
+      { title: R["shift-roster"].label, blurb: R["shift-roster"].blurb, demo: "ShiftRosterDemo", doc: R["shift-roster"].doc + "/" },
+      { title: R["equipment-rental"].label, blurb: R["equipment-rental"].blurb, demo: "EquipmentRentalDemo", doc: R["equipment-rental"].doc + "/" },
+      { title: R["field-service"].label, blurb: R["field-service"].blurb, demo: "FieldServiceDemo", doc: R["field-service"].doc + "/" },
+      { title: R["project-allocation"].label, blurb: R["project-allocation"].blurb, demo: "ProjectAllocationDemo", doc: R["project-allocation"].doc + "/" },
+      { title: "Clinic appointment board", blurb: "Clinicians with their own hours and gaps, and a buffer held around every visit.", demo: "ClinicBoardDemo", doc: "tutorials/react-clinic-appointment-board/" },
+    ],
+  },
+  {
+    id: "interaction",
+    label: "Drag, resize and rules",
+    intro: "The core of it: pointer and keyboard editing, with conflicts stopped before you drop.",
+    demos: [
+      { title: "Quick start", blurb: "The smallest working setup: resources in, a scheduler out.", demo: "BasicDemo", doc: "start/quick-start/" },
+      { title: "Conflict control", blurb: "Forbid overlaps, or write your own rule. Refused places turn red before you drop.", demo: "ConflictDemo", doc: "guides/conflict-control/" },
+      { title: "Slots and day view", blurb: "Select a range and open your own form. Slots of 15, 30 or 60 minutes.", demo: "SlotsDemo", doc: "guides/views-and-slots/" },
+      { title: "Week view", blurb: "The week at a glance, with the same drag, resize and create.", demo: "WeekDemo", doc: "guides/views-and-slots/" },
+      { title: "Controlled view", blurb: "Load data lazily as the range changes, and drive the view from your own buttons.", demo: "ControlDemo", doc: "guides/loading-and-control/" },
+      { title: "Recurring events", blurb: "Series kept as one event each, drawn as occurrences. Move one and choose what happens to the rest.", demo: "RecurringDemo", doc: "guides/recurring-events/" },
+      { title: "Keyboard and screen readers", blurb: "An ARIA grid: move, resize and create from the keyboard, with live announcements.", demo: "KeyboardDemo", doc: "guides/keyboard-and-accessibility/" },
+    ],
+  },
+  {
+    id: "capacity",
+    label: "Availability and capacity",
+    intro: "Know when someone is free, and how full each row is.",
+    demos: [
+      { title: "Business hours and time off", blurb: "Closed hours and time off are protected, so nothing lands where it should not.", demo: "AvailabilityDemo", doc: "guides/availability/" },
+      { title: "Suggest a free slot", blurb: "Pick a job and a strategy, see who ranks first, and book it. Crews can have a capacity above one.", demo: "SuggestDemo", doc: "guides/availability/" },
+      { title: "Utilization", blurb: "Booked against available time for each row, for whatever range is on screen.", demo: "UtilizationDemo", doc: "guides/utilization/" },
+      { title: "Time zones", blurb: "Store one time, show each viewer their own clock.", demo: "TimeZoneDemo", doc: "guides/time-zones/" },
+    ],
+  },
+  {
+    id: "organize",
+    label: "Rows and groups",
+    intro: "Shape the left-hand side: groups, ordering, or a flat list.",
+    demos: [
+      { title: "Resource groups", blurb: "Collapse rows into teams, floors or sites.", demo: "GroupsDemo", doc: "guides/resource-groups/" },
+      { title: "Reorder rows", blurb: "Rooms on two floors and an annex. Drag to reorder; the order is just your list.", demo: "ReorderDemo", doc: "guides/resource-groups/" },
+      { title: "Flat timeline", blurb: "A plain free timeline, nothing but rows and time.", demo: "FlatTimelineDemo", doc: "tutorials/free-react-resource-timeline/" },
+    ],
+  },
+  {
+    id: "data",
+    label: "Data in and out",
+    intro: "Bring calendars in, take them out, put them on paper.",
+    demos: [
+      { title: "Export calendar files", blurb: "eventsToICS and eventsToCSV on whatever is on the board right now.", demo: "ExportDemo", doc: "guides/export/" },
+      { title: "Import calendar files", blurb: "Paste or open a calendar file and see which events come out, and which cannot be shown.", demo: "ImportDemo", doc: "guides/export/" },
+      { title: "Printing", blurb: "A print layout that drops the page chrome and keeps the board.", demo: "PrintDemo", doc: "guides/printing/" },
+    ],
+  },
+  {
+    id: "yours",
+    label: "Make it yours",
+    intro: "Theme it, translate it, replace pieces, or build the whole UI yourself.",
+    demos: [
+      { title: "Theming", blurb: "Colors are CSS variables. Switch preset, dark mode and density live.", demo: "ThemeDemo", doc: "guides/theming/" },
+      { title: "Replace parts", blurb: "Swap the event, the row header or the toolbar for your own components.", demo: "ComponentsDemo", doc: "guides/components/" },
+      { title: "Headless", blurb: "Use the hooks and build the interface from scratch.", demo: "HeadlessDemo", doc: "guides/build-your-own-ui/" },
+      { title: "Custom timeline", blurb: "A timeline made from the headless functions and inline styles, with its own pointer handling.", demo: "CustomTimelineDemo", doc: "guides/build-your-own-ui/" },
+      { title: "Languages and clocks", blurb: "Translated labels, first day of the week, 12 or 24 hour time.", demo: "I18nDemo", doc: "guides/internationalization/" },
+    ],
+  },
+];
+---
+
+<div class="gallery not-content">
+  <nav class="gallery-nav" aria-label="Demo groups">
+    {groups.map((g) => <a href={`#${g.id}`}>{g.label}<span>{g.demos.length}</span></a>)}
+  </nav>
+  {groups.map((g) => (
+    <section class="gallery-group" id={g.id}>
+      <header>
+        <h2>{g.label}</h2>
+        <p>{g.intro}</p>
+      </header>
+      {g.demos.map(({ title, blurb, demo, doc }) => (
+        <article class="gallery-card">
+          <header>
+            <div>
+              <h3>{title}</h3>
+              <p>{blurb}</p>
+            </div>
+            <a class="gallery-link" href={`${base}${doc}`}>Read the guide <span aria-hidden="true">→</span></a>
+          </header>
+          <div class="gallery-stage"><LazyDemo name={demo} client:only="react" /></div>
+        </article>
+      ))}
+    </section>
+  ))}
+</div>

@@ -1,14 +1,16 @@
 import { useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
-import EquipmentRentalDemo from "@demos/EquipmentRentalDemo";
-import FieldServiceDemo from "@demos/FieldServiceDemo";
-import ProjectAllocationDemo from "@demos/ProjectAllocationDemo";
-import RoomBookingDemo from "@demos/RoomBookingDemo";
-import ShiftRosterDemo from "@demos/ShiftRosterDemo";
-import UtilizationDemo from "@demos/UtilizationDemo";
-import type { DemoProps } from "@demos/Frame";
+import EquipmentRentalDemo from "../components/demos/EquipmentRentalDemo";
+import FieldServiceDemo from "../components/demos/FieldServiceDemo";
+import ProjectAllocationDemo from "../components/demos/ProjectAllocationDemo";
+import RoomBookingDemo from "../components/demos/RoomBookingDemo";
+import ShiftRosterDemo from "../components/demos/ShiftRosterDemo";
+import UtilizationDemo from "../components/demos/UtilizationDemo";
+import type { DemoProps } from "../components/demos/Frame";
+import { RECIPE_INFO } from "./recipes";
 import { ArrowRight, Book, Box, Chart, Clock, Code, Door, Drop, Gantt, Logo, Monitor, Moon, Pin, Sun } from "./icons";
 
-const DOCS = "https://resource-scheduler-docs.vercel.app";
+// The showcase lives in the docs site, so links stay on whatever origin and base it is served from.
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const REPO = "https://github.com/mdobaid311/resource-scheduler";
 
 const RECIPES: {
@@ -19,54 +21,12 @@ const RECIPES: {
   Icon: ComponentType;
   Demo: ComponentType<DemoProps>;
 }[] = [
-  {
-    id: "room-booking",
-    label: "Room booking",
-    blurb: "Meeting rooms in 30 minute slots, booked through your own form, with no double booking.",
-    doc: "recipes/room-booking",
-    Icon: Door,
-    Demo: RoomBookingDemo,
-  },
-  {
-    id: "shift-roster",
-    label: "Shift roster",
-    blurb: "Staff on shifts with their own hours. Time off is blocked, and each row shows how full it is.",
-    doc: "recipes/shift-roster",
-    Icon: Clock,
-    Demo: ShiftRosterDemo,
-  },
-  {
-    id: "equipment-rental",
-    label: "Equipment",
-    blurb: "Stock with several units, rented for days. Find the next free stretch, and never overbook.",
-    doc: "recipes/equipment-rental",
-    Icon: Box,
-    Demo: EquipmentRentalDemo,
-  },
-  {
-    id: "field-service",
-    label: "Field service",
-    blurb: "Dispatch jobs to technicians. One click picks the technician who can take it first.",
-    doc: "recipes/field-service-dispatch",
-    Icon: Pin,
-    Demo: FieldServiceDemo,
-  },
-  {
-    id: "project-allocation",
-    label: "Project allocation",
-    blurb: "Plan people across projects by the month. An allocation can't leave its project's dates.",
-    doc: "recipes/project-allocation",
-    Icon: Gantt,
-    Demo: ProjectAllocationDemo,
-  },
-  {
-    id: "utilization",
-    label: "Utilization",
-    blurb: "Booked against available time for every person, from their hours and capacity.",
-    doc: "guides/utilization",
-    Icon: Chart,
-    Demo: UtilizationDemo,
-  },
+  { id: "room-booking", ...RECIPE_INFO["room-booking"], Icon: Door, Demo: RoomBookingDemo },
+  { id: "shift-roster", ...RECIPE_INFO["shift-roster"], Icon: Clock, Demo: ShiftRosterDemo },
+  { id: "equipment-rental", ...RECIPE_INFO["equipment-rental"], Icon: Box, Demo: EquipmentRentalDemo },
+  { id: "field-service", ...RECIPE_INFO["field-service"], Icon: Pin, Demo: FieldServiceDemo },
+  { id: "project-allocation", ...RECIPE_INFO["project-allocation"], Icon: Gantt, Demo: ProjectAllocationDemo },
+  { id: "utilization", ...RECIPE_INFO["utilization"], Icon: Chart, Demo: UtilizationDemo },
 ];
 
 type Theme = "light" | "dark" | "system";
@@ -172,7 +132,7 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <a className="brand" href={REPO} aria-label="resource-scheduler on GitHub">
+        <a className="brand" href={BASE} aria-label="Resource Scheduler docs home">
           <Logo />
           <span>
             Resource<b>Scheduler</b>
@@ -202,11 +162,15 @@ export default function App() {
         </div>
 
         <nav className="links" aria-label="Project links">
-          <a href={`${DOCS}/start/quick-start/`}>
+          <a href={BASE}>
+            <Book />
+            Docs home
+          </a>
+          <a href={`${BASE}start/quick-start/`}>
             <Book />
             Quick start
           </a>
-          <a href={`${DOCS}/guides/theming/`}>
+          <a href={`${BASE}guides/theming/`}>
             <Drop />
             Theming guide
           </a>
@@ -264,7 +228,7 @@ export default function App() {
               <h1>{active.label}</h1>
               <p>{active.blurb}</p>
             </div>
-            <a className="primary-button" href={`${DOCS}/${active.doc}/`}>
+            <a className="primary-button" href={`${BASE}${active.doc}/`}>
               Read the guide
               <ArrowRight />
             </a>
@@ -275,7 +239,7 @@ export default function App() {
 
         <footer>
           Built from the package source on <code>main</code>, so this is the current code, not the last release.{" "}
-          <a href={`${REPO}/tree/main/resource-scheduler-example`}>See how this page is made</a>. MIT licensed.
+          <a href={`${REPO}/tree/main/docs/src/showcase`}>See how this page is made</a>. MIT licensed.
         </footer>
       </div>
     </div>

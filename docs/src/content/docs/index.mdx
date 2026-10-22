@@ -17,6 +17,7 @@ hero:
 
 import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
 import HeroDemo from '../../components/demos/HeroDemo';
+import DemoGallery from '../../components/DemoGallery.astro';
 
 <HeroDemo client:only="react" />
 
@@ -65,3 +66,9 @@ This is the real component, running live. Drag across empty days to create an ev
     Prefer to own the code? The shadcn CLI copies it into your project and adds the styles to your Tailwind CSS.
   </Card>
 </CardGrid>
+
+## Every demo, live
+
+All of them, running the real component. Each one links to the guide that explains how it is built.
+
+<DemoGallery />

@@ -44,6 +44,15 @@ export default defineConfig({
       },
       customCss: ["./src/styles/scheduler.css", "./src/styles/custom.css"],
       head: [
+        { tag: "link", attrs: { rel: "preconnect", href: "https://fonts.googleapis.com" } },
+        { tag: "link", attrs: { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" } },
+        {
+          tag: "link",
+          attrs: {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
+          },
+        },
         { tag: "meta", attrs: { name: "theme-color", content: "#2563eb" } },
         {
           tag: "meta",
@@ -73,6 +82,7 @@ export default defineConfig({
           label: "Start here",
           items: [
             { label: "Introduction", slug: "start/introduction" },
+            { label: "Showcase", link: "/showcase/" },
             { label: "Installation", slug: "start/installation" },
             { label: "Quick start", slug: "start/quick-start" },
           ],

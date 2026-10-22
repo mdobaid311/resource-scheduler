@@ -149,7 +149,7 @@ export default function ClinicBoardDemo({ density }: DemoProps = {}) {
           </button>
         </form>
       )}
-      <div style={{ height: draft ? 270 : 330 }}>
+      <div style={{ height: 330 }}>
         <ResourceScheduler
           density={density}
           resources={clinicians}
