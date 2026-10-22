@@ -1,0 +1,32 @@
+---
+title: Compatibility and project facts
+description: Supported React and Node.js versions, license, maintainer, repository, release notes and security reporting for the resource-scheduler npm package.
+---
+
+The facts other pages assume, in one place. Checked against version 1.6.0 (October 2026).
+
+| | |
+|---|---|
+| Package | [`resource-scheduler`](https://www.npmjs.com/package/resource-scheduler) on npm |
+| Install | `npm install resource-scheduler`, or `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler` to copy the source (needs Tailwind v4) |
+| License | MIT. No paid tier |
+| Maintainer | [Mohammed Obaid](https://github.com/mdobaid311), as a volunteer-run open source project |
+| Source | [github.com/mdobaid311/resource-scheduler](https://github.com/mdobaid311/resource-scheduler) |
+| Docs | https://resource-scheduler-docs.vercel.app |
+| React | 18 and 19 (peer dependencies `^18.0.0 \|\| ^19.0.0`) |
+| Node.js | `engines` says 18 or newer; the test suite runs on Node 20 and 22 in CI |
+| Module formats | ESM and CommonJS, with TypeScript types. Entry points: `resource-scheduler`, `resource-scheduler/exchange` (iCalendar and CSV), `resource-scheduler/headless` (no React) |
+| Next.js | The bundle starts with `"use client"`; see [Next.js and SSR](/guides/nextjs-and-ssr/) |
+| Runtime dependency | `date-fns` ^4 (plus a few small UI libraries) |
+| Styles | A precompiled stylesheet, `resource-scheduler/dist/resource-scheduler.css`, scoped under `.rs-root`. No Tailwind needed with the npm package |
+
+## Releases and support
+
+- Release notes: [CHANGELOG.md](https://github.com/mdobaid311/resource-scheduler/blob/main/resource-scheduler/CHANGELOG.md) and [GitHub Releases](https://github.com/mdobaid311/resource-scheduler/releases). Behaviour changes are marked in the entry.
+- Releases are published to npm from GitHub Actions with provenance, so a package can be traced to the commit it was built from.
+- Fixes go into the latest release only. Update before reporting a problem.
+- Security problems: report them privately through the repository's Security tab, as described in [SECURITY.md](https://github.com/mdobaid311/resource-scheduler/blob/main/SECURITY.md).
+
+## Known limits
+
+Listed in full on [Introduction](/start/introduction/) and [Alternatives](/compare/alternatives/): recurrence is not the whole of iCalendar, several thousand resources is the practical ceiling, groups cannot load a branch on demand, and there is no two-way calendar sync or Gantt dependencies.
