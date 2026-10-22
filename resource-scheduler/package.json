@@ -123,7 +123,7 @@
     "type": "git",
     "url": "git+https://github.com/mdobaid311/resource-scheduler.git"
   },
-  "homepage": "https://github.com/mdobaid311/resource-scheduler#readme",
+  "homepage": "https://resource-scheduler-docs.vercel.app",
   "bugs": {
     "url": "https://github.com/mdobaid311/resource-scheduler/issues"
   },
