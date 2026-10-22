@@ -77,6 +77,12 @@ export default defineConfig({
             description:
               "Resource timeline component for React with drag and drop, resize, conflict rules and keyboard accessibility.",
             codeRepository: "https://github.com/mdobaid311/resource-scheduler",
+            url: site,
+            author: { "@type": "Person", name: "Mohammed Obaid", url: "https://github.com/mdobaid311" },
+            sameAs: [
+              "https://www.npmjs.com/package/resource-scheduler",
+              "https://github.com/mdobaid311/resource-scheduler",
+            ],
             programmingLanguage: "TypeScript",
             license: "https://opensource.org/licenses/MIT",
           }),
@@ -89,6 +95,7 @@ export default defineConfig({
             { label: "Introduction", slug: "start/introduction" },
             { label: "Installation", slug: "start/installation" },
             { label: "Quick start", slug: "start/quick-start" },
+            { label: "Compatibility and facts", slug: "start/compatibility" },
             { label: "FAQ and troubleshooting", slug: "start/faq" },
             { label: "Live demos", link: "/showcase/" },
           ],
