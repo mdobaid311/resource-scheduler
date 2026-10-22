@@ -61,7 +61,7 @@ Check each site's self-promotion rules first. Disclose that you are the author. 
 - **Reactiflux Discord**, `#i-built-this` ([rules](https://reactiflux.com/promotion)).
 
 ### Directories and lists (low effort, lasting traffic)
-- **registry.directory**: submit the shadcn registry (needs a release tag; form, POST or PR).
+- **registry.directory**: submitted 2026-10-22 through their form (pointing at the raw `registry.json` on GitHub). The reply was "Received"; they read each submission and the registry has to resolve with real, installable content, so check https://registry.directory for a listing. If it is rejected, publish built registry files (`/r/*.json`) on the docs site and resubmit.
 - **Awesome lists and rankings**: awesome-react-components, best-of-react, Best of JS (bestofjs.org), awesome shadcn lists.
 - **AlternativeTo** and **Product Hunt** (optional; the evidence of open source lift is thin).
 - **GitHub itself**: repo topics, a social preview image, `good first issue` and `help wanted` labels, Discussions. Not checked in this session; the owner confirms each.
@@ -76,4 +76,6 @@ Check each site's self-promotion rules first. Disclose that you are the author. 
 
 ### Search
 - The long-tail queries in ROADMAP section 6b are below Google Trends' reporting threshold; only "react scheduler" shows measurable interest. Real monthly volumes need a paid keyword tool (Ahrefs, Semrush).
-- Submit the sitemap (`https://resource-scheduler-docs.vercel.app/sitemap-index.xml`) in Google Search Console and Bing Webmaster Tools.
+- **Google Search Console**: property `https://resource-scheduler-docs.vercel.app/` added and verified 2026-10-22 by the HTML file `docs/public/googlef36acfe511983b52.html` (do not delete it or verification is lost). Sitemap `sitemap-index.xml` submitted the same day; it showed "Couldn’t fetch" at first, so recheck after a day or two.
+- **Bing Webmaster Tools**: the site was imported from Search Console on 2026-10-22 (read-only access granted to Bing). Submitting `sitemap-index.xml` failed twice with "An unexpected error occurred on the server side"; retry later, and check whether Bing picked it up from Search Console.
+- **GitHub social preview**: `docs/public/og.png` (1200x630) uploaded in the repo settings on 2026-10-22. Topics, the labels `good first issue` and `help wanted`, and Discussions were already in place.
