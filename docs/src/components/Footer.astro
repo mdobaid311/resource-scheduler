@@ -1,0 +1,24 @@
+---
+import Default from "@astrojs/starlight/components/Footer.astro";
+---
+
+<Default><slot /></Default>
+
+<p class="contact">
+  Built by Mohammed Obaid &middot;
+  <a href="https://github.com/mdobaid311">GitHub</a> &middot;
+  <a href="https://www.linkedin.com/in/mohammed-obaid-56a33920b/">LinkedIn</a> &middot;
+  <a href="mailto:mdobaid311@gmail.com">mdobaid311@gmail.com</a>
+</p>
+
+<style>
+  .contact {
+    margin-top: 1rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+  .contact a {
+    color: inherit;
+    text-decoration: underline;
+  }
+</style>
