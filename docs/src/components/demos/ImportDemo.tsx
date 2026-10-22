@@ -107,7 +107,7 @@ export default function ImportDemo() {
         dayStartHour={8}
         dayEndHour={18}
         timeColumnWidth="80px"
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
       />
     </Frame>
   );

@@ -5,7 +5,7 @@ description: A working resource scheduler in a few lines. Create, move and click
 
 import BasicDemo from '../../../components/demos/BasicDemo';
 
-Here is the whole thing running live. Drag across empty days to create an event, drag an event to another day or person, click one.
+Here is the whole thing running live. Drag across empty days to create an event, drag an event to another day or person, drag its edge to resize it, click one.
 
 <BasicDemo client:only="react" />
 
@@ -16,6 +16,13 @@ import { useState } from "react";
 import { ResourceScheduler, ViewType } from "resource-scheduler";
 import "resource-scheduler/dist/resource-scheduler.css";
 
+// Today at the given hour, so the example shows up on whatever week you open it.
+const at = (hour: number) => {
+  const d = new Date();
+  d.setHours(hour, 0, 0, 0);
+  return d;
+};
+
 export function Board() {
   const [resources, setResources] = useState([
     {
@@ -25,8 +32,8 @@ export function Board() {
         {
           id: "e1",
           title: "Standup",
-          startDate: new Date(2026, 9, 12, 9),
-          endDate: new Date(2026, 9, 12, 10),
+          startDate: at(9),
+          endDate: at(10),
           color: "#3b82f6",
         },
       ],
@@ -54,6 +61,15 @@ export function Board() {
               if (r.id === toId) return { ...r, events: [...rest, { ...event, startDate: start, endDate: end }] };
               return r.id === fromId ? { ...r, events: rest } : r;
             })
+          )
+        }
+        onEventResize={(event, resourceId, start, end) =>
+          setResources((prev) =>
+            prev.map((r) =>
+              r.id === resourceId
+                ? { ...r, events: r.events.map((e) => (e.id === event.id ? { ...e, startDate: start, endDate: end } : e)) }
+                : r
+            )
           )
         }
       />

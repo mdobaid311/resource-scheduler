@@ -32,7 +32,7 @@ export default function FlatTimelineDemo() {
         events={events}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week, ViewType.Month]}
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         dateColumnWidth="120px"
         eventOverlap={false}
         onEventCreate={(event, resourceId) => {

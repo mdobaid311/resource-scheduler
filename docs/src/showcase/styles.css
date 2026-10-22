@@ -92,6 +92,48 @@ code {
   padding: 28px 16px 24px;
   border-inline-end: 1px solid var(--rs-border);
 }
+.brand-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* Narrow screens only (see the media query below). */
+.docs-link,
+.nav-select {
+  display: none;
+}
+.docs-link {
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  color: var(--rs-muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.docs-link:hover {
+  color: var(--rs-foreground);
+}
+.nav-select {
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  color: var(--rs-muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+.nav-select select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--rs-input);
+  border-radius: 8px;
+  background: var(--rs-background);
+  color: var(--rs-foreground);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+}
 .brand {
   display: flex;
   align-items: center;
@@ -302,6 +344,28 @@ main {
   color: var(--rs-muted-foreground);
   text-wrap: pretty;
 }
+.page-head .try {
+  margin-top: 8px;
+  color: var(--rs-foreground);
+}
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.text-link:hover {
+  text-decoration: underline;
+}
 .primary-button {
   display: inline-flex;
   align-items: center;
@@ -466,35 +530,13 @@ footer {
   .links {
     display: none;
   }
+  /* The demo list becomes a native picker, grouped like the sidebar. */
   .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* A fade at the edge says the list scrolls. */
-    mask-image: linear-gradient(90deg, #000 85%, transparent);
-    padding-bottom: 12px;
+    display: none;
   }
-  .nav button {
-    width: auto;
-    flex: none;
-    padding: 8px 12px;
-    white-space: nowrap;
-  }
-  .nav-group {
-    flex: none;
-    flex-direction: row;
-    align-items: center;
-    margin: 0 !important;
-  }
-  .nav-group + .nav-group {
-    margin-left: 8px !important;
-    padding-left: 12px;
-    border-left: 1px solid var(--rs-border);
-  }
-  .nav-label {
-    margin: 0 4px 0 0;
-    padding: 0;
-    white-space: nowrap;
+  .nav-select,
+  .docs-link {
+    display: flex;
   }
   .topbar,
   main,
@@ -545,4 +587,14 @@ footer {
   order: 1;
   border-top: 1px solid var(--rs-border, var(--sl-color-gray-5));
   border-bottom: 0;
+}
+
+/* Touch-only tip in demo captions: a drag across empty time scrolls on a phone. */
+.touch-hint {
+  display: none;
+}
+@media (pointer: coarse) {
+  .touch-hint {
+    display: inline;
+  }
 }

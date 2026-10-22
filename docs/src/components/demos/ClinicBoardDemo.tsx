@@ -161,7 +161,7 @@ export default function ClinicBoardDemo({ density }: DemoProps = {}) {
           dayEndHour={17}
           blockUnavailable
           timeColumnWidth="64px"
-          resourceColumnWidth="150px"
+          resourceColumnWidth="clamp(104px, 30vw, 150px)"
           ariaLabel="Clinic appointments"
           onSlotSelect={setDraft}
           onEventDrop={(visit, _from, to, start, end) => {

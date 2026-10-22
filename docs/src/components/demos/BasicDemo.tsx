@@ -6,20 +6,21 @@ import { useSchedule } from "./useSchedule";
 
 /** Quick start: the minimum an app writes. */
 export default function BasicDemo() {
-  const { resources, addEvent, move, log, setLog } = useSchedule(teamWeek);
+  const { resources, addEvent, move, resize, log, setLog } = useSchedule(teamWeek);
   return (
-    <Frame log={log} caption="Drag across empty days to create, drag an event to move it.">
+    <Frame log={log} caption="Drag across empty days to create, drag an event to move it, drag its edge to resize.">
       <ResourceScheduler
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week, ViewType.Month]}
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         dateColumnWidth="120px"
         onEventCreate={(event, resourceId) => {
           addEvent(resourceId, event);
           setLog(`Created "${event.title}"`);
         }}
         onEventDrop={move}
+        onEventResize={resize}
         onEventClick={(event) => setLog(`Clicked "${event.title}"`)}
       />
     </Frame>

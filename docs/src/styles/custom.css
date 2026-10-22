@@ -268,3 +268,13 @@ site-search button[data-open-modal] {
   border-top: 1px solid var(--rs-border, var(--sl-color-gray-5));
   border-bottom: 0;
 }
+
+/* Touch-only tip in demo captions: a drag across empty time scrolls on a phone. */
+.touch-hint {
+  display: none;
+}
+@media (pointer: coarse) {
+  .touch-hint {
+    display: inline;
+  }
+}

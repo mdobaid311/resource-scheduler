@@ -70,3 +70,35 @@ export const GROUPS: DemoGroup[] = [
 ];
 
 export const ALL_DEMOS = GROUPS.flatMap((g) => g.demos);
+
+/** One thing to do in each demo, shown under its description. */
+export const TRY: Record<string, string> = {
+  "room-booking": "Drag across free time on a room to book it, then try to drag the booking onto another one.",
+  "shift-roster": "Drag a shift to someone else to cover it for that day, or click a day in Dee's empty row to add one.",
+  "equipment-rental": "Drag across free days, then try to drop a rental onto a booked stretch.",
+  "field-service": "Press a button to book the earliest slot any technician has for that job.",
+  "project-allocation": "Try to place an allocation after Cassini ends. It is refused.",
+  "clinic-board": "Book a visit and notice the buffer held on either side of it.",
+  "quick-start": "Drag across empty days to create an event, then drag its edge to resize it.",
+  "conflict-control": "Drag one event over another. The refused place turns red before you let go.",
+  slots: "Drag across a few slots to open the form, then change the slot length.",
+  "week-view": "Drag an event to another day or person, or drag its edge to resize it.",
+  "controlled-view": "Use the buttons above the board to move the view; the data it shows follows the range.",
+  recurring: "Drag one occurrence of a series, or switch to the month view.",
+  keyboard: "Tab to the board, then use the arrow keys to move around. The instructions below list the rest.",
+  availability: "Drag an event over the grey, or select slots there.",
+  suggest: "Pick a job and a strategy, then book the slot that ranks first.",
+  utilization: "Move an event between rows and watch both rows' booked-versus-available figure update.",
+  "time-zones": "Compare the event times with the business hours shaded in the zone shown.",
+  groups: "Collapse and open a group to hide or show its rows.",
+  reorder: "Grab a row's grip and drag it to a new place.",
+  flat: "Drag across time on any row to add an event.",
+  export: "Add an event and watch the file preview below update.",
+  import: "Paste a calendar file and see which events appear and which cannot be shown.",
+  printing: "Open your browser's print preview. Only the board prints, without the toolbar.",
+  theming: "Switch preset, dark mode and density and watch every part follow.",
+  components: "Open an event card and press Mark done.",
+  headless: "Change the view with the buttons. All the UI here is plain markup on top of the hooks.",
+  "custom-timeline": "Drag across empty time. This whole timeline is built from the headless functions.",
+  i18n: "Switch the language and the 12 or 24 hour clock.",
+};

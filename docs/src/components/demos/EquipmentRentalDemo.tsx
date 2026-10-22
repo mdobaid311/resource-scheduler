@@ -145,7 +145,7 @@ export default function EquipmentRentalDemo({ density }: DemoProps = {}) {
           weekStartsOn={1}
           showUtilization
           blockUnavailable
-          resourceColumnWidth="190px"
+          resourceColumnWidth="clamp(104px, 30vw, 190px)"
           dateColumnWidth="110px"
           ariaLabel="Equipment rentals"
           onSlotSelect={setDraft}

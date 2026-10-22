@@ -56,7 +56,7 @@ export default function AvailabilityDemo() {
         dayStartHour={6}
         dayEndHour={24}
         timeColumnWidth="90px"
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         businessHours={shade ? {} : undefined}
         blockUnavailable={block}
         nowIndicator={nowLine}

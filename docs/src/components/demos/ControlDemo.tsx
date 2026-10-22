@@ -51,7 +51,7 @@ export default function ControlDemo() {
         resources={resources}
         initialView={ViewType.Week}
         availableViews={[ViewType.Week, ViewType.Month]}
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         dateColumnWidth="110px"
         onRangeChange={({ start, end, view }) =>
           setLog(`onRangeChange: fetch ${day(start)} to ${lastDay(end)} (${view} view)`)

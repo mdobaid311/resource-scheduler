@@ -143,7 +143,7 @@ export default function SuggestDemo() {
         dayStartHour={7}
         dayEndHour={19}
         timeColumnWidth="70px"
-        resourceColumnWidth="170px"
+        resourceColumnWidth="clamp(104px, 30vw, 170px)"
         ariaLabel="Crew schedule"
         showUtilization
         isValidDrop={(moved, { resourceId, start, end }) =>

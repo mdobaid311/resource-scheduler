@@ -158,7 +158,7 @@ export default function ShiftRosterDemo({ density }: DemoProps = {}) {
           showUtilization
           blockUnavailable
           eventOverlap={false}
-          resourceColumnWidth="170px"
+          resourceColumnWidth="clamp(104px, 30vw, 170px)"
           dateColumnWidth="110px"
           ariaLabel="Shift roster"
           onSlotSelect={setDraft}

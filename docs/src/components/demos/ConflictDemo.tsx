@@ -59,7 +59,7 @@ export default function ConflictDemo() {
         dayStartHour={8}
         dayEndHour={18}
         timeColumnWidth="80px"
-        resourceColumnWidth="150px"
+        resourceColumnWidth="clamp(104px, 30vw, 150px)"
         onEventCreate={(event, resourceId) => {
           addEvent(resourceId, event);
           setLog("Created");
