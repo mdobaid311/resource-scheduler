@@ -66,11 +66,26 @@ code {
   border-radius: 20px;
   background: var(--rs-background);
   box-shadow: var(--shell-shadow);
-  overflow: hidden;
+  /* clip, not hidden: the sidebar below stays sticky. */
+  overflow: clip;
+  /* The headless demos are styled with the docs' Starlight variables; map them to the scheduler's. */
+  --sl-color-bg: var(--rs-background);
+  --sl-color-text: var(--rs-foreground);
+  --sl-color-gray-2: var(--rs-foreground);
+  --sl-color-gray-3: var(--rs-muted-foreground);
+  --sl-color-gray-5: var(--rs-border);
+  --sl-color-gray-6: var(--rs-surface-muted);
+  --sl-color-accent: var(--rs-primary);
+  --sl-color-accent-low: var(--rs-accent);
 }
 
 /* Sidebar */
 .sidebar {
+  position: sticky;
+  top: 32px;
+  align-self: start;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -93,6 +108,27 @@ code {
 }
 .brand b {
   color: var(--primary-text);
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-group + .nav-group {
+  margin-top: 14px;
+}
+.demo-loading {
+  display: grid;
+  place-items: center;
+  min-height: 24rem;
+  margin: 0;
+  border: 1px dashed var(--rs-border);
+  border-radius: 16px;
+  color: var(--rs-muted-foreground);
+}
+footer a {
+  display: inline-block;
+  padding-block: 8px;
 }
 .nav-label {
   margin: 0 0 6px;
@@ -417,6 +453,9 @@ footer {
     min-height: calc(100vh - 32px);
   }
   .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
     padding: 16px 16px 0;
     border-inline-end: 0;
     border-bottom: 1px solid var(--rs-border);
@@ -424,7 +463,6 @@ footer {
   .brand {
     padding-bottom: 12px;
   }
-  .nav-label,
   .links {
     display: none;
   }
@@ -440,6 +478,23 @@ footer {
     width: auto;
     flex: none;
     padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .nav-group {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    margin: 0 !important;
+  }
+  .nav-group + .nav-group {
+    margin-left: 8px !important;
+    padding-left: 12px;
+    border-left: 1px solid var(--rs-border);
+  }
+  .nav-label {
+    margin: 0 4px 0 0;
+    padding: 0;
+    white-space: nowrap;
   }
   .topbar,
   main,
@@ -455,6 +510,17 @@ footer {
     margin: 0;
     border-radius: 0;
     min-height: 100vh;
+  }
+  /* Content first: the appearance controls drop below the demo. */
+  main {
+    order: 1;
+  }
+  .topbar {
+    order: 2;
+    padding-block: 12px;
+  }
+  footer {
+    order: 3;
   }
   .page-head h1 {
     font-size: 20px;

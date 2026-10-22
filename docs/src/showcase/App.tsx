@@ -1,33 +1,17 @@
-import { useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
-import EquipmentRentalDemo from "../components/demos/EquipmentRentalDemo";
-import FieldServiceDemo from "../components/demos/FieldServiceDemo";
-import ProjectAllocationDemo from "../components/demos/ProjectAllocationDemo";
-import RoomBookingDemo from "../components/demos/RoomBookingDemo";
-import ShiftRosterDemo from "../components/demos/ShiftRosterDemo";
-import UtilizationDemo from "../components/demos/UtilizationDemo";
+import { Suspense, lazy, useEffect, useState, type ComponentType, type KeyboardEvent, type ReactNode } from "react";
 import type { DemoProps } from "../components/demos/Frame";
-import { RECIPE_INFO } from "./recipes";
-import { ArrowRight, Book, Box, Chart, Clock, Code, Door, Drop, Gantt, Logo, Monitor, Moon, Pin, Sun } from "./icons";
+import { ALL_DEMOS, GROUPS } from "./recipes";
+import { ArrowRight, Book, Box, Code, Drop, Logo, Monitor, Moon, Sun } from "./icons";
 
 // The showcase lives in the docs site, so links stay on whatever origin and base it is served from.
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const REPO = "https://github.com/mdobaid311/resource-scheduler";
 
-const RECIPES: {
-  id: string;
-  label: string;
-  blurb: string;
-  doc: string;
-  Icon: ComponentType;
-  Demo: ComponentType<DemoProps>;
-}[] = [
-  { id: "room-booking", ...RECIPE_INFO["room-booking"], Icon: Door, Demo: RoomBookingDemo },
-  { id: "shift-roster", ...RECIPE_INFO["shift-roster"], Icon: Clock, Demo: ShiftRosterDemo },
-  { id: "equipment-rental", ...RECIPE_INFO["equipment-rental"], Icon: Box, Demo: EquipmentRentalDemo },
-  { id: "field-service", ...RECIPE_INFO["field-service"], Icon: Pin, Demo: FieldServiceDemo },
-  { id: "project-allocation", ...RECIPE_INFO["project-allocation"], Icon: Gantt, Demo: ProjectAllocationDemo },
-  { id: "utilization", ...RECIPE_INFO["utilization"], Icon: Chart, Demo: UtilizationDemo },
-];
+// Each demo loads on demand, so opening the showcase does not bundle all of them up front.
+const loaders = import.meta.glob<{ default: ComponentType<DemoProps> }>("../components/demos/*Demo.tsx");
+const DEMOS = Object.fromEntries(
+  Object.entries(loaders).map(([path, load]) => [path.split("/").pop()!.replace(".tsx", ""), lazy(load)])
+);
 
 type Theme = "light" | "dark" | "system";
 type Density = "comfortable" | "compact";
@@ -64,7 +48,7 @@ export default function App() {
   const [preset, setPreset] = useState<Preset>(() => pick(saved.preset, Object.keys(PRESETS) as Preset[], "Default"));
   const [density, setDensity] = useState<Density>(() => pick(saved.density, DENSITIES, "comfortable"));
   const [tab, setTab] = useState(() =>
-    pick(location.hash.slice(1) || saved.tab, RECIPES.map((r) => r.id), RECIPES[0].id)
+    pick(location.hash.slice(1) || saved.tab, ALL_DEMOS.map((d) => d.id), ALL_DEMOS[0].id)
   );
   const [systemDark, setSystemDark] = useState(() => matchMedia("(prefers-color-scheme: dark)").matches);
 
@@ -121,13 +105,13 @@ export default function App() {
     const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const next = RECIPES[(index + step + RECIPES.length) % RECIPES.length].id;
+    const next = ALL_DEMOS[(index + step + ALL_DEMOS.length) % ALL_DEMOS.length].id;
     select(next);
     document.getElementById(`tab-${next}`)?.focus();
   };
 
-  const active = RECIPES.find((r) => r.id === tab) ?? RECIPES[0];
-  const Demo = active.Demo;
+  const active = ALL_DEMOS.find((d) => d.id === tab) ?? ALL_DEMOS[0];
+  const Demo = DEMOS[active.demo];
 
   return (
     <div className="app">
@@ -139,25 +123,28 @@ export default function App() {
           </span>
         </a>
 
-        <p className="nav-label" id="recipes-label">
-          Recipes
-        </p>
-        <div className="nav" role="tablist" aria-labelledby="recipes-label" aria-orientation="vertical">
-          {RECIPES.map((r, i) => (
-            <button
-              key={r.id}
-              id={`tab-${r.id}`}
-              type="button"
-              role="tab"
-              aria-selected={tab === r.id}
-              aria-controls="panel"
-              tabIndex={tab === r.id ? 0 : -1}
-              onClick={() => select(r.id)}
-              onKeyDown={(e) => onTabKey(e, i)}
-            >
-              <r.Icon />
-              {r.label}
-            </button>
+        <div className="nav" role="tablist" aria-label="Demos" aria-orientation="vertical">
+          {GROUPS.map((g) => (
+            <div className="nav-group" role="presentation" key={g.id}>
+              <p className="nav-label" role="presentation">
+                {g.label}
+              </p>
+              {g.demos.map((d) => (
+                <button
+                  key={d.id}
+                  id={`tab-${d.id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === d.id}
+                  aria-controls="panel"
+                  tabIndex={tab === d.id ? 0 : -1}
+                  onClick={() => select(d.id)}
+                  onKeyDown={(e) => onTabKey(e, ALL_DEMOS.indexOf(d))}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 
@@ -188,7 +175,7 @@ export default function App() {
       <div className="main">
         <header className="topbar">
           <p className="tagline">
-            A free, MIT resource timeline for React. Six live recipes, one component.
+            {`A free, MIT resource timeline for React. ${ALL_DEMOS.length} live demos, one component.`}
           </p>
           <section className="appearance" aria-label="Appearance">
             <Group label="Theme">
@@ -234,7 +221,9 @@ export default function App() {
             </a>
           </div>
           {/* A new key resets the recipe's data when you switch. */}
-          <Demo key={active.id} density={density} />
+          <Suspense fallback={<p className="demo-loading" role="status">Loading demo…</p>}>
+            <Demo key={active.id} density={density} />
+          </Suspense>
         </main>
 
         <footer>
