@@ -96,6 +96,7 @@ export default defineConfig({
             { label: "Installation", slug: "start/installation" },
             { label: "Quick start", slug: "start/quick-start" },
             { label: "Compatibility and facts", slug: "start/compatibility" },
+            { label: "FAQ and troubleshooting", slug: "start/faq" },
             { label: "Live demos", link: "/showcase/" },
           ],
         },
