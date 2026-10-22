@@ -31,5 +31,7 @@ dist-ssr
 # graphify knowledge-graph output
 graphify-out/
 
+# Vercel
+.vercel/
 demo
 .claude

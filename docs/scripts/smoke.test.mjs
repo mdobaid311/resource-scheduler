@@ -42,6 +42,8 @@ async function open(route, { touch = false, fromStart = true, ready = "[data-rs-
     viewport,
     hasTouch: touch,
   });
+  // Vercel Analytics script only exists on Vercel; stub it so its 404 is not a console error.
+  await context.route("**/_vercel/**", (r) => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
   const page = await context.newPage();
   const errors = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
