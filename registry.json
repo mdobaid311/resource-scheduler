@@ -14,7 +14,6 @@
         "class-variance-authority",
         "clsx",
         "date-fns",
-        "lucide-react",
         "tailwind-merge"
       ],
       "files": [
@@ -137,6 +136,11 @@
           "path": "resource-scheduler/src/components/ResourceScheduler/i18nCore.ts",
           "type": "registry:component",
           "target": "@components/resource-scheduler/i18nCore.ts"
+        },
+        {
+          "path": "resource-scheduler/src/components/ResourceScheduler/icons.tsx",
+          "type": "registry:component",
+          "target": "@components/resource-scheduler/icons.tsx"
         },
         {
           "path": "resource-scheduler/src/components/ResourceScheduler/index.ts",

@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
-import { Calendar, User } from "lucide-react";
+import { Calendar, User } from "./icons";
 import { type EventItemProps, ViewType } from "./types";
 import { formatEventTime, formatRangeLabel } from "./utils/dateUtils";
 import { flipHorizontal } from "./utils/keyboard";

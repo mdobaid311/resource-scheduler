@@ -78,7 +78,7 @@ npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
 import { ResourceScheduler } from "@/components/resource-scheduler";
 ```
 
-This copies the component to `components/resource-scheduler/` (it mirrors this package's `src`), installs its dependencies (date-fns, lucide-react, Radix popover/select and friends) and adds the `--rs-*` design tokens plus a few utilities to your Tailwind CSS. Your own theme variables and your `components/ui` folder are not touched, and everything is scoped to `.rs-root`.
+This copies the component to `components/resource-scheduler/` (it mirrors this package's `src`), installs its dependencies (date-fns, Radix popover and friends) and adds the `--rs-*` design tokens plus a few utilities to your Tailwind CSS. Your own theme variables and your `components/ui` folder are not touched, and everything is scoped to `.rs-root`.
 
 - Needs Tailwind v4, which is what shadcn sets up by default. Skip the `resource-scheduler.css` import from the npm instructions; the registry adds the styles to your CSS itself.
 - Preview first with `npx shadcn@latest view mdobaid311/resource-scheduler/resource-scheduler` or `--dry-run`, and pin a release tag or commit for reproducible installs: `...resource-scheduler#<tag>`.
