@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+- Removed the `lucide-react` dependency: the six icons the scheduler draws are now inline SVG. If you install with the shadcn CLI, `icons.tsx` is copied with the other files and `lucide-react` is no longer installed.
+- The published JavaScript is no longer minified (your bundler minifies it anyway), so npm and Socket stop flagging minified code. The CSS is still minified.
+- Added `repository.directory` to `package.json`, pinned the GitHub Actions to commit SHAs and updated dependencies.
+
 ## [1.6.0] - 2026-10-22
 
 ### Changed
