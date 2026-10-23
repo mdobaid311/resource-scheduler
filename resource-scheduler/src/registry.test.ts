@@ -57,7 +57,6 @@ describe("registry.json", () => {
     expect(item().dependencies).toEqual(
       expect.arrayContaining([
         "date-fns",
-        "lucide-react",
         "@radix-ui/react-popover",
         "class-variance-authority",
         "clsx",

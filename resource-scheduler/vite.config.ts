@@ -49,7 +49,6 @@ export default defineConfig({
         "tailwind-merge",
         "clsx",
         "class-variance-authority",
-        "lucide-react",
       ],
       output: {
         // Next.js App Router: lets the package be imported from a server file.
@@ -69,6 +68,10 @@ export default defineConfig({
       },
     },
     outDir: "dist",
+    // Published code stays readable: packages on npm should not ship minified
+    // code (Socket flags it), and consumers' bundlers minify it anyway.
+    minify: false,
+    cssMinify: true,
     // public/ belongs to the playground; copying it put a demo screenshot and
     // an icon into the published package.
     copyPublicDir: false,

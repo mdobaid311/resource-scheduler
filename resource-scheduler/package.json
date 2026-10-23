@@ -70,7 +70,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "lucide-react": "^0.544.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
@@ -121,7 +120,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mdobaid311/resource-scheduler.git"
+    "url": "git+https://github.com/mdobaid311/resource-scheduler.git",
+    "directory": "resource-scheduler"
   },
   "homepage": "https://resource-scheduler-docs.vercel.app",
   "bugs": {

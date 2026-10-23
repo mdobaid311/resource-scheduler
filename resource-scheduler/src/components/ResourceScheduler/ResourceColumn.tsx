@@ -1,5 +1,5 @@
 // src/components/ResourceScheduler/ResourceColumn.tsx
-import { ChevronDown, GripVertical } from "lucide-react";
+import { ChevronDown, GripVertical } from "./icons";
 import React, { useRef, useState } from "react";
 import { useClassNames, withClass } from "./classNames";
 import { ColumnUtilizationLabel } from "./ColumnUtilization";

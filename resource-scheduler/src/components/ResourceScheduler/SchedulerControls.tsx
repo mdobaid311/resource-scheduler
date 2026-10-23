@@ -1,6 +1,6 @@
 // src/components/ResourceScheduler/SchedulerControls.tsx
 import { Button } from "./ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "./icons";
 import React from "react";
 import { useClassNames, withClass } from "./classNames";
 import { useComponents } from "./components";
