@@ -1,8 +1,9 @@
 <h1 align="center">Resource Scheduler</h1>
 
 <p align="center">
-  A free, MIT-licensed <b>resource timeline for React</b>.<br />
-  Drag, resize, stop double booking, and drive it from the keyboard.
+  A free, MIT-licensed <b>React scheduler</b> with a resource timeline.<br />
+  Drag, resize, stop double booking, and drive it from the keyboard.<br />
+  <sub>Also called a resource calendar or booking calendar. Used for room booking, shift rosters, equipment rental and field dispatch.</sub>
 </p>
 
 <p align="center">
@@ -41,7 +42,7 @@ In most calendar libraries the resource timeline is a paid tier. Here it is free
 | DayPilot Lite | Free, but resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 | react-big-scheduler | Free, MIT, has a resource view; no commits since March 2023 and about 170 open issues and pull requests |
 
-Prices checked October 2026; see the [full comparison](https://resource-scheduler-docs.vercel.app/compare/alternatives/) the [step-by-step tutorial](https://resource-scheduler-docs.vercel.app/tutorials/free-react-resource-timeline/), the [room booking tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-calendar/), the [shift planner tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-shift-planner/), the [clinic appointment board tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-clinic-appointment-board/), the [equipment rental tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-equipment-rental-calendar/), or the [Next.js and Prisma tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-nextjs-prisma/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
+Prices checked October 2026; see the [full comparison](https://resource-scheduler-docs.vercel.app/compare/alternatives/), the [step-by-step tutorial](https://resource-scheduler-docs.vercel.app/tutorials/free-react-resource-timeline/), the [room booking tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-calendar/), the [shift planner tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-shift-planner/), the [clinic appointment board tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-clinic-appointment-board/), the [equipment rental tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-equipment-rental-calendar/), or the [Next.js and Prisma tutorial](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-nextjs-prisma/). It is also younger than they are: rows and columns are virtualized and benchmarked up to 2,500 resources and 50,000 events, but for timelines far beyond that pick a heavier tool.
 
 ## Features
 

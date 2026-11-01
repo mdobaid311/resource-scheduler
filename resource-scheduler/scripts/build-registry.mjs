@@ -134,7 +134,7 @@ export const buildRegistry = ({ pkgDir = defaultPkgDir() } = {}) => {
         type: "registry:block",
         title: "Resource Scheduler",
         description:
-          "Resource timeline for React: drag, resize, overlap rules, slot selection, keyboard and screen reader support. Installs as source you own.",
+          "React scheduler with a resource timeline: drag, resize, no double booking, slot selection, keyboard and screen reader support. Installs as source you own.",
         dependencies: [...dependencies].sort(),
         files: rels.map((rel) => ({
           path: `${repoPrefix}/${SCHEDULER_DIR}/${rel}`,
