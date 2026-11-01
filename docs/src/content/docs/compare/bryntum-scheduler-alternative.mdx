@@ -1,0 +1,75 @@
+---
+title: Free Bryntum Scheduler alternative for React
+description: "A free, MIT-licensed alternative to Bryntum Scheduler for React resource timelines: licence and prices checked on bryntum.com, where Bryntum is clearly stronger, and how the data maps across."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Bryntum Scheduler is a commercial scheduling component with a large feature set, aimed at heavy planning apps. resource-scheduler is a smaller, free React scheduler that covers the common resource timeline jobs (booking, rosters, rentals, dispatch) under the MIT licence. They are not equals, so this page says plainly where each one fits.
+
+<Aside type="caution" title="Checked November 2026">
+  Everything about Bryntum below comes from [bryntum.com/store/scheduler](https://bryntum.com/store/scheduler/), [bryntum.com/products/scheduler](https://bryntum.com/products/scheduler/) and its API docs, read on 1 November 2026. Verify before you decide.
+</Aside>
+
+## How we compared
+
+Licence and price, what a team gets without writing it themselves, performance at scale, how it fits a React codebase, and support.
+
+| | resource-scheduler | Bryntum Scheduler |
+|---|---|---|
+| Licence | MIT, free for any use | Commercial. End User Licence per developer, perpetual, with a year of updates and support that renews automatically |
+| Price | Free | "From $680 / Dev" (small team, shown for 3 developers: $2,040) or "From $600 / Dev" (large team, shown for 10: $6,000) |
+| SaaS or a product you sell | Free | Needs an OEM licence, priced on request |
+| Free option | The whole library | A trial, installable from npm |
+| Frameworks | React 18 and 19 | JavaScript, TypeScript, React, Vue, Angular, and others listed on the product page |
+| Overlap rules | `eventOverlap`, `isValidDrop` | `allowOverlap` (default `true`) and many more options |
+| Large data | Rows and columns virtualized; 2,500 resources with 50,000 events in the [benchmark](/guides/performance/) | Virtual rendering, minimal DOM, element reuse (vendor's description) |
+| Export | `.ics` and CSV, and printing | PDF, PNG, Excel, ICS and print |
+| Dependencies between tasks | No | Yes ("visualize task dependencies"); a scheduling engine in Scheduler Pro |
+| Extra widgets | No | "50+ more widgets" |
+| Support | GitHub issues | Standard or Premium support subscription |
+
+## When to choose resource-scheduler
+
+- Your timeline is about **availability and booking**: who or what is free, no double booking, your own forms.
+- You want **no licence cost**, including for a SaaS product, and the source in your repository.
+- You want a **small, React-first API**: one component, plain objects, handlers, and a headless entry for the server.
+
+## When Bryntum is the better choice
+
+- **Planning, not just booking**: dependencies between tasks, or a scheduling engine that moves dependent work (Scheduler Pro).
+- **Very large or very busy boards** where you want the vendor's performance work and tooling.
+- **Built-in export to PDF, PNG and Excel**, an event editor and many ready-made widgets, rather than building them.
+- **A support contract** with response times, or a buyer who requires a commercial vendor.
+
+## Moving data across
+
+Bryntum event records have `name`, `startDate`, `endDate` and `resourceId`; resources have `id` and `name`. The shapes are close, so most of the work is renaming `name` to `title` on events and turning the handlers into props:
+
+```ts
+import type { SchedulerEvent } from "resource-scheduler";
+
+// Bryntum event data: { id, name, startDate, endDate, resourceId }
+const toEvent = (e: { id: string; name: string; startDate: string | Date; endDate: string | Date; resourceId: string }): SchedulerEvent => ({
+  id: e.id,
+  title: e.name,
+  startDate: new Date(e.startDate),
+  endDate: new Date(e.endDate),
+  resourceId: e.resourceId,
+});
+```
+
+```tsx
+<ResourceScheduler
+  resources={resources}            // { id, name } works as it is
+  events={bryntumEvents.map(toEvent)}
+  eventOverlap={false}             // Bryntum: allowOverlap: false
+  onEventDrop={(event, from, to, start, end) => save(event.id, to, start, end)}
+  onEventResize={(event, resourceId, start, end) => save(event.id, resourceId, start, end)}
+  onSlotSelect={({ resourceId, start, end }) => openForm(resourceId, start, end)}
+/>
+```
+
+Features with no equivalent here (dependencies, the event editor, PDF export) need your own code or a different library. Check that list before you start.
+
+More: [Prevent double booking](/guides/conflict-control/), [Large data and virtualization](/guides/performance/), and every option side by side in [Alternatives](/compare/alternatives/).

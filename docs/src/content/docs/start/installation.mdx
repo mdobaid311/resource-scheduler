@@ -1,61 +1,138 @@
 ---
 title: Install the React scheduler
-description: Install the Resource Scheduler React component from npm, or copy the source into your project with the shadcn CLI.
+description: Install the resource-scheduler React component with npm, pnpm, yarn or bun, or copy the source in with the shadcn CLI. Setup for Next.js and Vite, plus fixes for common install problems.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Pick one. Both give you the same component.
+There are two ways to get the scheduler. Both give you the same component; they differ in who owns the code.
 
-<Tabs>
+- **The npm package** is precompiled, with its own stylesheet. You update it with your package manager. Choose this unless you want to edit the source.
+- **The shadcn CLI** copies the source into your project, where it becomes your code. Choose this if you want to change how it works, and you already use Tailwind v4.
+
+## Requirements
+
+- React 18 or 19, with `react-dom` (both are peer dependencies).
+- Any bundler that handles CSS imports: Next.js, Vite, Remix, Parcel, webpack.
+- TypeScript is optional. Types are included; there is no `@types` package to install.
+- No Tailwind setup for the npm package. The shadcn install needs Tailwind v4.
+
+## Install from npm
+
+<Tabs syncKey="pkg">
   <TabItem label="npm">
     ```bash
     npm install resource-scheduler
     ```
-
-    Then import the stylesheet once, anywhere in your app:
-
-    ```tsx
-    import "resource-scheduler/dist/resource-scheduler.css";
-    ```
-
-    - React 18 or 19 (`react` and `react-dom` are peer dependencies).
-    - **No Tailwind setup needed.** The stylesheet is precompiled.
-    - Use npm if you want updates with `npm update`.
   </TabItem>
-  <TabItem label="shadcn CLI">
+  <TabItem label="pnpm">
     ```bash
-    npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+    pnpm add resource-scheduler
     ```
-
-    ```tsx
-    import { ResourceScheduler } from "@/components/resource-scheduler";
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add resource-scheduler
     ```
-
-    - Needs Tailwind v4, which is what shadcn sets up by default.
-    - Copies the source to `components/resource-scheduler/` and installs its dependencies.
-    - Adds the `--rs-*` tokens and a few utilities to your CSS. Your own theme variables and `components/ui` are not touched.
-    - Skip the stylesheet import: the styles are already in your CSS.
-    - Use the registry if you want to edit the source. Preview with `--dry-run` or `npx shadcn@latest view mdobaid311/resource-scheduler/resource-scheduler`, and pin a release with `...#<tag>`.
+  </TabItem>
+  <TabItem label="bun">
+    ```bash
+    bun add resource-scheduler
+    ```
   </TabItem>
 </Tabs>
+
+Then import the stylesheet once, anywhere in your app:
+
+```tsx
+import "resource-scheduler/dist/resource-scheduler.css";
+```
+
+The stylesheet is precompiled and isolated: no global resets, no `body` or `html` rules, and every variable starts with `--rs-`, so it does not restyle the rest of your page.
+
+## Install with the shadcn CLI
+
+```bash
+npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler
+```
+
+```tsx
+import { ResourceScheduler } from "@/components/resource-scheduler";
+```
+
+- Copies the source to `components/resource-scheduler/` and installs its dependencies.
+- Adds the `--rs-*` tokens and a few utilities to your CSS. Your own theme variables and `components/ui` are not touched.
+- Skip the stylesheet import: the styles are already in your CSS.
+- Preview first with `--dry-run`, or with `npx shadcn@latest view mdobaid311/resource-scheduler/resource-scheduler`. Pin a release by adding `#<tag>` to the name.
 
 ## Check it works
 
 ```tsx
 import { ResourceScheduler } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
 
 export function Board() {
   return (
     <div style={{ height: 480 }}>
-      <ResourceScheduler resources={[{ id: "1", name: "Ann", events: [] }]} />
+      <ResourceScheduler
+        resources={[
+          { id: "ann", name: "Ann", events: [] },
+          { id: "ben", name: "Ben", events: [] },
+        ]}
+      />
     </div>
   );
 }
 ```
 
-The component fills its parent, so give the parent a height.
+The component fills its parent, so give the parent a height. You should see two rows and the current week. Next, [the quick start](/start/quick-start/) adds events, drag and drop and a conflict rule.
 
 ## Next.js
 
-The bundle starts with `"use client"`, so you can import it from a server file. See [Next.js and SSR](/guides/nextjs-and-ssr/).
+**App Router.** The package's main entry starts with `"use client"`, so a server component can render `<ResourceScheduler>` directly. Your handlers (`onEventDrop`, `onSlotSelect`, ...) are functions, which cannot cross from server to client, so keep the scheduler and its state in a client component:
+
+```tsx
+// app/board/board.tsx
+"use client";
+
+import { useState } from "react";
+import { ResourceScheduler, type Resource } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+export function Board({ initial }: { initial: Resource[] }) {
+  const [resources, setResources] = useState(initial);
+  return <ResourceScheduler resources={resources} /* handlers here */ />;
+}
+```
+
+Server code (route handlers, server actions) that needs the scheduling logic without the component, for example to check a booking before saving it, imports from `resource-scheduler/headless`, which has no `"use client"` marker.
+
+**Pages Router.** Import the stylesheet in `pages/_app.tsx` and use the component in any page.
+
+Dates passed from the server arrive as strings, and the current time can differ between server render and hydration. [Next.js and SSR](/guides/nextjs-and-ssr/) covers both. For a complete app, see [Room booking with Next.js and Prisma](/tutorials/react-room-booking-nextjs-prisma/).
+
+## Vite
+
+Nothing to configure. Create a React app and install:
+
+```bash
+npm create vite@latest my-board -- --template react-ts
+cd my-board
+npm install resource-scheduler
+```
+
+Import the component and the stylesheet in `src/App.tsx` as in [Check it works](#check-it-works).
+
+## Troubleshooting
+
+**The board is blank or has no height.** The scheduler fills its parent. A parent with no height (a flex child without `min-height: 0`, or a plain `div` in a page with no height) gives it nothing to fill. Set a height on the parent.
+
+**It renders but looks unstyled.** The npm package needs `import "resource-scheduler/dist/resource-scheduler.css"` once. With the shadcn install, check that your CSS is Tailwind v4 and that the CLI added the `--rs-*` tokens to it.
+
+**`Invalid hook call`, or two copies of React.** The package expects your app's React as a peer. In a monorepo or with a linked package, make sure only one `react` is installed (`npm ls react`), and dedupe it in your bundler if needed.
+
+**A peer dependency warning about React 17.** React 17 is not supported. Upgrade to React 18 or 19.
+
+**`startDate.getTime is not a function`.** Events need `Date` objects. Dates from JSON are strings; convert them with `new Date(...)` when you load them.
+
+More answers are in the [FAQ and troubleshooting](/start/faq/) page.

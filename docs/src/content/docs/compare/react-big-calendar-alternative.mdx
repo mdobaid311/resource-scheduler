@@ -1,0 +1,87 @@
+---
+title: react-big-calendar alternative with a resource timeline
+description: "react-big-calendar shows resources as columns in its day and week views. When you need resources as rows on a timeline, here is how resource-scheduler compares (checked on GitHub) and how to migrate."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+react-big-calendar is a popular free React calendar, MIT licensed, in the style of Google Calendar. It can show **resources as columns** in its day and week views. It has no **resource timeline**, where resources are rows and time runs across. resource-scheduler is that timeline, also MIT licensed. Both are free, so the choice is about shape, not price.
+
+<Aside type="caution" title="Checked November 2026">
+  Facts about react-big-calendar come from [its GitHub repository](https://github.com/jquense/react-big-calendar) (source, `package.json` and stories), read on 1 November 2026: MIT, 8,762 stars, latest release v1.20.0 on 1 June 2026.
+</Aside>
+
+## How we compared
+
+The layout each library draws, what it costs, how many resources fit, how events are created and moved, and what it needs from you to set up.
+
+| | resource-scheduler | react-big-calendar |
+|---|---|---|
+| Licence and price | MIT, free | MIT, free |
+| Views | Day, week, month, quarter and year, all as resource timelines | Month, week, work week, day and agenda |
+| Resources | Rows, any number (virtualized); groups and nesting | Columns in the day and week views (`resources` prop), grouped by resource or by day |
+| Drag and resize | Built in | A drag-and-drop add-on (`withDragAndDrop`) |
+| Overlap rules | `eventOverlap`, `isValidDrop`, red before you drop | Your own checks in the handlers |
+| Dates | `Date` objects; date-fns inside, no setup | A localizer you choose and pass in |
+| Recurring events | `recurrence`, RRULE in and out | Not built in; expand them yourself |
+
+## When to choose resource-scheduler
+
+- You schedule **many resources** (rooms, staff, vehicles) and want to compare them **row by row** over days or weeks. A few columns work in a day view; twenty do not.
+- You want **double booking refused** in the UI and on the server with the same rule.
+- You need **month, quarter or year timelines** for rentals, allocations or rosters.
+
+## When react-big-calendar is the better choice
+
+- You want a **calendar** for one person or a small team: a month grid, a week of time slots, an agenda list.
+- You have **a handful of resources** and like them as side-by-side columns in a day view.
+- You already use it, and a resource timeline is not something you need.
+
+The two can live in one app: a personal calendar on one screen, a resource board on another.
+
+## Migrating from react-big-calendar
+
+Events keep their shape apart from the field names. react-big-calendar events usually look like `{ title, start, end, resourceId }`, and resources are read through `resourceIdAccessor` and `resourceTitleAccessor`.
+
+Before:
+
+```tsx
+import { Calendar } from "react-big-calendar";
+import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
+
+const DnDCalendar = withDragAndDrop(Calendar);
+
+<DnDCalendar
+  localizer={localizer}
+  defaultView="day"
+  events={events}
+  resources={rooms}
+  resourceIdAccessor="id"
+  resourceTitleAccessor="title"
+  selectable
+  onSelectSlot={({ start, end, resourceId }) => openForm(resourceId, start, end)}
+  onEventDrop={({ event, start, end, resourceId }) => save(event.id, resourceId, start, end)}
+  onEventResize={({ event, start, end }) => save(event.id, event.resourceId, start, end)}
+/>
+```
+
+After:
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+<ResourceScheduler
+  initialView={ViewType.Day}
+  resources={rooms.map((r) => ({ id: r.id, name: r.title }))}
+  events={events.map((e) => ({ id: e.id, title: e.title, startDate: e.start, endDate: e.end, resourceId: e.resourceId }))}
+  eventOverlap={false}
+  onSlotSelect={({ resourceId, start, end }) => openForm(resourceId, start, end)}
+  onEventDrop={(event, from, to, start, end) => save(event.id, to, start, end)}
+  onEventResize={(event, resourceId, start, end) => save(event.id, resourceId, start, end)}
+/>
+```
+
+No localizer: pass a date-fns `locale` if you want another language or week start. See [Languages, locales and 12/24h clocks](/guides/internationalization/).
+
+More: [the step-by-step tutorial](/tutorials/free-react-resource-timeline/), and every option side by side in [Alternatives](/compare/alternatives/).

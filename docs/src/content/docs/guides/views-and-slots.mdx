@@ -1,14 +1,16 @@
 ---
 title: Day, week, month, quarter and year views
-description: Day, week, month, quarter and year views, plus slot length and visible hours for the day view, in React.
+description: The React scheduler's day, week, month, quarter and year views, day view slots of 15, 30 or 60 minutes, visible hours, week start, hidden weekends, navigation and column widths.
 ---
 
 import SlotsDemo from "../../../components/demos/SlotsDemo";
 import WeekDemo from "../../../components/demos/WeekDemo";
 
+Every view is the same resource timeline: resources down the side, time across the top. The views differ in how much time one column holds and how much fits on screen.
+
 ## Views
 
-`ViewType` is `Day`, `Week`, `Month`, `Quarter` or `Year`. Choose where to start with `initialView`, and which ones the selector offers with `availableViews`:
+`ViewType` is `Day`, `Week`, `Month`, `Quarter` or `Year`. Choose where to start with `initialView` (the week view by default), and which ones the selector offers with `availableViews`:
 
 ```tsx
 import { ResourceScheduler, ViewType } from "resource-scheduler";
@@ -20,9 +22,19 @@ import { ResourceScheduler, ViewType } from "resource-scheduler";
 />
 ```
 
-Set `allowViewChange={false}` to hide the selector. `onViewChange` and `onDateChange` tell you when the user navigates.
+Set `allowViewChange={false}` to hide the selector. `onViewChange` and `onDateChange` tell you when the user navigates. Switching views keeps the date that is shown.
 
 `ViewType` is a `const` object plus a union type, so both `ViewType.Week` and `view: ViewType` work.
+
+| View | One column is | On screen | Good for |
+|---|---|---|---|
+| Day | a slot (`slotDuration` minutes) | one day | room booking, clinic appointments, field dispatch |
+| Week | a day | 7 days (5 with `hideWeekends`) | shift rosters, team planning |
+| Month | a day | the month | equipment rental, vacations |
+| Quarter | a day | three months | project allocation |
+| Year | a day | the year | long-term planning, utilization at a glance |
+
+The year view has a column for every day. Above 100 columns, only the columns near the viewport are drawn (`virtualizeColumns`), so it scrolls smoothly; see [Large data and virtualization](/guides/performance/).
 
 ## Slots in the day view
 
@@ -46,6 +58,8 @@ Dragging, resizing, selecting and scroll-to-time all snap to these slots. Events
 />
 ```
 
+Visible hours only hide time. To stop bookings outside opening hours, shade it with `businessHours` and refuse it with `blockUnavailable`; see [Business hours and availability](/guides/availability/).
+
 ## Week start and weekends
 
 The week view starts on Sunday. Set `weekStartsOn` (`0` Sunday to `6` Saturday) to change it, and `hideWeekends` to leave Saturday and Sunday out of the week, month, quarter and year views. The title, keyboard navigation and drag all follow the days that are shown. An event that only falls on hidden days is not drawn; one that spans a weekend simply continues over the gap.
@@ -61,6 +75,34 @@ The week view starts on Sunday. Set `weekStartsOn` (`0` Sunday to `6` Saturday) 
 />
 ```
 
+A date-fns `locale` also sets the first day of the week, and the day and month names. See [Languages, locales and 12/24h clocks](/guides/internationalization/).
+
+## Start date and navigation
+
+`initialDate` sets the date shown first (today by default). The toolbar's previous, Today and next buttons move by one period of the current view. To drive it from your own buttons, keep a ref:
+
+```tsx
+import { useRef } from "react";
+import { ResourceScheduler, ViewType, type ResourceSchedulerHandle } from "resource-scheduler";
+
+const ref = useRef<ResourceSchedulerHandle>(null);
+
+<button onClick={() => ref.current?.goTo(new Date(2026, 11, 1))}>December</button>
+<button onClick={() => ref.current?.setView(ViewType.Month)}>Month</button>
+<button onClick={() => ref.current?.scrollToTime(new Date())}>Now</button>
+
+<ResourceScheduler ref={ref} resources={resources} />
+```
+
+`getVisibleRange()` returns what the grid covers, and `onRangeChange` reports it whenever it changes, with `end` exclusive, so you can load only the events on screen. See [Load events and control the view](/guides/loading-and-control/).
+
 ## Column widths
 
-`resourceColumnWidth`, `timeColumnWidth` (day view) and `dateColumnWidth` (other views) take pixel values such as `"140px"`. On narrow screens the defaults shrink.
+`resourceColumnWidth`, `timeColumnWidth` (day view) and `dateColumnWidth` (other views) take pixel values such as `"140px"`. On narrow screens the defaults shrink. Columns stretch to fill the width when there are few of them. Keep the widths in `px` if you rely on column virtualization, which measures them.
+
+## Which view to start with
+
+- A booking screen where people pick a time today: the **day view** with 15 or 30 minute slots and visible hours set to your opening hours.
+- A roster planned a week at a time: the **week view**, with `weekStartsOn={1}` in most of Europe.
+- Rentals or allocations measured in days or weeks: the **month** or **quarter view**.
+- If people switch often, offer two or three views with `availableViews` rather than all five.

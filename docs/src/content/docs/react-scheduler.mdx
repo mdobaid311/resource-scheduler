@@ -1,0 +1,92 @@
+---
+title: Free React scheduler component (MIT)
+description: "resource-scheduler is a free, MIT-licensed React scheduler component: a resource timeline with drag and drop booking, no double booking, keyboard support and virtualized rows. Example, features and when to pick something else."
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import HeroDemo from '../../components/demos/HeroDemo';
+
+**resource-scheduler** is a free React scheduler component, released under the MIT licence. It draws a resource timeline: the people, rooms, vehicles or machines you schedule are the rows, and time runs across the top. Bookings are bars you can create, drag and resize, and rules you write decide where they may go.
+
+<HeroDemo client:only="react">
+  <div slot="fallback" class="demo-frame not-content" style="height:462px" aria-busy="true"></div>
+</HeroDemo>
+
+## What is a resource scheduler?
+
+A calendar answers "what is on today?" for one person. A resource scheduler answers "who or what is free, and when?" for many at once. Each resource gets its own row, so you can see at a glance that Room B is free at 2 pm, that Ana is on leave on Thursday, or that both vans are booked all week.
+
+That makes it the right shape for:
+
+- **room booking**: meeting rooms, desks, studios, courts;
+- **shift scheduling**: staff rosters, rotas, on-call;
+- **equipment rental**: tools, vehicles, cameras, with stock counts;
+- **field service dispatch**: jobs assigned to technicians or crews;
+- **clinic appointments** and **project allocation**.
+
+A month-grid event calendar (one box per day) is a different component. If that is what you need, see [when to pick something else](#when-to-pick-something-else).
+
+## A React scheduler in ten lines
+
+```tsx
+import { ResourceScheduler } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+const at = (h: number) => new Date(new Date().setHours(h, 0, 0, 0));
+const resources = [
+  { id: "a", name: "Room A", events: [{ id: "1", title: "Standup", startDate: at(9), endDate: at(10) }] },
+  { id: "b", name: "Room B", events: [] },
+];
+
+export default function App() {
+  return <div style={{ height: 400 }}><ResourceScheduler resources={resources} eventOverlap={false} /></div>;
+}
+```
+
+`eventOverlap={false}` is the whole double-booking rule: a booking cannot be dropped, resized or drawn on top of another one in the same room. To save changes, add `onEventDrop`, `onEventResize` and `onSlotSelect`; the [quick start](/start/quick-start/) walks through them.
+
+Install it with `npm install resource-scheduler`, or copy the source into your project with `npx shadcn@latest add mdobaid311/resource-scheduler/resource-scheduler`. See [Install the React scheduler](/start/installation/).
+
+## Features
+
+- **Five views**: day (slots of 15, 30 or 60 minutes, with visible hours), week, month, quarter and year. [Views](/guides/views-and-slots/)
+- **Create, move and resize** with mouse, pen or touch, using Pointer Events, so there is no drag-and-drop library to wire up. [Drag and resize](/guides/drag-and-resize/)
+- **No double booking**: `eventOverlap` and `isValidDrop` refuse a place before you drop, shown in red, and the same functions run on your server. [Conflict rules](/guides/conflict-control/)
+- **Your own dialogs**: `onSlotSelect` hands you the selected range. [Creating events](/guides/creating-events/)
+- **Business hours, time off and free-slot search**: shaded and optionally blocked, with `findAvailableSlots` and `suggestResources`. [Availability](/guides/availability/)
+- **Recurring events** with iCalendar `RRULE` strings in and out. [Recurring events](/guides/recurring-events/)
+- **Keyboard and screen readers**: an ARIA grid with keyboard move, resize and create, checked with axe in CI. [Accessibility](/guides/keyboard-and-accessibility/)
+- **Large schedules**: rows and columns are virtualized; 2,500 resources with 50,000 events draw in under a second in the [benchmark](/guides/performance/).
+- **Resource groups**, nested, collapsible and reorderable, with **utilization** per row and per group. [Groups](/guides/resource-groups/), [Utilization](/guides/utilization/)
+- **Time zones**, **locales**, 12 or 24-hour clocks and right-to-left layouts. [Time zones](/guides/time-zones/), [Languages](/guides/internationalization/)
+- **Export and import** `.ics` and CSV, and **print**. [Export](/guides/export/), [Printing](/guides/printing/)
+- **Themeable and isolated**: `--rs-*` CSS variables, dark mode, and styles that never touch the rest of your app. [Theming](/guides/theming/)
+- **Headless core**: the layout, rules and date math as plain functions in `resource-scheduler/headless`, to [build your own UI](/guides/build-your-own-ui/).
+- **TypeScript** types included; React 18 and 19; [Next.js](/guides/nextjs-and-ssr/) ready.
+
+Everything above is in the free package. There is no paid tier.
+
+## When to pick something else
+
+Choose a different library if one of these is a must-have:
+
+- **A month-grid or agenda calendar** for one person or a few, like Google Calendar: [react-big-calendar](/compare/react-big-calendar-alternative/) or FullCalendar Standard are built for that.
+- **Resources as columns** (a vertical resource day view): FullCalendar Premium has one. Here, resources are always rows.
+- **Gantt dependencies, a scheduling engine or vendor support with an SLA**: [Bryntum](/compare/bryntum-scheduler-alternative/) is the specialist.
+- **Far beyond tens of thousands of events on screen at once**: load a window from your server, or pick a heavier tool.
+- **Two-way sync with Google or Outlook calendars**: not built in. You can export and import `.ics` files.
+
+The [comparison page](/compare/alternatives/) puts the options side by side, with prices checked on each vendor's site.
+
+## Tutorials
+
+<CardGrid>
+  <LinkCard title="A plain resource timeline" description="The free FullCalendar timeline alternative, step by step." href="/tutorials/free-react-resource-timeline/" />
+  <LinkCard title="Room booking calendar" description="Rooms, 30-minute slots and no double booking." href="/tutorials/react-room-booking-calendar/" />
+  <LinkCard title="Room booking with Next.js and Prisma" description="A full-stack app with a server check in a transaction." href="/tutorials/react-room-booking-nextjs-prisma/" />
+  <LinkCard title="Shift planner" description="An employee roster with hours, time off and utilization." href="/tutorials/react-shift-planner/" />
+  <LinkCard title="Clinic appointment board" description="Clinicians, gaps and a buffer around every visit." href="/tutorials/react-clinic-appointment-board/" />
+  <LinkCard title="Equipment rental calendar" description="Stock counts, rentals by the day, the next free stretch." href="/tutorials/react-equipment-rental-calendar/" />
+</CardGrid>
+
+Or open the [28 live demos](/showcase/) and read the code behind each one.

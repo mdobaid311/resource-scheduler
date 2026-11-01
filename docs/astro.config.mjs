@@ -86,6 +86,7 @@ export default defineConfig({
         {
           label: "Start here",
           items: [
+            { label: "React scheduler", slug: "react-scheduler" },
             { label: "Introduction", slug: "start/introduction" },
             { label: "Installation", slug: "start/installation" },
             { label: "Quick start", slug: "start/quick-start" },
@@ -169,7 +170,13 @@ export default defineConfig({
         },
         {
           label: "Compare",
-          items: [{ label: "Alternatives", slug: "compare/alternatives" }],
+          items: [
+            { label: "Alternatives", slug: "compare/alternatives" },
+            { label: "vs FullCalendar", slug: "compare/fullcalendar-alternative" },
+            { label: "vs Bryntum", slug: "compare/bryntum-scheduler-alternative" },
+            { label: "vs DHTMLX", slug: "compare/dhtmlx-scheduler-alternative" },
+            { label: "vs react-big-calendar", slug: "compare/react-big-calendar-alternative" },
+          ],
         },
         {
           label: "Reference",
