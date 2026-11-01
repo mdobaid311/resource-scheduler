@@ -249,7 +249,7 @@ export default function App() {
         <main id="panel" role="tabpanel" aria-labelledby={`tab-${active.id}`}>
           <div className="page-head">
             <div>
-              <h1>{active.label}</h1>
+              <h2>{active.label}</h2>
               <p>{active.blurb}</p>
               {TRY[active.id] && (
                 <p className="try">

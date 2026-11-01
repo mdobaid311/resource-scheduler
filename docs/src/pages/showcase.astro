@@ -1,35 +1,46 @@
 ---
 // The showcase: every recipe in one dashboard. A standalone page (not Starlight) so its
-// own chrome and theme switch do not fight the docs layout.
+// own chrome and theme switch do not fight the docs layout. The live app only runs in the
+// browser, so the heading, intro and demo list around it are plain HTML for readers and
+// crawlers without JavaScript.
 import "../styles/scheduler.css";
 import "../showcase/styles.css";
 import App from "../showcase/App";
+import { ALL_DEMOS, GROUPS } from "../showcase/recipes";
 
 const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const home = new URL(base, Astro.site).href;
+const url = new URL("showcase/", home).href;
+const title = "Live React scheduler demos";
+const description = `${ALL_DEMOS.length} live demos of a free React scheduler with a resource timeline: room booking, shift rosters, equipment rental, field service and project allocation. Drag, resize, switch theme and density.`;
+const jsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "React Resource Scheduler", item: home },
+    { "@type": "ListItem", position: 2, name: title, item: url },
+  ],
+});
 ---
 
 <html lang="en" data-theme="system">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>React Resource Timeline Demos | Resource Scheduler</title>
-    <meta
-      name="description"
-      content="Live React resource timeline demos: room booking, shift rosters, equipment rental, field service and project allocation. Drag, resize, switch theme and density."
-    />
-    <link rel="canonical" href={new URL(base.slice(1) + "showcase/", Astro.site).href} />
+    <title>{title} | React Resource Scheduler</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Resource Scheduler" />
-    <meta property="og:title" content="Resource Scheduler Showcase" />
-    <meta
-      property="og:description"
-      content="Six working recipes on one page: drag, resize, book, assign. Switch theme and density live."
-    />
-    <meta property="og:image" content={new URL("og.png", Astro.site + base.slice(1)).href} />
+    <meta property="og:site_name" content="React Resource Scheduler" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={new URL("og.png", home).href} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Resource Scheduler Showcase" />
+    <meta name="twitter:title" content={title} />
     <meta name="color-scheme" content="light dark" />
+    <script is:inline type="application/ld+json" set:html={jsonLd} />
     <script is:inline>
       // Apply the saved theme before first paint so there is no flash.
       try {
@@ -40,11 +51,48 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
     </script>
   </head>
   <body>
+    <header class="intro">
+      <a href={base}>&larr; Docs home</a>
+      <h1>{title}</h1>
+      <p>
+        {ALL_DEMOS.length} working demos of resource-scheduler, a free, MIT-licensed React scheduler with a
+        resource timeline. Each one is the real component, so you can drag, resize and book, then open the
+        guide that explains how it is built.
+      </p>
+    </header>
+
     <App client:only="react">
       <div slot="fallback" class="app" aria-busy="true">
         <aside class="sidebar"></aside>
-        <div class="main"><main><div class="page-head"><h1>Resource Scheduler</h1><p>Loading the live recipes…</p></div></main></div>
+        <div class="main"><main><div class="page-head"><p>Loading the live recipes…</p></div></main></div>
       </div>
     </App>
+
+    <section class="demo-index" aria-labelledby="all-demos">
+      <h2 id="all-demos">All demos</h2>
+      <div class="demo-groups">
+        {
+          GROUPS.map((group) => (
+            <div>
+              <h3>{group.label}</h3>
+              <ul>
+                {group.demos.map((demo) => (
+                  <li>
+                    <a href={`${base}${demo.doc}/`}>{demo.label}</a>: {demo.blurb}{" "}
+                    <a href={`#${demo.id}`} aria-label={`Open the ${demo.label} demo`}>Open demo</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+    <script is:inline>
+      // The demo links switch the live app above, so bring it into view.
+      document.querySelectorAll('.demo-index a[href^="#"]').forEach((a) =>
+        a.addEventListener("click", () => window.scrollTo({ top: 0 }))
+      );
+    </script>
   </body>
 </html>

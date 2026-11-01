@@ -331,7 +331,7 @@ main {
   gap: 12px 24px;
   margin-bottom: 20px;
 }
-.page-head h1 {
+.page-head h2 {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
@@ -564,7 +564,7 @@ footer {
   footer {
     order: 3;
   }
-  .page-head h1 {
+  .page-head h2 {
     font-size: 20px;
   }
 }
@@ -596,5 +596,75 @@ footer {
 @media (pointer: coarse) {
   .touch-hint {
     display: inline;
+  }
+}
+
+/* Plain HTML around the live app (showcase.astro): the page heading above, the demo list below. */
+.intro,
+.demo-index {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  padding: 0 24px;
+}
+.intro h1 {
+  margin: 8px 0 4px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.intro p {
+  margin: 0;
+  max-width: 80ch;
+  color: var(--rs-muted-foreground);
+  text-wrap: pretty;
+}
+.intro + .app {
+  margin-top: 24px;
+}
+.demo-index {
+  margin-bottom: 48px;
+}
+.demo-index h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.demo-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 0 32px;
+}
+.demo-index h3 {
+  margin: 20px 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.demo-index ul {
+  margin: 0;
+  padding-inline-start: 18px;
+  color: var(--rs-muted-foreground);
+}
+.demo-index li {
+  margin: 4px 0;
+}
+.demo-index li > a:first-child {
+  font-weight: 500;
+}
+:is(.intro, .demo-index) a:focus-visible {
+  outline: 2px solid var(--rs-ring);
+  outline-offset: 2px;
+}
+@media (max-width: 1024px) {
+  .intro,
+  .demo-index {
+    margin-top: 16px;
+    padding: 0 16px;
+  }
+  .intro h1 {
+    font-size: 22px;
+  }
+  .intro + .app {
+    margin-top: 16px;
   }
 }
