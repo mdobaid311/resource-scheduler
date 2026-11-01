@@ -1,20 +1,55 @@
 ---
 title: Room booking calendar recipe
-description: A React meeting room booking board with no double booking and your own booking form, in about forty lines.
+description: A React room booking calendar with no double booking. Rooms as rows, 30-minute slots, your own booking form, move and resize, opening hours, and finding a free room.
 ---
 
 import RoomBookingDemo from "../../../components/demos/RoomBookingDemo";
 
-Rooms are the rows, half hours are the columns. Selecting free time opens your own form, and booked time cannot be selected, moved onto or resized into.
+Rooms are the rows, half hours are the columns. Selecting free time opens your own form, and booked time cannot be selected, moved onto or resized into. This is the smallest complete room booking calendar; the [room booking tutorial](/tutorials/react-room-booking-calendar/) builds it step by step, and the [Next.js and Prisma tutorial](/tutorials/react-room-booking-nextjs-prisma/) adds a database.
 
 <RoomBookingDemo client:only="react" />
+
+## The data
+
+Each room is a resource. Bookings can sit inside their room, or in one flat list with a `resourceId`; this recipe nests them. `group` puts rooms under a floor heading, and `capacity` is yours to use in rules and in the form.
+
+```ts
+import type { Resource } from "resource-scheduler";
+
+const initialRooms: Resource[] = [
+  { id: "atlas", name: "Atlas", role: "6 seats", group: "Floor 1", capacity: 6, events: [] },
+  { id: "borealis", name: "Borealis", role: "12 seats", group: "Floor 1", capacity: 12, events: [] },
+  { id: "cosmos", name: "Cosmos", role: "4 seats", group: "Floor 2", capacity: 4, events: [] },
+];
+```
+
+`role` is the second line under the room name.
 
 ## The code
 
 ```tsx
+import { useState } from "react";
+import { ResourceScheduler, ViewType, type Resource, type SchedulerEvent, type SlotSelection } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
 export function Rooms() {
   const [rooms, setRooms] = useState<Resource[]>(initialRooms);
   const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+  // Remove a booking from whichever room has it, and put the new version in `roomId`.
+  const place = (booking: SchedulerEvent, roomId: string) =>
+    setRooms((prev) =>
+      prev.map((r) => ({
+        ...r,
+        events: [...r.events.filter((e) => e.id !== booking.id), ...(r.id === roomId ? [booking] : [])],
+      }))
+    );
+
+  const moveBooking = (event: SchedulerEvent, _from: string, to: string, startDate: Date, endDate: Date) =>
+    place({ ...event, startDate, endDate }, to);
+
+  const resizeBooking = (event: SchedulerEvent, roomId: string, startDate: Date, endDate: Date) =>
+    place({ ...event, startDate, endDate }, roomId);
 
   return (
     <>
@@ -23,39 +58,95 @@ export function Rooms() {
           slot={draft}
           onCancel={() => setDraft(null)}
           onBook={(title) => {
-            setRooms((prev) =>
-              prev.map((r) =>
-                r.id === draft.resourceId
-                  ? { ...r, events: [...r.events, { id: crypto.randomUUID(), title, startDate: draft.start, endDate: draft.end }] }
-                  : r
-              )
-            );
+            place({ id: crypto.randomUUID(), title, startDate: draft.start, endDate: draft.end }, draft.resourceId);
             setDraft(null);
           }}
         />
       )}
 
-      <ResourceScheduler
-        resources={rooms}
-        initialView={ViewType.Day}
-        allowViewChange={false}
-        slotDuration={30}
-        dayStartHour={8}
-        dayEndHour={18}
-        ariaLabel="Meeting room bookings"
-        eventOverlap={false}        // no double booking, anywhere
-        onSlotSelect={setDraft}     // your form, not ours
-        onEventDrop={moveBooking}
-        onEventResize={resizeBooking}
-      />
+      <div style={{ height: 420 }}>
+        <ResourceScheduler
+          resources={rooms}
+          initialView={ViewType.Day}
+          allowViewChange={false}
+          slotDuration={30}
+          dayStartHour={8}
+          dayEndHour={18}
+          ariaLabel="Meeting room bookings"
+          eventOverlap={false}        // no double booking, anywhere
+          onSlotSelect={setDraft}     // your form, not ours
+          onEventDrop={moveBooking}
+          onEventResize={resizeBooking}
+        />
+      </div>
     </>
   );
 }
 ```
 
+## The booking form
+
+Any form works. It gets the selected room and times, and calls back with a title:
+
+```tsx
+import { format } from "date-fns";
+import type { SlotSelection } from "resource-scheduler";
+
+function BookingForm({ slot, onBook, onCancel }: {
+  slot: SlotSelection;
+  onBook: (title: string) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onBook(String(new FormData(e.currentTarget).get("title") || "Meeting"));
+      }}
+    >
+      <p>{slot.resourceId}, {format(slot.start, "p")} to {format(slot.end, "p")}</p>
+      <label>
+        Title <input name="title" autoFocus />
+      </label>
+      <button type="submit">Book</button>
+      <button type="button" onClick={onCancel}>Cancel</button>
+    </form>
+  );
+}
+```
+
+## Opening hours
+
+`dayStartHour` and `dayEndHour` only hide the night. To refuse bookings outside opening hours, and on weekends, shade them and block them:
+
+```tsx
+<ResourceScheduler
+  /* ...the props above */
+  businessHours={{ daysOfWeek: [1, 2, 3, 4, 5], startHour: 8, endHour: 18 }}
+  blockUnavailable
+/>
+```
+
+A room that is closed for a day (maintenance, an event) gets an `unavailable` range: `{ ..., unavailable: [{ start, end }] }`. See [Business hours and availability](/guides/availability/).
+
+## Find a free room
+
+"Which room is free for an hour this afternoon?" `findAvailableSlots` answers it for one room; ask each room and keep the first answer:
+
+```ts
+import { findAvailableSlots } from "resource-scheduler";
+
+const freeRooms = rooms
+  .filter((room) => (room.capacity ?? 0) >= people)
+  .map((room) => ({ room, slot: findAvailableSlots(room, { from, to, duration: 60, step: 30, limit: 1 })[0] }))
+  .filter((match) => match.slot);
+```
+
+Given several resources at once it finds a time when **all** of them are free, which is what you want for people who must meet, not for rooms. For ranking (the earliest, or the least booked), `suggestResources` does the loop for you; see [Business hours and availability](/guides/availability/).
+
 ## Make it real
 
-- **Enforce on the server too.** The browser check is a courtesy. Run `isPlacementAllowed` (or your own query) before saving, and return an error if someone else booked first.
-- **Business hours.** `dayStartHour` and `dayEndHour` hide the night, and `isValidDrop` can reject anything outside opening hours or on holidays.
+- **Enforce on the server too.** The browser check is a courtesy. Run `isPlacementAllowed` from `resource-scheduler/headless` (or your own query) before saving, and return an error if someone else booked first. See [Prevent double booking](/guides/conflict-control/#check-the-same-rules-on-the-server).
 - **Capacity or equipment.** Put the rule in `isValidDrop`: it receives the event and the target `resourceId`. [Equipment rental](/recipes/equipment-rental/) shows a stock count enforced this way.
 - **Recurring bookings** are built in: give an event a [`recurrence`](/guides/recurring-events/) and the scheduler draws each occurrence. [Shift roster](/recipes/shift-roster/) uses it for a weekly rota.
+- **Export** the day's bookings as an `.ics` file for people's own calendars with `eventsToICS` from `resource-scheduler/exchange`. See [Export and import](/guides/export/).

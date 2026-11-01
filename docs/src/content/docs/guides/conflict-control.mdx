@@ -1,11 +1,11 @@
 ---
 title: Prevent double booking (conflict rules)
-description: Stop double booking with eventOverlap and isValidDrop. The same rules apply to drag, resize and create, and you can reuse them on the server.
+description: Stop double booking in a React scheduler with eventOverlap and isValidDrop. The same rules apply to drag, resize and create, and the server can run them before saving.
 ---
 
 import ConflictDemo from "../../../components/demos/ConflictDemo";
 
-Two props decide whether a place is allowed. Both apply to **moving, resizing and drag-creating** alike, and both are checked against your full `resources` prop, not just what is on screen.
+Two props decide whether a place is allowed. Both apply to **moving, resizing and drag-creating** alike, so a room booking calendar, a shift roster or an equipment rental board can refuse a double booking before it reaches your code.
 
 <ConflictDemo client:only="react" />
 
@@ -16,7 +16,7 @@ Two props decide whether a place is allowed. Both apply to **moving, resizing an
 <ResourceScheduler eventOverlap={(moving, other) => other.title === "Tentative"} />
 ```
 
-`false` forbids an event from overlapping another one on the same resource. A function decides per overlapping pair: return `true` to allow it. Touching is not overlapping, because end times are exclusive. The default is to allow overlap.
+`false` forbids an event from overlapping another one on the same resource. A function decides per overlapping pair: return `true` to allow it. Touching is not overlapping, because end times are exclusive: 9:00 to 10:00 and 10:00 to 11:00 can sit side by side. The default is to allow overlap.
 
 ## `isValidDrop`
 
@@ -30,25 +30,108 @@ A final veto for anything else: working hours, holidays, capacity.
 />
 ```
 
-It runs after `eventOverlap`, and only when overlap did not already reject the place.
+It receives the event and the place it would go (`{ resourceId, start, end }`). It runs after `eventOverlap`, and only when overlap did not already reject the place.
 
 ## What the user sees
 
-While dragging or resizing, the slots the event would cover are tinted blue when allowed and red when not. Releasing on a red place does nothing. From the keyboard, a rejected place is announced ("Not allowed here") and the event stays picked up.
+While dragging or resizing, the slots the event would cover are tinted blue when allowed and red when not. Releasing on a red place does nothing: `onEventDrop`, `onEventResize` and `onSlotSelect` are not called. From the keyboard, a rejected place is announced ("Not allowed here", `labels.notAllowedHere`) and the event stays picked up.
 
-## Check the same rules elsewhere
+## Common rules
 
-The check is a plain function, so you can run it on the server before saving, which is where double booking is really prevented:
+**Opening hours and time off.** Rather than writing the hours check yourself, describe the working time and let the scheduler shade and refuse the rest. `blockUnavailable` rejects anything that touches a shaded slot: outside `businessHours`, or inside a resource's `unavailable` ranges. See [Business hours and availability](/guides/availability/).
 
-```ts
-import { isPlacementAllowed } from "resource-scheduler";
-
-const ok = isPlacementAllowed(
-  event,
-  { resourceId: "atlas", start, end },
-  resources,
-  { eventOverlap: false }
-);
+```tsx
+<ResourceScheduler
+  resources={staff}
+  businessHours={{ daysOfWeek: [1, 2, 3, 4, 5], startHour: 9, endHour: 17 }}
+  blockUnavailable
+  eventOverlap={false}
+/>
 ```
 
-`rangesOverlap(aStart, aEnd, bStart, bEnd)` is exported too. Both treat end times as exclusive and a zero-length event as a single instant.
+**Nothing in the past.**
+
+```tsx
+isValidDrop={(event, { start }) => start >= new Date()}
+```
+
+**A gap between bookings**, for cleaning a room or travelling between jobs. Allow overlap in the prop and check a widened range yourself:
+
+```tsx
+import { addMinutes } from "date-fns";
+import { rangesOverlap } from "resource-scheduler";
+
+const BUFFER = 15; // minutes
+
+<ResourceScheduler
+  events={bookings}
+  isValidDrop={(event, { resourceId, start, end }) =>
+    !bookings.some(
+      (other) =>
+        other.id !== event.id &&
+        other.resourceId === resourceId &&
+        rangesOverlap(addMinutes(start, -BUFFER), addMinutes(end, BUFFER), other.startDate, other.endDate)
+    )
+  }
+/>
+```
+
+**More than one at a time**, such as a van that carries two jobs or a stock item with several units. Count what overlaps the new place:
+
+```tsx
+isValidDrop={(event, { resourceId, start, end }) => {
+  const resource = resources.find((r) => r.id === resourceId);
+  const overlapping = bookings.filter(
+    (other) =>
+      other.id !== event.id &&
+      other.resourceId === resourceId &&
+      rangesOverlap(start, end, other.startDate, other.endDate)
+  );
+  return overlapping.length < (resource?.capacity ?? 1);
+}}
+```
+
+This counts every booking that touches the range, so it is stricter than needed when those bookings do not overlap each other. [Equipment rental](/recipes/equipment-rental/) shows a stock count enforced this way.
+
+**Locked events.** Keep the ids of events that may not move, and refuse them: `isValidDrop={(event) => !locked.has(event.id)}`.
+
+## Check the same rules on the server
+
+The browser check is a courtesy: two people can pick the same free slot at the same moment, and only your server sees both. The check is a plain function, so run it before saving. Import it from `resource-scheduler/headless`, which has no `"use client"` marker and runs in route handlers, server actions and workers:
+
+```ts
+import { isPlacementAllowed } from "resource-scheduler/headless";
+
+const ok = isPlacementAllowed(
+  event,                                  // the booking being saved ({ id: "new", ... } for a new one)
+  { resourceId: "atlas", start, end },
+  resources,                              // that resource with its current bookings
+  { eventOverlap: false }                 // the same rules object the client uses
+);
+if (!ok) return Response.json({ error: "That time was just booked." }, { status: 409 });
+```
+
+`rangesOverlap(aStart, aEnd, bStart, bEnd)` is exported too. Both treat end times as exclusive and a zero-length event as a single instant. Keep the rules in one module that both sides import, so they cannot drift apart.
+
+Two habits make the server check reliable:
+
+- **Read and write in one transaction**, with an isolation level that stops two requests from both reading "free". The [Next.js and Prisma tutorial](/tutorials/react-room-booking-nextjs-prisma/) does this with a `Serializable` transaction and answers a conflict with a 409.
+- **Let the database refuse it too.** In Postgres an exclusion constraint makes double booking impossible whatever code writes the row:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+ALTER TABLE booking ADD CONSTRAINT no_double_booking
+  EXCLUDE USING gist (room_id WITH =, tstzrange(starts_at, ends_at, '[)') WITH &&);
+```
+
+`'[)'` makes the end exclusive, the same rule the scheduler uses.
+
+## FAQ
+
+**Does the browser check events that are not on screen?** It checks every event in the visible range, with recurring events expanded. A placement is always inside the visible range, so nothing else can overlap it. If you load events lazily with `onRangeChange`, the browser only knows what you loaded; the server check covers the rest.
+
+**What about recurring events on the server?** `isPlacementAllowed` compares against the events you pass, as they are. Expand series first with `expandEvents(events, from, to)` (also in `resource-scheduler/headless`) for the range you are checking.
+
+**Why did `onSlotSelect` not fire?** A selection that breaks a rule is not reported at all. Allow the place, or check that your rule returns `true` for it.
+
+**Can I explain why a place was refused?** The board shows red and announces "Not allowed here"; it does not report the reason. If you need one, run the same checks in your own code (they are plain functions) and show your message, for example in the booking form.

@@ -1,0 +1,84 @@
+---
+title: Free DHTMLX Scheduler timeline alternative
+description: "A free, MIT-licensed alternative to the DHTMLX Scheduler Timeline view for React: editions, licences and prices checked on dhtmlx.com, when DHTMLX is the better choice, and how to migrate."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+DHTMLX Scheduler is a mature JavaScript event calendar. Its free Standard edition is GPL v2.0, and its **Timeline view** and **Units view** (the resource views) are in the paid **PRO** edition only. resource-scheduler is a React scheduler whose whole job is that resource timeline, under the MIT licence.
+
+<Aside type="caution" title="Checked November 2026">
+  Everything about DHTMLX below comes from [the DHTMLX licences page](https://dhtmlx.com/docs/products/licenses.shtml), [Standard vs PRO](https://docs.dhtmlx.com/scheduler/editions_comparison.html) and [the Timeline view docs](https://docs.dhtmlx.com/scheduler/views/timeline/), read on 1 November 2026. Verify before you decide.
+</Aside>
+
+## How we compared
+
+Which edition has the resource timeline and under which licence, what that costs, which views and features come with it, and how it fits a React app.
+
+| | resource-scheduler | DHTMLX Scheduler |
+|---|---|---|
+| Resource timeline | Included | Timeline view: PRO only. Units view (multiple resource view): PRO only |
+| Free edition | Everything, MIT | Standard edition, GPL v2.0: free for open-source projects under a GPLv2-compatible licence, without PRO features |
+| Price of the PRO edition | Free | Individual $599 (1 developer, 1 project, no SaaS), Commercial $1,299 (up to 5 developers, 1 project), Enterprise $2,899 (up to 20 developers, 5 projects, SaaS), Ultimate $5,799 |
+| Licence term | MIT, no term | Perpetual, with one year of support and updates |
+| Other views | Day, week, month, quarter and year, all as timelines | Day, week, month, year, agenda and map in Standard; grid and week agenda in PRO |
+| Event in several rows | `resourceIds` | Multisection events, PRO only |
+| Export | `.ics` and CSV, and printing | iCal, XML, JSON, PDF and PNG |
+| React | A React component | A JavaScript library; DHTMLX also lists a "Scheduler for React" product |
+| Support | GitHub issues | Support plan included for one year, by plan |
+
+## When to choose resource-scheduler
+
+- You need a **resource timeline in a closed-source or SaaS React app** without buying PRO.
+- You want a **React component** with props and handlers rather than a global `scheduler` object configured imperatively.
+- **No double booking** has to hold on the client and the server with the same rule.
+
+## When DHTMLX is the better choice
+
+- You need **views this library does not have**: agenda, map, a month grid, or a grid view.
+- You want **PDF or PNG export** and a vendor **support plan** with response times.
+- Your app is **not React**, or already uses other DHTMLX components (Gantt, Kanban) and you want one vendor.
+- Your project is **open source under a GPLv2-compatible licence** and the Standard edition's views are enough.
+
+## Migrating from the DHTMLX Timeline view
+
+A DHTMLX timeline is configured once on the global `scheduler` object. Sections are `{ key, label }`, and events name their section through the property set in `y_property`:
+
+```js
+scheduler.plugins({ timeline: true });
+scheduler.createTimelineView({
+  name: "timeline",
+  x_unit: "minute",
+  x_step: 30,
+  x_size: 20,
+  x_start: 16,                      // 08:00
+  y_unit: [{ key: "a", label: "Room A" }, { key: "b", label: "Room B" }],
+  y_property: "room_id",
+  render: "bar",
+});
+scheduler.init("scheduler_here", new Date(), "timeline");
+scheduler.parse([{ id: 1, text: "Standup", start_date: "2026-11-02 09:00", end_date: "2026-11-02 10:00", room_id: "a" }]);
+```
+
+The same board as a React component:
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+<ResourceScheduler
+  initialView={ViewType.Day}
+  slotDuration={30}                 // x_step: 30 minutes
+  dayStartHour={8}                  // x_start
+  dayEndHour={18}                   // x_start + x_size slots
+  resources={[{ id: "a", name: "Room A" }, { id: "b", name: "Room B" }]}  // y_unit: key -> id, label -> name
+  events={[{ id: "1", title: "Standup", startDate: new Date("2026-11-02T09:00"), endDate: new Date("2026-11-02T10:00"), resourceId: "a" }]}
+  eventOverlap={false}
+  onEventDrop={(event, from, to, start, end) => save(event.id, to, start, end)}
+  onSlotSelect={({ resourceId, start, end }) => openForm(resourceId, start, end)}
+/>
+```
+
+Rename `text` to `title`, `start_date`/`end_date` to `startDate`/`endDate` as `Date` objects, and your `y_property` to `resourceId`. A DHTMLX tree timeline maps to [resource groups](/guides/resource-groups/): give each resource a `group` (a string, or an array for nested folders).
+
+More: [Prevent double booking](/guides/conflict-control/), and every option side by side in [Alternatives](/compare/alternatives/).

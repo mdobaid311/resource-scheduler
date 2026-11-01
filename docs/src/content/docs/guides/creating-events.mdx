@@ -1,11 +1,11 @@
 ---
 title: Create events by click or drag
-description: "Create events in the React resource scheduler: use onSlotSelect to open your own dialog, or let onEventCreate make one."
+description: Create bookings in a React scheduler by clicking or dragging across free time, with your own dialog through onSlotSelect, or with onEventCreate. Mouse, touch and keyboard.
 ---
 
 import RoomBookingDemo from "../../../components/demos/RoomBookingDemo";
 
-There are two ways to react when someone clicks or drags across empty slots.
+Someone clicks an empty slot, or drags across several, and you get the range. There are two ways to handle it: open your own form (`onSlotSelect`), or let the scheduler build a placeholder event (`onEventCreate`).
 
 ## `onSlotSelect`: you own the dialog (recommended)
 
@@ -18,14 +18,93 @@ const [draft, setDraft] = useState<SlotSelection | null>(null);
 {draft && <CreateDialog slot={draft} onClose={() => setDraft(null)} />}
 ```
 
-`SlotSelection` is `{ resourceId, start, end }`, with `end` exclusive. The conflict rules apply, so a selection that would overlap an existing event is not reported at all.
+`SlotSelection` is `{ resourceId, start, end }`, with `end` exclusive. The conflict rules apply, so a selection that would overlap an existing event (with `eventOverlap={false}`) or that `isValidDrop` refuses is not reported at all.
 
 <RoomBookingDemo client:only="react" />
 
+## Save the new event
+
+The scheduler draws whatever is in `resources` (or the flat `events` prop). It never adds an event by itself, so creating one means adding it to your state:
+
+```tsx
+import { useState } from "react";
+import { ResourceScheduler, type SchedulerEvent, type SlotSelection } from "resource-scheduler";
+
+export function Board({ rooms }: { rooms: { id: string; name: string }[] }) {
+  const [bookings, setBookings] = useState<SchedulerEvent[]>([]);
+  const [draft, setDraft] = useState<SlotSelection | null>(null);
+
+  function book(title: string) {
+    if (!draft) return;
+    setBookings((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), title, resourceId: draft.resourceId, startDate: draft.start, endDate: draft.end },
+    ]);
+    setDraft(null);
+  }
+
+  return (
+    <>
+      <ResourceScheduler resources={rooms} events={bookings} eventOverlap={false} onSlotSelect={setDraft} />
+      {draft && <BookingForm slot={draft} onBook={book} onCancel={() => setDraft(null)} />}
+    </>
+  );
+}
+```
+
+`resources` can leave out `events` when you pass the flat `events` list; each event names its row with `resourceId`.
+
+### Saving to a server
+
+Add the event to your state first so the board updates at once, then send it. If the server refuses (someone booked the slot a moment earlier), take it out again and tell the user:
+
+```tsx
+async function book(title: string) {
+  if (!draft) return;
+  const event = { id: crypto.randomUUID(), title, resourceId: draft.resourceId, startDate: draft.start, endDate: draft.end };
+  setBookings((prev) => [...prev, event]);
+  setDraft(null);
+
+  const res = await fetch("/api/bookings", { method: "POST", body: JSON.stringify(event) });
+  if (!res.ok) {
+    setBookings((prev) => prev.filter((b) => b.id !== event.id));
+    alert(res.status === 409 ? "That time was just booked." : "Could not save the booking.");
+  }
+}
+```
+
+The server should run the same rules before it writes; see [Prevent double booking](/guides/conflict-control/#check-the-same-rules-on-the-server). The [Next.js and Prisma tutorial](/tutorials/react-room-booking-nextjs-prisma/) builds this end to end.
+
 ## `onEventCreate`: the scheduler makes the event
 
-If you only provide `onEventCreate`, the scheduler builds an event titled "New Event" with a random color and calls you with it (without an `id`). Handy for prototypes. If you provide **both**, `onSlotSelect` wins and `onEventCreate` is not called.
+If you only provide `onEventCreate`, the scheduler builds an event titled `labels.newEvent` ("New Event" in English) with a random color and calls you with it (without an `id`), plus the resource id. Add an `id` and store it. Handy for prototypes:
+
+```tsx
+<ResourceScheduler
+  resources={resources}
+  onEventCreate={(event, resourceId) =>
+    setBookings((prev) => [...prev, { ...event, id: crypto.randomUUID(), resourceId }])
+  }
+/>
+```
+
+If you provide **both**, `onSlotSelect` wins and `onEventCreate` is not called.
+
+## What a click or a drag selects
+
+- In the **day view** the unit is a slot: `slotDuration` minutes (60 by default; 15 and 30 are common). A click selects one slot; a drag selects every slot it crosses.
+- In the **week, month, quarter and year views** the unit is a whole day, so a click selects one day and `end` is midnight at the start of the next day.
+- A selection belongs to one row. A drag that ends on another row creates nothing.
+- With the `timeZone` prop set, `start` and `end` are the real instants, ready to store, even though the grid shows another zone's clock. See [Time zones](/guides/time-zones/).
+
+## Touch
+
+**Tap** an empty slot to select it, or **press and hold** one for about a third of a second, then drag across more slots and lift. A quick swipe on empty space still scrolls the board. See [Drag and drop and resize](/guides/drag-and-resize/).
 
 ## From the keyboard
 
 Move the cursor with the arrow keys, extend with <kbd>Shift</kbd> + <kbd>&larr;</kbd>/<kbd>&rarr;</kbd>, and press <kbd>Enter</kbd> or <kbd>Space</kbd>. It calls the same handler. See [Keyboard and accessibility](/guides/keyboard-and-accessibility/).
+
+## Create without the grid
+
+A "New booking" button needs nothing from the scheduler: add the event to your state, and it appears. To suggest a time, [`findAvailableSlots`](/guides/availability/) returns the free ranges of one or more resources, and `suggestResources` ranks who can take a job first.

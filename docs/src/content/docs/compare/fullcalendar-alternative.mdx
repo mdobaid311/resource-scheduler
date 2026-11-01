@@ -1,0 +1,107 @@
+---
+title: Free FullCalendar Scheduler alternative
+description: "A free, MIT-licensed alternative to FullCalendar Premium's resource timeline for React: prices and licences checked on fullcalendar.io, when FullCalendar is the better choice, and how to migrate."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+FullCalendar is the best-known JavaScript calendar, and its free Standard edition is MIT licensed. Its **resource timeline** (resources as rows, time across) is part of **FullCalendar Premium**, which is paid for commercial use. resource-scheduler is a React scheduler built only around that resource timeline, and it is free under MIT.
+
+<Aside type="caution" title="Checked November 2026">
+  Everything about FullCalendar below comes from [fullcalendar.io/pricing](https://fullcalendar.io/pricing) and [fullcalendar.io/license](https://fullcalendar.io/license), read on 1 November 2026. Vendors change their tiers and prices; verify before you decide.
+</Aside>
+
+## How we compared
+
+What matters when you need a resource timeline in a React app: what it costs and under which licence, which views you get, how bookings are created and checked, how it works with the keyboard, and how much history and support stand behind it.
+
+| | resource-scheduler | FullCalendar |
+|---|---|---|
+| Resource timeline | Included | Premium |
+| Price for commercial use | Free | Premium "starting at $480" for 1 to 10 developers; renewing before expiry is 50% off |
+| Licence | MIT | Standard: MIT. Premium: commercial licence; a free non-commercial licence for registered non-profits (not governments or universities); AGPLv3 for projects whose frontend and backend are both AGPLv3 |
+| Resources as columns (vertical resource view) | No | Premium |
+| Month grid, list and other calendar views | No: day, week, month, quarter and year, all as timelines | Yes, in the free Standard edition |
+| Frameworks | React 18 and 19 | React, Vue and Angular components |
+| Conflict rules | `eventOverlap`, `isValidDrop`; the same functions run on your server | `eventOverlap`, `selectOverlap`, `eventAllow`, `selectAllow` |
+| Printing | Included | Premium ("printer-friendly rendering") |
+| Support | GitHub issues | Premium: email, 2 tickets a month, 48-hour response |
+| Source code | All of it, MIT; or copied into your project with the shadcn CLI | Premium licence allows editing; redistributing to clients is minified unless each client is licensed |
+
+## When to choose resource-scheduler
+
+- You need a resource timeline in a commercial React app and do not want a per-developer licence.
+- You want the source in your repository (the shadcn CLI copies it in) and the freedom to change it.
+- You want the rules that stop double booking to run unchanged on your server: `isPlacementAllowed` is a plain function in `resource-scheduler/headless`.
+- Keyboard and screen reader use matter: the grid is an ARIA grid with keyboard move, resize and create, checked with axe in CI.
+
+## When FullCalendar is the better choice
+
+- **You also need classic calendar views**: a month grid, a list or agenda, a time grid with days as columns. FullCalendar Standard has them for free; this library draws only timelines.
+- **You need resources as columns** (a vertical resource day view). That is a FullCalendar Premium view; here resources are always rows.
+- **Your app is in Vue or Angular**, or several apps share one calendar library across frameworks.
+- **You want a long track record and paid email support** from the vendor.
+- **You are a registered non-profit or an AGPLv3 project**: FullCalendar Premium is free for you too, under those licences.
+
+## Migrating from FullCalendar
+
+The model is close. Resources and events are plain objects, an event names its row with `resourceId` (`resourceIds` for several), and you can keep one flat `events` list. The differences: resources have a `name` instead of a `title`, dates are `Date` objects named `startDate` and `endDate`, and each action is turned on by its handler rather than by `editable` and `selectable`.
+
+Before, with FullCalendar 6 (check option names against your version):
+
+```tsx
+import FullCalendar from "@fullcalendar/react";
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
+import interactionPlugin from "@fullcalendar/interaction";
+
+<FullCalendar
+  plugins={[resourceTimelinePlugin, interactionPlugin]}
+  schedulerLicenseKey={key}
+  initialView="resourceTimelineDay"
+  slotDuration="00:30:00"
+  slotMinTime="08:00:00"
+  slotMaxTime="18:00:00"
+  resources={[{ id: "a", title: "Room A" }]}
+  events={[{ id: "1", resourceId: "a", title: "Standup", start: "2026-11-02T09:00", end: "2026-11-02T10:00" }]}
+  editable
+  selectable
+  eventOverlap={false}
+  selectOverlap={false}
+  select={(info) => openForm(info.resource?.id, info.start, info.end)}
+/>
+```
+
+After:
+
+```tsx
+import { ResourceScheduler, ViewType } from "resource-scheduler";
+import "resource-scheduler/dist/resource-scheduler.css";
+
+<ResourceScheduler
+  initialView={ViewType.Day}
+  slotDuration={30}
+  dayStartHour={8}
+  dayEndHour={18}
+  resources={[{ id: "a", name: "Room A" }]}
+  events={[{ id: "1", resourceId: "a", title: "Standup", startDate: new Date("2026-11-02T09:00"), endDate: new Date("2026-11-02T10:00") }]}
+  eventOverlap={false}
+  onSlotSelect={({ resourceId, start, end }) => openForm(resourceId, start, end)}
+  onEventDrop={(event, fromResourceId, toResourceId, start, end) => save(event.id, toResourceId, start, end)}
+  onEventResize={(event, resourceId, start, end) => save(event.id, resourceId, start, end)}
+/>
+```
+
+`eventOverlap={false}` applies to moving, resizing and selecting alike, so it replaces both FullCalendar options. The callbacks map like this:
+
+| FullCalendar | resource-scheduler |
+|---|---|
+| `eventDrop` | `onEventDrop(event, fromResourceId, toResourceId, start, end)` |
+| `eventResize` | `onEventResize(event, resourceId, start, end)` |
+| `select` | `onSlotSelect({ resourceId, start, end })` |
+| `eventClick` | `onEventClick(event, resource)` |
+| `eventOverlap`, `selectOverlap` | `eventOverlap` (also accepts a function) |
+| `eventAllow`, `selectAllow` | `isValidDrop(event, { resourceId, start, end })` |
+| `businessHours` | `businessHours` (`startHour`/`endHour` numbers), plus `blockUnavailable` to refuse the rest |
+| `slotMinTime`, `slotMaxTime` | `dayStartHour`, `dayEndHour` |
+
+Next: the [step-by-step tutorial](/tutorials/free-react-resource-timeline/) builds a full timeline, and [Prevent double booking](/guides/conflict-control/) covers the rules. All alternatives side by side: [Alternatives](/compare/alternatives/).

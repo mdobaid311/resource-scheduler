@@ -1,24 +1,28 @@
 ---
 title: FullCalendar, MUI X and DayPilot alternatives
-description: How Resource Scheduler compares with FullCalendar, MUI X, DayPilot Lite, react-big-scheduler and Bryntum for React resource timelines, with prices and gaps.
+description: How resource-scheduler, a free React scheduler, compares with FullCalendar, MUI X, DayPilot, Bryntum, DHTMLX, react-big-calendar and react-big-scheduler for resource timelines, with prices and gaps.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="caution" title="Checked October 2026">
-  Vendors change their tiers and prices. Everything below comes from the vendors' own pages, linked at the end. Verify before you decide.
+<Aside type="caution" title="Checked November 2026">
+  Vendors change their tiers and prices. Everything below comes from the vendors' own pages, linked at the end, read on 1 November 2026 (DayPilot Lite's feature limits: October 2026). Verify before you decide.
 </Aside>
+
+Detailed comparisons, each with a migration example: [FullCalendar](/compare/fullcalendar-alternative/), [Bryntum Scheduler](/compare/bryntum-scheduler-alternative/), [DHTMLX Scheduler](/compare/dhtmlx-scheduler-alternative/) and [react-big-calendar](/compare/react-big-calendar-alternative/).
 
 A **resource timeline** has resources (people, rooms, machines) down the side and time across the top. Most calendar libraries have it, but often as a paid tier. Here is where each option stands.
 
 | | Resource timeline | Cost | Notes |
 |---|---|---|---|
 | **Resource Scheduler** (this) | Included | Free, MIT | Recurring events, row and column virtualization and nested resource groups included; a `timeZone` prop; RRULE strings in and out |
-| **FullCalendar** | Premium add-on | Premium starts at $480 per developer | Mature, broad feature set, official React connector |
-| **MUI X Scheduler** | Event Timeline is Premium | Community is free (MIT, beta); Premium is per developer | Recurring events are also Premium |
+| **FullCalendar** | Premium add-on | Premium "starting at $480" (1 to 10 developers) | Mature, broad feature set, official React connector. [Compare](/compare/fullcalendar-alternative/) |
+| **MUI X Scheduler** | Event Timeline is Premium-only | Event Calendar is free (MIT); Premium is per developer | In beta. Recurring events are also Premium |
 | **DayPilot Lite** | Included (horizontal) | Free, Apache 2.0 | Resource hierarchy, keyboard navigation and overlap prevention are Pro only (Pro from $649) |
 | **react-big-scheduler** | Included (resource view) | Free, MIT | Community project; last push March 2023, about 170 open issues and pull requests |
-| **Bryntum Scheduler** | Core feature | Commercial subscription | Built for heavy planning: large datasets, dependencies, utilization |
+| **Bryntum Scheduler** | Core feature | From $600 to $680 per developer (perpetual, a year of updates); OEM licence for SaaS | Built for heavy planning: large datasets, dependencies, export. [Compare](/compare/bryntum-scheduler-alternative/) |
+| **DHTMLX Scheduler** | Timeline view is PRO only | Standard is GPL v2.0; PRO from $599 (1 developer, 1 project) | Many views (agenda, map), PDF/PNG export. [Compare](/compare/dhtmlx-scheduler-alternative/) |
+| **react-big-calendar** | None (resources as columns in day and week views) | Free, MIT | A Google Calendar style calendar. [Compare](/compare/react-big-calendar-alternative/) |
 
 ## When to choose this one
 
@@ -32,13 +36,13 @@ Be honest about the gaps. If any of these are must-haves, use a more mature libr
 
 - **Recurring rules beyond the basics.** Hourly to yearly repeats (the last Friday, the first and last day of the month) with exceptions are built in, and `parseRRule` / `toRRule` read and write iCalendar `RRULE` strings; a rule with its own time zone, `BYMONTH` lists and week numbers are not.
 - **Far more than tens of thousands of events.** Rows and columns are virtualized: 2,500 resources with 50,000 events draw in under a second and drag smoothly ([benchmark](/guides/performance/)), a year view across 50 resources draws in 0.15 s. Beyond several thousand resources, load a window from your server.
-- **A resource tree with its own data.** Nested groups (departments inside divisions, with collapsing headers and a utilization total per group) are built in; drag to reorder and loading a branch on demand are not.
+- **A resource tree with its own data.** Nested groups (departments inside divisions, with collapsing headers, drag to reorder and a utilization total per group) are built in; loading a branch on demand is not.
 - **Gantt dependencies**, critical path, utilization charts and resource levelling. Bryntum is the specialist.
 - **Calendar sync** (Google, Outlook, iCal) and server-side scheduling engines.
 
 ## Migrating from FullCalendar
 
-The model is close. Like FullCalendar, you can keep one flat list of events and name each one's resource with `resourceId` (`resourceIds` for several): pass it as the `events` prop next to `resources`. Events can also sit inside their resource (`resource.events`). The callbacks map like this:
+There is a full before-and-after example on [the FullCalendar comparison](/compare/fullcalendar-alternative/#migrating-from-fullcalendar). The model is close. Like FullCalendar, you can keep one flat list of events and name each one's resource with `resourceId` (`resourceIds` for several): pass it as the `events` prop next to `resources`. Events can also sit inside their resource (`resource.events`). The callbacks map like this:
 
 | FullCalendar | Resource Scheduler |
 |---|---|
@@ -51,9 +55,11 @@ The model is close. Like FullCalendar, you can keep one flat list of events and 
 
 ## Sources
 
-- [FullCalendar Premium pricing](https://fullcalendar.io/premium)
+- [FullCalendar pricing](https://fullcalendar.io/pricing) and [licence](https://fullcalendar.io/license)
 - [MUI X Scheduler](https://mui.com/x/react-scheduler/)
 - [DayPilot for React](https://www.daypilot.org/react/) and [DayPilot Lite](https://javascript.daypilot.org/open-source/)
 - [react-big-scheduler](https://github.com/StephenChou1017/react-big-scheduler)
 - [DayPilot Pro pricing](https://javascript.daypilot.org/buy/) (Web Mini $649, one developer, no source code)
-- [Bryntum Scheduler performance benchmark](https://github.com/bryntum/scheduler-performance) (by the vendor)
+- [Bryntum Scheduler pricing](https://bryntum.com/store/scheduler/) and [performance benchmark](https://github.com/bryntum/scheduler-performance) (by the vendor)
+- [DHTMLX licences and prices](https://dhtmlx.com/docs/products/licenses.shtml) and [Standard vs PRO](https://docs.dhtmlx.com/scheduler/editions_comparison.html)
+- [react-big-calendar](https://github.com/jquense/react-big-calendar)

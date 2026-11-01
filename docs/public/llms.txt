@@ -59,15 +59,16 @@ export function Board() {
 
 ## Docs
 
+- [React scheduler](https://resource-scheduler-docs.vercel.app/react-scheduler/): what a resource scheduler is, a ten-line example, features, when to pick something else
 - [Introduction](https://resource-scheduler-docs.vercel.app/start/introduction/): what it is and is not
-- [Installation](https://resource-scheduler-docs.vercel.app/start/installation/): npm and shadcn
+- [Installation](https://resource-scheduler-docs.vercel.app/start/installation/): npm, pnpm, yarn, bun and shadcn; Next.js, Vite; install troubleshooting
 - [Quick start](https://resource-scheduler-docs.vercel.app/start/quick-start/): a working board with create, move and resize
 - [Data model](https://resource-scheduler-docs.vercel.app/guides/data-model/): resources, events, flat events, end times
 - [Views and slots](https://resource-scheduler-docs.vercel.app/guides/views-and-slots/): views, slot length, week start, weekends
 - [Load data and control the view](https://resource-scheduler-docs.vercel.app/guides/loading-and-control/): onRangeChange and the ref
 - [Creating events](https://resource-scheduler-docs.vercel.app/guides/creating-events/): onSlotSelect and onEventCreate
 - [Drag and resize](https://resource-scheduler-docs.vercel.app/guides/drag-and-resize/)
-- [Conflict control](https://resource-scheduler-docs.vercel.app/guides/conflict-control/): eventOverlap and isValidDrop
+- [Conflict control](https://resource-scheduler-docs.vercel.app/guides/conflict-control/): eventOverlap and isValidDrop, buffers, capacity, the same check on the server (resource-scheduler/headless), a Postgres exclusion constraint
 - [Business hours and availability](https://resource-scheduler-docs.vercel.app/guides/availability/)
 - [Utilization](https://resource-scheduler-docs.vercel.app/guides/utilization/): showUtilization, capacity, getUtilization
 - [Resource groups](https://resource-scheduler-docs.vercel.app/guides/resource-groups/): group, collapsedGroups, onGroupReorder, onResourceReorder
@@ -99,5 +100,9 @@ Each has a live demo and the complete data model.
 
 ## Optional
 
-- [Alternatives compared](https://resource-scheduler-docs.vercel.app/compare/alternatives/): FullCalendar, MUI X, DayPilot, Bryntum and where this one falls short
+- [Alternatives compared](https://resource-scheduler-docs.vercel.app/compare/alternatives/): FullCalendar, MUI X, DayPilot, Bryntum, DHTMLX, react-big-calendar and where this one falls short
+- [vs FullCalendar](https://resource-scheduler-docs.vercel.app/compare/fullcalendar-alternative/): Premium licence and price, when FullCalendar fits better, migration
+- [vs Bryntum Scheduler](https://resource-scheduler-docs.vercel.app/compare/bryntum-scheduler-alternative/): licence and price, where Bryntum is stronger, data mapping
+- [vs DHTMLX Scheduler](https://resource-scheduler-docs.vercel.app/compare/dhtmlx-scheduler-alternative/): Timeline is PRO only, editions and prices, migration
+- [vs react-big-calendar](https://resource-scheduler-docs.vercel.app/compare/react-big-calendar-alternative/): resources as columns vs a resource timeline, migration
 - [Source](https://github.com/mdobaid311/resource-scheduler)
