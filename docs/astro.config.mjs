@@ -5,6 +5,7 @@ import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
+import { lastModified } from "./src/lib/last-modified.mjs";
 
 // Set these for your deployment (Vercel: Project Settings > Environment Variables).
 const site = process.env.SITE_URL ?? "https://resource-scheduler-docs.vercel.app";
@@ -26,11 +27,23 @@ export default defineConfig({
     react(),
     // Starlight adds its own sitemap unless one is listed. These pages are
     // tools (GIF, social card, benchmark), noindex and disallowed in robots.txt.
-    sitemap({ filter: (page) => !/\/(hero|og|bench)\/?$/.test(page) }),
+    sitemap({
+      filter: (page) => !/\/(hero|og|bench)\/?$/.test(page),
+      // <lastmod> is the last commit to the page's source file, and left out when unknown.
+      serialize(item) {
+        const path = new URL(item.url).pathname.slice(base.replace(/\/?$/, "/").length).replace(/\/$/, "");
+        const file =
+          path === "" ? "src/content/docs/index.mdx"
+          : path === "showcase" ? "src/pages/showcase.astro"
+          : `src/content/docs/${path}.mdx`;
+        const lastmod = lastModified(file);
+        return lastmod ? { ...item, lastmod } : item;
+      },
+    }),
     starlight({
-      title: "Resource Scheduler",
+      title: "React Resource Scheduler",
       description:
-        "A free, MIT-licensed resource timeline for React: drag, resize, conflict rules, keyboard and screen reader support. Install from npm or copy the source with the shadcn CLI.",
+        "A free, MIT-licensed React scheduler with a resource timeline: drag, resize, conflict rules, keyboard and screen reader support. Install from npm or copy the source with the shadcn CLI.",
       favicon: "/favicon.svg",
       social: [
         {
@@ -67,26 +80,7 @@ export default defineConfig({
         },
         { tag: "meta", attrs: { property: "og:type", content: "website" } },
         { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
-        {
-          tag: "script",
-          attrs: { type: "application/ld+json" },
-          content: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareSourceCode",
-            name: "Resource Scheduler",
-            description:
-              "Resource timeline component for React with drag and drop, resize, conflict rules and keyboard accessibility.",
-            codeRepository: "https://github.com/mdobaid311/resource-scheduler",
-            url: site,
-            author: { "@type": "Person", name: "Mohammed Obaid", url: "https://github.com/mdobaid311" },
-            sameAs: [
-              "https://www.npmjs.com/package/resource-scheduler",
-              "https://github.com/mdobaid311/resource-scheduler",
-            ],
-            programmingLanguage: "TypeScript",
-            license: "https://opensource.org/licenses/MIT",
-          }),
-        },
+        // Structured data (JSON-LD) differs per page, so it is in src/components/Head.astro.
       ],
       sidebar: [
         {

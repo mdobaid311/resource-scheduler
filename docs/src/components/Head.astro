@@ -1,8 +1,94 @@
 ---
 import Default from "@astrojs/starlight/components/Head.astro";
+import { version } from "../../../resource-scheduler/package.json";
+import { lastModified } from "../lib/last-modified.mjs";
+
+// Structured data (JSON-LD). Every page is a TechArticle about the one software entity
+// (a stable @id, described in full on the home page) with a breadcrumb back home.
+const route = Astro.locals.starlightRoute;
+const { title, description } = route.entry.data;
+const home = new URL(import.meta.env.BASE_URL.replace(/\/?$/, "/"), Astro.site).href;
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const isHome = url === home;
+const softwareId = `${home}#software`;
+const authorId = `${home}#author`;
+const dateModified = lastModified(route.entry.filePath);
+
+const graph = [];
+if (route.id !== "404") {
+  graph.push(
+    {
+      "@type": "TechArticle",
+      "@id": `${url}#article`,
+      headline: title,
+      description,
+      url,
+      mainEntityOfPage: url,
+      inLanguage: "en",
+      image: `${home}og.png`,
+      ...(dateModified && { dateModified }),
+      author: { "@id": authorId },
+      about: { "@id": softwareId },
+    },
+    {
+      "@type": "Person",
+      "@id": authorId,
+      name: "Mohammed Obaid",
+      url: "https://github.com/mdobaid311",
+      sameAs: ["https://github.com/mdobaid311", "https://www.linkedin.com/in/mohammed-obaid-56a33920b"],
+    }
+  );
+  if (!isHome) {
+    graph.push({
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: route.siteTitle, item: home },
+        { "@type": "ListItem", position: 2, name: title, item: url },
+      ],
+    });
+  }
+}
+if (isHome) {
+  graph.push(
+    {
+      "@type": "SoftwareApplication",
+      "@id": softwareId,
+      name: "Resource Scheduler",
+      alternateName: "resource-scheduler",
+      description:
+        "A free, MIT-licensed React scheduler component with a resource timeline: drag and drop booking, resize, conflict rules, keyboard and screen reader support.",
+      url: home,
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Web",
+      softwareVersion: version,
+      license: "https://opensource.org/licenses/MIT",
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      downloadUrl: "https://www.npmjs.com/package/resource-scheduler",
+      image: `${home}og.png`,
+      author: { "@id": authorId },
+      sameAs: ["https://www.npmjs.com/package/resource-scheduler", "https://github.com/mdobaid311/resource-scheduler"],
+    },
+    {
+      "@type": "VideoObject",
+      "@id": `${home}#tour`,
+      name: "Resource Scheduler: a 40-second tour",
+      description:
+        "A 40-second tour of resource-scheduler, a free React scheduler with a resource timeline: room booking, shift rosters, field dispatch and utilization.",
+      thumbnailUrl: `${home}launch-poster.png`,
+      contentUrl: `${home}launch.mp4`,
+      uploadDate: "2026-10-15T05:46:53+05:30",
+      duration: "PT42S",
+      about: { "@id": softwareId },
+    }
+  );
+}
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c");
 ---
 
 <Default><slot /></Default>
+
+{graph.length > 0 && <script is:inline type="application/ld+json" set:html={jsonLd} />}
 
 <script>
   import { inject } from "@vercel/analytics";

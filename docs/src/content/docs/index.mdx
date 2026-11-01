@@ -1,9 +1,9 @@
 ---
-title: Free resource timeline for React
-description: A free, MIT-licensed resource timeline for React. Drag, resize, conflict rules, keyboard and screen reader support. Install from npm or the shadcn CLI.
+title: Free React scheduler and resource timeline
+description: A free, MIT-licensed React scheduler with a resource timeline. Drag, resize, conflict rules, keyboard and screen reader support. Install from npm or the shadcn CLI.
 template: splash
 hero:
-  title: A resource timeline for React that you own
+  title: A React scheduler with a resource timeline you own
   tagline: Rows are people, rooms or machines; columns are time. Drag, resize, stop double booking, and drive it from the keyboard. Free and MIT, with nothing held back for a paid tier.
   actions:
     - text: Quick start
@@ -15,6 +15,10 @@ hero:
       variant: secondary
     - text: View on GitHub
       link: https://github.com/mdobaid311/resource-scheduler
+      icon: github
+      variant: minimal
+    - text: npm package
+      link: https://www.npmjs.com/package/resource-scheduler
       icon: external
       variant: minimal
 ---
@@ -27,6 +31,14 @@ This is the real component, running live. Drag across empty days to create an ev
 <HeroDemo client:only="react">
   <div slot="fallback" class="demo-frame not-content" style="height:462px" aria-busy="true"></div>
 </HeroDemo>
+
+## What is resource-scheduler?
+
+resource-scheduler is a React scheduler component built around a resource timeline. Each row is a resource (a person, a room, a vehicle or a machine) and each column is time, in day, week, month, quarter and year views. You drag across free time to book it, drag a booking to move it, and drag its edge to resize it. Rules you write decide what is allowed, so a room is never booked twice and nobody gets a job outside their hours; a refused place turns red before you let go.
+
+It is for developers building room booking, shift rosters, equipment rental, clinic appointments, field service dispatch or project allocation in React or Next.js.
+
+What makes it different: most calendar libraries sell the resource timeline as a paid add-on. Here it is free under the MIT licence, with nothing held back for a paid tier (see [how it compares](/compare/alternatives/)). It works with the keyboard and screen readers, virtualizes rows and columns for large schedules, and installs from npm or as source you own through the shadcn CLI.
 
 ## 40-second tour
 

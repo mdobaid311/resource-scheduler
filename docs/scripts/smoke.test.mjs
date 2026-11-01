@@ -1173,9 +1173,9 @@ describe("tutorial", () => {
 });
 
 describe("showcase", () => {
-  const heading = (page) => page.locator("main h1").textContent();
+  const heading = (page) => page.locator("main h2").textContent();
   const headingIs = (page, text) =>
-    page.waitForFunction((t) => document.querySelector("main h1")?.textContent === t, text);
+    page.waitForFunction((t) => document.querySelector("main h2")?.textContent === t, text);
 
   it("follows the address: a hash link and Back switch the demo", async () => {
     const { page, context, errors } = await open("/showcase/#room-booking", { fromStart: false });
