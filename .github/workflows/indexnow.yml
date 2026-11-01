@@ -1,0 +1,33 @@
+# After each production deploy of the docs, tell IndexNow (Bing, Yandex and others)
+# which URLs exist, so new and changed pages are crawled sooner. The key file is
+# docs/public/<key>.txt, served at the site root.
+name: IndexNow
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    # Vercel names the environment "Production" (or "Production – <project>").
+    if: github.event.deployment_status.state == 'success' && startsWith(github.event.deployment.environment, 'Production')
+    runs-on: ubuntu-latest
+    env:
+      SITE: https://resource-scheduler-docs.vercel.app
+      KEY: 723b46cd4b1df28d19c05079332227fe
+    steps:
+      - name: Submit the sitemap's URLs
+        run: |
+          set -euo pipefail
+          locs() { curl -fsSL "$1" | grep -o '<loc>[^<]*' | sed 's/<loc>//'; }
+          urls=$(for sitemap in $(locs "$SITE/sitemap-index.xml"); do locs "$sitemap"; done | jq -R . | jq -sc .)
+          echo "Submitting $(echo "$urls" | jq length) URLs"
+          body=$(jq -nc --arg host "${SITE#https://}" --arg key "$KEY" --arg keyLocation "$SITE/$KEY.txt" \
+            --argjson urlList "$urls" '{host: $host, key: $key, keyLocation: $keyLocation, urlList: $urlList}')
+          code=$(curl -s -o response.txt -w '%{http_code}' -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' -d "$body")
+          echo "IndexNow answered HTTP $code"; cat response.txt; echo
+          # 200 OK and 202 Accepted are success; 422/403 mean the key or URLs were refused.
+          [ "$code" = 200 ] || [ "$code" = 202 ]
