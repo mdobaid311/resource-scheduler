@@ -1,8 +1,9 @@
 <h1 align="center">Resource Scheduler</h1>
 
 <p align="center">
-  A free, MIT-licensed <b>resource timeline for React</b>.<br />
-  Drag, resize, stop double booking, and drive it from the keyboard.
+  A free, MIT-licensed <b>React scheduler</b> with a resource timeline.<br />
+  Drag, resize, stop double booking, and drive it from the keyboard.<br />
+  <sub>Also called a resource calendar or booking calendar. Used for room booking, shift rosters, equipment rental and field dispatch.</sub>
 </p>
 
 <p align="center">

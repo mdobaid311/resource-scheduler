@@ -7,7 +7,7 @@
       "name": "resource-scheduler",
       "type": "registry:block",
       "title": "Resource Scheduler",
-      "description": "Resource timeline for React: drag, resize, overlap rules, slot selection, keyboard and screen reader support. Installs as source you own.",
+      "description": "React scheduler with a resource timeline: drag, resize, no double booking, slot selection, keyboard and screen reader support. Installs as source you own.",
       "dependencies": [
         "@radix-ui/react-popover",
         "@radix-ui/react-slot",
