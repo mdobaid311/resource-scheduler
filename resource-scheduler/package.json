@@ -1,6 +1,6 @@
 {
   "name": "resource-scheduler",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "React resource scheduler and timeline calendar component: drag-and-drop booking, no double booking, keyboard accessible, virtualized. Free MIT alternative to FullCalendar Scheduler. npm or shadcn CLI.",
   "type": "module",
   "main": "./dist/index.cjs",
