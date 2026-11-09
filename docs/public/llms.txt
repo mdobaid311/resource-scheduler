@@ -63,6 +63,8 @@ export function Board() {
 - [Introduction](https://resource-scheduler-docs.vercel.app/start/introduction/): what it is and is not
 - [Installation](https://resource-scheduler-docs.vercel.app/start/installation/): npm, pnpm, yarn, bun and shadcn; Next.js, Vite; install troubleshooting
 - [Quick start](https://resource-scheduler-docs.vercel.app/start/quick-start/): a working board with create, move and resize
+- [Compatibility and project facts](https://resource-scheduler-docs.vercel.app/start/compatibility/): supported React and Node.js versions, licence, release notes, security reporting
+- [FAQ and troubleshooting](https://resource-scheduler-docs.vercel.app/start/faq/): common questions, a blank board, missing styles, hydration mismatches
 - [Data model](https://resource-scheduler-docs.vercel.app/guides/data-model/): resources, events, flat events, end times
 - [Views and slots](https://resource-scheduler-docs.vercel.app/guides/views-and-slots/): views, slot length, week start, weekends
 - [Load data and control the view](https://resource-scheduler-docs.vercel.app/guides/loading-and-control/): onRangeChange and the ref
@@ -74,12 +76,22 @@ export function Board() {
 - [Resource groups](https://resource-scheduler-docs.vercel.app/guides/resource-groups/): group, collapsedGroups, onGroupReorder, onResourceReorder
 - [Export and import](https://resource-scheduler-docs.vercel.app/guides/export/): eventsToICS, eventsToCSV, icsToEvents
 - [Time zones](https://resource-scheduler-docs.vercel.app/guides/time-zones/): timeZone, utcToZoned, zonedToUtc
+- [Recurring events and RRULE](https://resource-scheduler-docs.vercel.app/guides/recurring-events/): repeat rules, exceptions, moving one occurrence
+- [Languages, locales and 12/24h clocks](https://resource-scheduler-docs.vercel.app/guides/internationalization/): date-fns locale, labels, clock format, screen reader text
 - [Keyboard and accessibility](https://resource-scheduler-docs.vercel.app/guides/keyboard-and-accessibility/)
 - [Printing](https://resource-scheduler-docs.vercel.app/guides/printing/): landscape, margins, printing a chosen range, limits
 - [Theming](https://resource-scheduler-docs.vercel.app/guides/theming/): the --rs-* tokens, dark mode
 - [Replace parts](https://resource-scheduler-docs.vercel.app/guides/components/): components, Toolbar, Event, EventPopover
 - [Build your own UI](https://resource-scheduler-docs.vercel.app/guides/build-your-own-ui/): resource-scheduler/headless, layout, lanes, row heights, drag math
 - [Next.js and SSR](https://resource-scheduler-docs.vercel.app/guides/nextjs-and-ssr/)
+- [Large data and virtualization](https://resource-scheduler-docs.vercel.app/guides/performance/): thousands of resources, row and column virtualization, measured numbers
+- [Live demos](https://resource-scheduler-docs.vercel.app/showcase/): every demo board on one page, with theme and density switches
+- [Tutorial: free React resource timeline](https://resource-scheduler-docs.vercel.app/tutorials/free-react-resource-timeline/): drag-and-drop timeline step by step, FullCalendar callback map
+- [Tutorial: room booking calendar](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-calendar/): your own booking form, overlap refused in the browser and on the server
+- [Tutorial: room booking with Next.js and Prisma](https://resource-scheduler-docs.vercel.app/tutorials/react-room-booking-nextjs-prisma/): App Router, Prisma and Postgres, 409 on double booking, optimistic updates
+- [Tutorial: shift planner](https://resource-scheduler-docs.vercel.app/tutorials/react-shift-planner/): repeating shifts, contracted hours, leave, max hours per week
+- [Tutorial: clinic appointment board](https://resource-scheduler-docs.vercel.app/tutorials/react-clinic-appointment-board/): fixed-length visits, clinician hours, gaps between patients, next free slot
+- [Tutorial: equipment rental calendar](https://resource-scheduler-docs.vercel.app/tutorials/react-equipment-rental-calendar/): whole-day rentals, stock counts, service days, next free days
 
 ## Recipes
 
